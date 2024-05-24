@@ -1,0 +1,40 @@
+.codeblock-command {
+  background-color: black;
+  outline: 1px solid gray;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 5px 8px;
+
+  border-radius: 12px;
+
+  font-size: 0.8rem;
+
+  min-width: 180px;
+
+  code {
+    margin-left: 10px;
+  }
+
+  &:hover {
+    outline: 1px solid white;
+  }
+
+  button {
+    outline: none;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: gray;
+    padding: 0;
+
+    &:hover {
+      color: white;
+    }
+
+    &[data-copying="true"] {
+      background-color: red;
+    }
+  }
+}

@@ -1,0 +1,27 @@
+---
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+
+import "../styles/global.scss";
+
+const { title } = Astro.props;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <Header />
+    <main>
+      <div class="content">
+        <slot />
+      </div>
+    </main>
+    <Footer />
+  </body>
+</html>
