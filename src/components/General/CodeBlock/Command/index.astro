@@ -1,0 +1,29 @@
+---
+import { Copy } from "lucide-astro";
+import "./index.scss";
+
+const { text } = Astro.props;
+---
+
+<script>
+  const copyBtn = document.getElementById("copyBtn");
+  let copyTimeout;
+  copyBtn.addEventListener("click", () => {
+    const text: string = String(copyBtn.dataset.value || "");
+    if (text) {
+      copyBtn.dataset.copying = "true";
+      navigator.clipboard.writeText(text);
+      clearTimeout(copyTimeout);
+      copyTimeout = setTimeout(() => {
+        copyBtn.dataset.copying = "false";
+      }, 600);
+    }
+  });
+</script>
+
+<p class={"codeblock-command"}>
+  <code>{text}</code>
+  <button id="copyBtn" data-value={text} data-copying="false" type="button">
+    <Copy height={20} width={20} />
+  </button>
+</p>

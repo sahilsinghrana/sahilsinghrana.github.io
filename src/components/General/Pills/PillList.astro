@@ -1,0 +1,18 @@
+---
+import Pill from "./Pill.astro"
+
+const { title, pills = [], className = "" } = Astro.props;
+---
+
+<div id="title" class={`pillSection ${className}`}>
+  <h2>{title}</h2>
+  <ul>
+    {
+      pills.map((pill = []) => (
+        <li>
+          <Pill text={pill[0]} link={pill[1]} />
+        </li>
+      ))
+    }
+  </ul>
+</div>

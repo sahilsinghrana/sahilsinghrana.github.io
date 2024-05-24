@@ -1,0 +1,11 @@
+---
+import PillList from "@components/General/Pills/PillList.astro";
+
+const skills = [["React.js"], ["Node.js"], ["MongoDB"]];
+const hobbies = [["Music"], ["Trekking"], ["Technology"]];
+---
+
+<>
+  <PillList title="Skills" className="Skills" pills={skills} />
+  <PillList title="Hobbies" className="Hobbies" pills={hobbies} />
+</>

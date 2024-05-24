@@ -1,0 +1,12 @@
+---
+import NavLink from "./Navlink.astro";
+import { links } from "@utils/constants";
+---
+
+<nav>
+  <NavLink url={links.about} label="About" />
+  <NavLink url={links.contact} label="Contact" />
+  <NavLink url={links.projects} label="Projects" />
+  <NavLink url={links.blog} label="Blog" />
+  <NavLink url={links.github} label="Github" />
+</nav>
