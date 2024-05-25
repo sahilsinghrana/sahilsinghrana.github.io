@@ -60,39 +60,3 @@
     margin-top: 15px;
   }
 }
-
-// .pillSection
-
-.pillSection {
-  h2 {
-    font-size: 1rem;
-  }
-
-  ul {
-    display: flex;
-    justify-content: flex-start;
-    gap: 10px;
-    margin-block-start: 0;
-    margin-block-end: 0;
-    padding-inline-start: 0;
-    list-style: none;
-
-    li {
-      list-style: none;
-      background-color: rgba(3, 22, 77, 0.726);
-      padding: 9px 18px;
-      border-radius: 18px;
-      font-size: 0.8rem;
-
-      margin: 0;
-      a {
-        color: lightgray;
-        text-decoration: none;
-      }
-
-      &:hover {
-        background-color: rgb(80, 80, 80);
-      }
-    }
-  }
-}
