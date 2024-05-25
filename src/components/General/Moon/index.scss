@@ -1,33 +1,13 @@
-.moonWrapper {
-  position: absolute;
+.myMoon {
   pointer-events: none;
-  overflow: hidden;
-
-  min-height: 100vh;
-  height: 100%;
-
-  div {
-    position: relative;
-    top: 0;
-    overflow: hidden;
-    height: 100%;
-    width: 100vw;
-    z-index: -3;
-    .myMoon {
-      position: absolute;
-      height: 20em;
-      top: 0;
-      left: 0;
-      opacity: 0.3;
-      z-index: -1;
-      //   offset-path: path("M.4 84.1s127.4 188 267.7 0 247.3 0 247.3 0");
-      offset-path: ellipse(64vw 25vh at center);
-
-      //   offset-path: circle(10rem at center);
-
-      animation: spin 25s infinite linear;
-    }
-  }
+  position: fixed;
+  height: 20em;
+  top: 0;
+  left: 0;
+  opacity: 0.3;
+  z-index: -1;
+  offset-path: ellipse(64vw 25vh at center);
+  animation: spin 25s infinite linear;
 }
 
 @keyframes spin {

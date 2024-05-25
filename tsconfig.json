@@ -9,7 +9,8 @@
       "@styles/*": ["src/styles/*"],
       "@layouts/*": ["src/layouts/*"],
       "@utils/*": ["src/utils/*"],
-      "@constants": ["src/utils/constants.ts"]
+      "@assets/*": ["src/assets/*"],
+      "@images/*": ["src/assets/images/*"]
     }
   }
 }

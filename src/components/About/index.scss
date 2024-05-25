@@ -1,3 +1,5 @@
+$mobileBreakpoint: 486px;
+
 .about {
   width: 100%;
   display: flex;
@@ -57,7 +59,6 @@
 
   .pillSection {
     align-self: flex-start;
-    margin-top: 15px;
   }
 
   .experience {
@@ -71,18 +72,33 @@
       display: grid;
       grid-template-columns: 1fr 8fr;
       font-size: 0.8rem;
-
-      .companyLogo {
+      @media screen and (max-width: $mobileBreakpoint) {
+        grid-template-columns: 1fr;
+      }
+      img.companyLogo {
         width: 50px;
         height: 50px;
         object-fit: cover;
+        @media screen and (max-width: $mobileBreakpoint) {
+          width: 100%;
+          height: 100px;
+        }
       }
 
       .experienceDetailsWrapper {
+        a:hover {
+          color: lightgray;
+        }
+
         .companyInfo {
           display: flex;
           flex-direction: column;
           font-weight: bold;
+          font-size: 1rem;
+          @media screen and (max-width: $mobileBreakpoint) {
+            margin: 5px 0;
+            text-align: center;
+          }
           p {
             padding: 0;
             margin: 0;
@@ -94,8 +110,8 @@
         }
         .companyDescription {
           font-weight: lighter;
-          font-size: 0.8rem;
-          margin: 3px 0;
+          font-size: 0.7rem;
+          margin: 2px 0;
           text-align: justify;
         }
         .projectInfo {
@@ -112,9 +128,11 @@
 
         .subExperienceWrapper {
           .companyInfo {
+            text-align: left;
             h4 {
-              font-size: 1rem;
-              margin: 8px 0;
+              font-size: 0.92rem;
+              margin: 2px 0;
+              margin-top: 6px;
             }
           }
           .projectInfo {

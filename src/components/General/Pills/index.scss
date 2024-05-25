@@ -6,7 +6,7 @@
   ul {
     display: flex;
     justify-content: flex-start;
-    gap: 10px;
+    gap: 8px;
     margin-block-start: 0;
     margin-block-end: 0;
     padding-inline-start: 0;
@@ -14,19 +14,20 @@
 
     li {
       list-style: none;
-      background-color: rgba(3, 22, 77, 0.726);
-      padding: 9px 18px;
-      border-radius: 18px;
-      font-size: 0.8rem;
-
+      background-color: rgba(124, 124, 124, 0.726);
+      padding: 7px 15px;
+      border-radius: 25px;
+      font-size: 0.7rem;
       margin: 0;
+
       a {
         color: lightgray;
         text-decoration: none;
+        cursor: pointer;
       }
 
       &:hover {
-        background-color: rgb(80, 80, 80);
+        background-color: rgb(53, 53, 53);
       }
     }
   }
