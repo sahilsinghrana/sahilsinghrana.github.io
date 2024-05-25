@@ -1,10 +1,10 @@
 ---
-import Pill from "./Pill.astro"
+import Pill from "./Pill.astro";
 
 const { title, pills = [], className = "" } = Astro.props;
 ---
 
-<div id="title" class={`pillSection ${className}`}>
+<section id={title} class={`pillSection ${className}`}>
   <h2>{title}</h2>
   <ul>
     {
@@ -15,4 +15,4 @@ const { title, pills = [], className = "" } = Astro.props;
       ))
     }
   </ul>
-</div>
+</section>

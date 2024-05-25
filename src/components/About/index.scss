@@ -59,4 +59,73 @@
     align-self: flex-start;
     margin-top: 15px;
   }
+
+  .experience {
+    width: 100%;
+    margin: 20px 10px;
+    h2 {
+      font-size: 1rem;
+    }
+
+    .experienceInfoWrapper {
+      display: grid;
+      grid-template-columns: 1fr 8fr;
+      font-size: 0.8rem;
+
+      .companyLogo {
+        width: 50px;
+        height: 50px;
+        object-fit: cover;
+      }
+
+      .experienceDetailsWrapper {
+        .companyInfo {
+          display: flex;
+          flex-direction: column;
+          font-weight: bold;
+          p {
+            padding: 0;
+            margin: 0;
+          }
+          span {
+            font-size: 0.7rem;
+            color: lightgray;
+          }
+        }
+        .companyDescription {
+          font-weight: lighter;
+          font-size: 0.8rem;
+          margin: 3px 0;
+          text-align: justify;
+        }
+        .projectInfo {
+          h4 {
+            font-size: 0.8rem;
+            margin: 5px 0;
+          }
+          p {
+            margin: 0;
+            font-size: 0.7rem;
+            color: lightgray;
+          }
+        }
+
+        .subExperienceWrapper {
+          .companyInfo {
+            h4 {
+              font-size: 1rem;
+              margin: 8px 0;
+            }
+          }
+          .projectInfo {
+            padding-left: 10px;
+            h5 {
+              font-size: 0.7rem;
+              margin: 3px 0;
+            }
+          }
+        }
+      }
+    }
+  }
 }
