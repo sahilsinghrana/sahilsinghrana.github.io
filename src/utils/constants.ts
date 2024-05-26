@@ -1,6 +1,6 @@
 export const links = {
   home: "/",
-  about: "/",
+  about: "/about",
   contact: "/contact",
   projects: "/projects",
   blog: "/blog",

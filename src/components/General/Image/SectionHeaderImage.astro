@@ -1,0 +1,52 @@
+---
+import placeholder from "@images/placeholder2.webp";
+
+const { Image, title } = Astro.props;
+
+const placeHolderImagee = Image || placeholder;
+---
+
+<style>
+  .sectionHeaderImageWrapper {
+    width: 100%;
+    height: 25vw;
+    position: relative;
+    border-radius: 0px 0px 20px 20px;
+    overflow: hidden;
+  }
+  .sectionHeaderImage {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+
+    /* opacity: 0.4; */
+
+    filter: grayscale(0.7) blur(0.8px) brightness(0.8) contrast(1.6);
+  }
+
+  .headerImageTitle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+
+    display: grid;
+    place-items: center;
+
+    font-weight: bold;
+    font-size: 1.3rem;
+    letter-spacing: 4px;
+
+    text-shadow: 4px 4px 2px rgba(0, 0, 0, 0.6);
+
+    background-color: rgba(17, 25, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+</style>
+
+<div class="sectionHeaderImageWrapper">
+  <img src={placeHolderImagee.src} class="sectionHeaderImage" />
+
+  <div class="headerImageTitle">{title}</div>
+</div>

@@ -4,145 +4,171 @@ $mobileBreakpoint: 486px;
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: start;
   margin-top: 3rem;
   margin-bottom: 20px;
 
-  .heading {
-    margin-bottom: 20px;
-    display: grid;
-    place-items: center;
-    img {
-      border-radius: 100%;
-      height: 150px;
-      width: 150px;
-      object-fit: cover;
-    }
-    div {
-      display: flex;
-      justify-content: center;
-      flex-direction: column;
-      align-items: center;
-
-      h3 {
-        margin: 0;
-        margin-top: 15px;
-        margin-bottom: 3px;
-      }
-
-      h4 {
-        margin: 0;
-        font-size: 0.9rem;
-        color: rgba(255, 255, 255, 0.699);
-        font-weight: 300;
-        margin-bottom: var(--bottom-spacing);
-      }
-
-      a {
-        background-color: rgba(97, 97, 97, 0.733);
-        color: rgba(255, 255, 255, 0.836);
-        padding: 8px 15px;
-        font-size: 0.8rem;
-        border-radius: 12px;
-        cursor: pointer;
-        font-weight: 600;
-        margin-top: var(--top-spacing);
-      }
-    }
-  }
-
-  .intro {
-    font-size: small;
-    color: rgba(255, 255, 255, 0.74);
-    text-align: justify;
+  h2 {
+    text-align: left;
   }
 
   .pillSection {
     align-self: flex-start;
   }
+}
 
-  .experience {
-    width: 100%;
-    margin: 20px 10px;
-    h2 {
-      font-size: 1rem;
+section.heading {
+  align-self: center;
+  margin-bottom: 20px;
+  display: grid;
+  place-items: center;
+  img {
+    border-radius: 100%;
+    height: 150px;
+    width: 150px;
+    object-fit: cover;
+  }
+  div {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      margin-top: 15px;
+      margin-bottom: 3px;
     }
 
-    .experienceInfoWrapper {
-      display: grid;
-      grid-template-columns: 1fr 8fr;
+    h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.699);
+      font-weight: 300;
+      margin-bottom: var(--bottom-spacing);
+    }
+
+    a {
+      background-color: rgba(97, 97, 97, 0.733);
+      color: rgba(255, 255, 255, 0.836);
+      padding: 8px 15px;
       font-size: 0.8rem;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: var(--top-spacing);
+    }
+  }
+}
+
+section.intro {
+  font-size: small;
+  color: rgba(255, 255, 255, 0.74);
+  text-align: justify;
+}
+
+section.experience {
+  width: 100%;
+  margin: 20px 0;
+
+  .experienceInfoWrapper {
+    display: grid;
+    grid-template-columns: 1fr 8fr;
+    font-size: 0.8rem;
+    @media screen and (max-width: $mobileBreakpoint) {
+      grid-template-columns: 1fr;
+    }
+    img.companyLogo {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
       @media screen and (max-width: $mobileBreakpoint) {
-        grid-template-columns: 1fr;
+        width: 100%;
+        height: 100px;
       }
-      img.companyLogo {
-        width: 50px;
-        height: 50px;
-        object-fit: cover;
-        @media screen and (max-width: $mobileBreakpoint) {
-          width: 100%;
-          height: 100px;
-        }
+    }
+
+    .experienceDetailsWrapper {
+      a:hover {
+        color: lightgray;
       }
 
-      .experienceDetailsWrapper {
-        a:hover {
+      .companyInfo {
+        display: flex;
+        flex-direction: column;
+        font-weight: bold;
+        font-size: 1rem;
+        @media screen and (max-width: $mobileBreakpoint) {
+          margin: 5px 0;
+          text-align: center;
+        }
+        p {
+          padding: 0;
+          margin: 0;
+        }
+        span {
+          font-size: 0.7rem;
           color: lightgray;
         }
-
-        .companyInfo {
-          display: flex;
-          flex-direction: column;
-          font-weight: bold;
-          font-size: 1rem;
-          @media screen and (max-width: $mobileBreakpoint) {
-            margin: 5px 0;
-            text-align: center;
-          }
-          p {
-            padding: 0;
-            margin: 0;
-          }
-          span {
-            font-size: 0.7rem;
-            color: lightgray;
-          }
+      }
+      .companyDescription {
+        font-weight: lighter;
+        font-size: 0.7rem;
+        margin: 2px 0;
+        text-align: justify;
+      }
+      .projectInfo {
+        h4 {
+          font-size: 0.8rem;
+          margin: 5px 0;
         }
-        .companyDescription {
-          font-weight: lighter;
+        p {
+          margin: 0;
           font-size: 0.7rem;
-          margin: 2px 0;
-          text-align: justify;
+          color: lightgray;
+        }
+      }
+
+      .subExperienceWrapper {
+        .companyInfo {
+          text-align: left;
+          h4 {
+            font-size: 0.92rem;
+            margin: 2px 0;
+            margin-top: 6px;
+          }
         }
         .projectInfo {
-          h4 {
-            font-size: 0.8rem;
-            margin: 5px 0;
-          }
-          p {
-            margin: 0;
+          padding-left: 10px;
+          h5 {
             font-size: 0.7rem;
-            color: lightgray;
+            margin: 3px 0;
           }
         }
+      }
+    }
+  }
+}
 
-        .subExperienceWrapper {
-          .companyInfo {
-            text-align: left;
-            h4 {
-              font-size: 0.92rem;
-              margin: 2px 0;
-              margin-top: 6px;
-            }
-          }
-          .projectInfo {
-            padding-left: 10px;
-            h5 {
-              font-size: 0.7rem;
-              margin: 3px 0;
-            }
-          }
-        }
+section.education,
+section.otherActivities {
+  h2 {
+    margin: 0;
+  }
+  ul {
+    list-style: none;
+    li {
+      margin-bottom: 10px;
+      h4 {
+        margin: 0;
+        font-size: 0.85rem;
+      }
+      p {
+        margin: 0;
+        margin-top: 2px;
+        padding-left: 10px;
+        font-size: 0.7rem;
+        color: lightgray;
       }
     }
   }

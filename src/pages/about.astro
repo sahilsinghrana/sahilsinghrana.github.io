@@ -1,0 +1,18 @@
+---
+import Layout from "../layouts/index.astro";
+import Experience from "@components/About/Experience.astro";
+import Education from "@components/About/Education.astro";
+import OtherActivities from "@components/About/OtherActivities.astro";
+import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
+
+import "@components/About/index.scss";
+---
+
+<Layout title="Sahil Singh Rana">
+  <SectionHeaderImage title="About" />
+  <div class="aboutPage">
+    <Experience />
+    <Education />
+    <OtherActivities />
+  </div>
+</Layout>

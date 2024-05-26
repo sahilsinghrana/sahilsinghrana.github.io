@@ -1,5 +1,35 @@
 ---
+import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
 ---
 
-<Layout> Under Construction.... </Layout>
+<style>
+  .contactMe {
+    p {
+      font-size: 0.8rem;
+    }
+  }
+</style>
+
+<Layout>
+  <SectionHeaderImage title="Contact" />
+  <div class="contactMe">
+    <p>
+      You can reach out to me at <a href="mailto:ranasahil98@gmail.com"
+        >ranasahil98@gmail.com</a
+      >.
+    </p>
+    <p>Or Connect With me on:</p>
+
+    <ul>
+      <li>Linkedin</li>
+      <li>X</li>
+      <li>Github</li>
+      <li>Instagram</li>
+    </ul>
+
+    <p>
+      <i>I am not much active on Social Media. So response might be delayed.</i>
+    </p>
+  </div>
+</Layout>
