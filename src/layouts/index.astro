@@ -69,7 +69,7 @@ const { title } = Astro.props;
     <meta name="msapplication-TileColor" content="#da532c" />
     <meta name="theme-color" content="#000000" />
 
-    <meta name="title" content="Sahil Singh Rana" />
+    <meta name="title" content={title} />
     <meta
       name="description"
       content="Explore the portfolio of Sahil Singh Rana, a software engineer specializing in Web development using technologies like React.JS and Node.js."
@@ -85,7 +85,7 @@ const { title } = Astro.props;
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://sahilsinghrana.github.io/" />
-    <meta property="og:title" content="Sahil Singh Rana" />
+    <meta property="og:title" content={title} />
     <meta
       property="og:description"
       content="I'm a Software Engineer currently learning web development. I have got some experience in building web applications using MERN Stack. You'll find me always listening to music, if not then I must be running, playing football, reading a random book or watching tech videos..
@@ -99,7 +99,7 @@ const { title } = Astro.props;
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:url" content="https://sahilsinghrana.github.io/" />
-    <meta property="twitter:title" content="Sahil Singh Rana" />
+    <meta property="twitter:title" content={title} />
     <meta
       property="twitter:description"
       content="I'm a Software Engineer currently learning web development. I have got some experience in building web applications using MERN Stack. You'll find me always listening to music, if not then I must be running, playing football, reading a random book or watching tech videos..
