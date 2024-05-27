@@ -4,12 +4,13 @@ import Experience from "@components/About/Experience.astro";
 import Education from "@components/About/Education.astro";
 import OtherActivities from "@components/About/OtherActivities.astro";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
+import placeholderImage from "@images/placeholder4.webp";
 
 import "@components/About/index.scss";
 ---
 
 <Layout title="Sahil Singh Rana">
-  <SectionHeaderImage title="About" />
+  <SectionHeaderImage title="About" Image={placeholderImage} />
   <div class="aboutPage">
     <Experience />
     <Education />
