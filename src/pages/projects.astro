@@ -1,8 +1,33 @@
 ---
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
+import ProjectCard from "@components/Projects/ProjectCard.astro";
+import projects  from "@utils/projects";
 ---
+
+<style>
+  .projectList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: space-around;
+    margin-top: 20px;
+  }
+</style>
 
 <Layout>
   <SectionHeaderImage title="Projects" />
+
+  <div class="projectList">
+    {
+      projects.map((project) => (
+        <ProjectCard
+          title={project.title}
+          content={project.content}
+          links={project.links}
+          image={project.image}
+        />
+      ))
+    }
+  </div>
 </Layout>
