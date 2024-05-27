@@ -1,6 +1,21 @@
 ---
+import { getCollection } from 'astro:content';
+
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
+
+const blogEntries = await getCollection('blog');
+
 ---
 
-<Layout> <SectionHeaderImage title="Blog" /> </Layout>
+
+<Layout> <SectionHeaderImage title="Blog" /> 
+    {
+        blogEntries.map((post) => (
+        //   <BlogPost url={`/posts/${post.slug}/`} title={post.data.title} />
+        <div>
+            url={`/posts/${post.slug}/`}
+        </div>
+        ))
+      }
+</Layout>
