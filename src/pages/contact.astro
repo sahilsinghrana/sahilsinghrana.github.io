@@ -1,6 +1,9 @@
 ---
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
+
+import BusinessCard from "@components/General/BusinessCard/index.astro";
+import { links } from "@utils/constants";
 ---
 
 <style>
@@ -8,28 +11,54 @@ import Layout from "../layouts/index.astro";
     p {
       font-size: 0.8rem;
     }
+    a {
+      font-style: italic;
+      font-size: 0.7rem;
+      color: lightgray;
+    }
+    a:hover {
+      color: white;
+    }
   }
 </style>
 
 <Layout>
   <SectionHeaderImage title="Contact" />
+
+  <BusinessCard />
+
   <div class="contactMe">
     <p>
-      You can reach out to me at <a href="mailto:ranasahil98@gmail.com"
-        >ranasahil98@gmail.com</a
-      >.
+      Feel free to get in touch with me via email at <a
+        href="mailto:ranasahil98@gmail.com">ranasahil98@gmail.com</a
+      >
     </p>
-    <p>Or Connect With me on:</p>
 
-    <ul>
-      <li>Linkedin</li>
-      <li>X</li>
-      <li>Github</li>
-      <li>Instagram</li>
-    </ul>
+    <div>
+      <p>Alternatively, you can connect with me on:</p>
+      <ul>
+        <small>
+          <li>
+            Linkedin : <a target="_blank" href={links.linkedin}
+              >@sahilsinghrana</a>
+          </li>
+          <li>X : <a target="_blank" href={links.twitter}>@sahilrana010</a></li>
+          <li>
+            Github : <a target="_blank" href={links.github}>@sahilsinghrana</a>
+          </li>
+          <li>
+            Instagram : <a target="_blank" href={links.instagram}
+              >@sahilrana0_0</a>
+          </li>
+        </small>
+      </ul>
+    </div>
 
     <p>
-      <i>I am not much active on Social Media. So response might be delayed.</i>
+      <i
+        >Please note that I'm not very active on social media, so my response
+        may be delayed.
+      </i>
     </p>
   </div>
 </Layout>
