@@ -30,7 +30,7 @@ const projects = [
       ]
     },
     {
-      title: "Chat Aoolication",
+      title: "Chat Application",
       image: "",
       content: "Built a chat application with Next.js as Frontend and Express.js as backend with websockets.",
       links: [
