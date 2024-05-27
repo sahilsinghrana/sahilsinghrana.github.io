@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.1.5",
+    "@playform/compress": "^0.0.10",
     "astro": "^4.9.1",
     "lucide-astro": "^0.379.0"
   },
