@@ -1,21 +1,27 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection } from "astro:content";
 
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
+import PostCard from "@components/General/Blog/PostCard.astro";
 
-const blogEntries = await getCollection('blog');
-
+const blogEntries = await getCollection("blog");
 ---
 
-
-<Layout> <SectionHeaderImage title="Blog" /> 
-    {
-        blogEntries.map((post) => (
-        //   <BlogPost url={`/posts/${post.slug}/`} title={post.data.title} />
-        <div>
-            url={`/posts/${post.slug}/`}
-        </div>
-        ))
-      }
+<Layout>
+  <SectionHeaderImage title="Blog" />
+  {
+    blogEntries.map(async (post) => {
+      const { title, description, image, pubDate, author } = post.data;
+      return (
+        <PostCard
+          title={title}
+          description={description}
+          image={image}
+          pubDate={pubDate}
+          author={author}
+        />
+      );
+    })
+  }
 </Layout>
