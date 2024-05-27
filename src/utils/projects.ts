@@ -1,6 +1,8 @@
-import { Github, Youtube } from "lucide-astro";
+import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
 
 import esp32Car from "@images/projects/esp8266car.webp"
+import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp"
+import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp"
 
 const projects = [
     {
@@ -20,15 +22,36 @@ const projects = [
     },
     {
       title: "TicTacToe",
-      image: "",
+      image: TicTacToeVanilla,
       content: "Built a Node.js Package to play TicTacToe with the CPU usin Min-Max algorithm.",
       links: [
         {
           Icon: Github,
           link: "https://github.com/sahilsinghrana/tictactoe.js"
+        },  {
+            Icon : Package,
+            link : "https://www.npmjs.com/package/@sahilsinghrana/tictactoe.js"
+        },
+        {
+            Icon : ExternalLink,
+            link : "https://sahilsinghrana.github.io/tictactoevanilla/"
         }
       ]
     },
+    {
+        title: "Namaste-sahil",
+        image: npxNamasteSahil,
+        content: "Built a npx script to greet me.",
+        links: [
+          {
+            Icon: Github,
+            link: "https://github.com/sahilsinghrana/namaste-sahil"
+          },  {
+              Icon : Package,
+              link : "https://www.npmjs.com/package/namaste-sahil"
+          }
+        ]
+      },
     {
       title: "Chat Application",
       image: "",
