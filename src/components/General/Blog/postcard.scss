@@ -1,0 +1,57 @@
+.blogPostCard {
+  width: 280px;
+  height: 190px;
+  overflow: hidden;
+  outline: 1px solid rgba(128, 128, 128, 0.724);
+  border-radius: 20px;
+  transition: 0.1s ease;
+
+  &:hover {
+    outline: 2px solid rgba(255, 255, 255, 0.671);
+    h3 {
+      color: white;
+    }
+  }
+
+  img {
+    width: 100%;
+    height: 40%;
+    object-fit: cover;
+    background: darkgray;
+    outline: 3px solid rgba(128, 128, 128, 0.158);
+  }
+
+  .content {
+    width: 90%;
+    margin-left: 5%;
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h3 {
+    font-size: 1rem;
+    margin: 0;
+    text-wrap: wrap;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.524);
+    width: 100%;
+    padding-bottom: 5px;
+    border-radius: 5px;
+    color: rgba(255, 255, 255, 0.81);
+  }
+
+  .description {
+    font-size: 0.7rem;
+    color: rgba(211, 211, 211, 0.757);
+    font-style: italic;
+    margin: 0;
+    margin-top: 8px;
+    text-wrap: wrap;
+    width: 100%;
+  }
+  .meta {
+    span {
+      font-size: 0.8rem;
+    }
+  }
+}

@@ -3,13 +3,17 @@ import { ViewTransitions } from "astro:transitions";
 import Header from "@components/Header/index.astro";
 import Footer from "@components/Footer/index.astro";
 
+import GtagScripts from "./Metas/GtagScripts.astro";
+import OgMeta from "./Metas/OgMeta.astro";
+import DescriptionMeta from "./Metas/DescriptionMeta.astro";
+
 import Moon from "@components/General/Moon/index.astro";
 
 import "@styles/global.scss";
 
 const { title } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <script type="application/ld+json">
@@ -30,15 +34,9 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
   <head>
     <ViewTransitions />
     <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,  heigth=device-height , initial-scale=1.0"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <link rel="canonical" href={canonicalURL} />
-
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="canonical" href={currentUrl} />
 
     <meta name="generator" content={Astro.generator} />
     <link rel="sitemap" href="/sitemap-index.xml" />
@@ -46,86 +44,19 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       name="google-site-verification"
       content="w4Q8_lhxctc5EB94weOcv_HFvNR7h_gyjZPRJcRuWqQ"
     />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="/apple-touch-icon.png?v=2"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="/favicon-32x32.png?v=2"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="/favicon-16x16.png?v=2"
-    />
-    <link rel="manifest" href="/site.webmanifest?v=2" />
-    <link rel="mask-icon" href="/safari-pinned-tab.svg?v=2" color="#5bbad5" />
-    <link rel="shortcut icon" href="/favicon.ico?v=2" />
-    <meta name="apple-mobile-web-app-title" content="Sahil Singh Rana" />
-    <meta name="application-name" content="Sahil Singh Rana" />
-    <meta name="msapplication-TileColor" content="#da532c" />
-    <meta name="theme-color" content="#000000" />
 
-    <meta name="title" content={title} />
-    <meta
-      name="description"
-      content="Explore the portfolio of Sahil Singh Rana, a software engineer specializing in Web development using technologies like React.JS and Node.js."
-    />
-    <meta
-      name="keywords"
-      content="React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java"
-    />
     <meta name="robots" content="index, follow" />
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta name="language" content="English" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://sahilsinghrana.github.io/" />
-    <meta property="og:title" content={title} />
-    <meta
-      property="og:description"
-      content="I'm a Software Engineer currently learning web development. I have got some experience in building web applications using MERN Stack. You'll find me always listening to music, if not then I must be running, playing football, reading a random book or watching tech videos..
-"
-    />
-    <meta
-      property="og:image"
-      content="https://avatars.githubusercontent.com/u/48375250?v=4"
-    />
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image" />
-    <meta property="twitter:url" content="https://sahilsinghrana.github.io/" />
-    <meta property="twitter:title" content={title} />
-    <meta
-      property="twitter:description"
-      content="I'm a Software Engineer currently learning web development. I have got some experience in building web applications using MERN Stack. You'll find me always listening to music, if not then I must be running, playing football, reading a random book or watching tech videos..
-"
-    />
-    <meta
-      property="twitter:image"
-      content="https://avatars.githubusercontent.com/u/48375250?v=4"
-    />
-
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-V3FFEDCSDS"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
-
-      gtag("config", "G-V3FFEDCSDS");
-    </script>
-
+    <GtagScripts />
+    <OgMeta title={title} />
+    <DescriptionMeta title={title} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>{title}</title>
   </head>
+
   <body>
     <Header />
     <Moon />
