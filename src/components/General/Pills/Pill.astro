@@ -4,6 +4,6 @@ const { text, link } = Astro.props;
 import "./index.scss";
 ---
 
-<a class="pill" href={link}>
+<a class="pill" target="_blank" rel="nofollow" href={link}>
   {text}
 </a>

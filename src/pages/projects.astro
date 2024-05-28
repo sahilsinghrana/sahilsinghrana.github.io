@@ -3,6 +3,8 @@ import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.ast
 import Layout from "../layouts/index.astro";
 import ProjectCard from "@components/Projects/ProjectCard.astro";
 import projects from "@utils/projects";
+
+import placeholderImage from "@images/placeholder3.webp";
 ---
 
 <style>
@@ -15,8 +17,8 @@ import projects from "@utils/projects";
   }
 </style>
 
-<Layout>
-  <SectionHeaderImage title="Projects" />
+<Layout title="Projects">
+  <SectionHeaderImage title="Projects" Image={placeholderImage} />
 
   <div class="projectList">
     {

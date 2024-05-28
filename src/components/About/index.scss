@@ -126,6 +126,7 @@ section.experience {
           margin: 0;
           font-size: 0.7rem;
           color: lightgray;
+          text-align: justify;
         }
       }
 
@@ -166,9 +167,10 @@ section.otherActivities {
       p {
         margin: 0;
         margin-top: 2px;
-        padding-left: 10px;
+        padding-left: 2px;
         font-size: 0.7rem;
         color: lightgray;
+        text-align: justify;
       }
     }
   }

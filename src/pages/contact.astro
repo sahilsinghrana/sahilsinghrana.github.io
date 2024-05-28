@@ -1,9 +1,11 @@
 ---
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
+import placeholderImage from "@images/placeholder5.webp";
 
 import BusinessCard from "@components/General/BusinessCard/index.astro";
 import { links } from "@utils/constants";
+import { Github, Instagram, Linkedin, Twitter } from "lucide-astro";
 ---
 
 <style>
@@ -11,24 +13,54 @@ import { links } from "@utils/constants";
     p {
       font-size: 0.8rem;
     }
+    .mail {
+      margin-bottom: 20px;
+      a {
+        font-size: 0.9rem;
+      }
+    }
+    .note {
+      margin-top: 2rem;
+      font-size: 0.67rem;
+      padding-left: 10px;
+      color: lightgray;
+    }
+    li {
+      margin-bottom: 7px;
+      display: flex;
+      align-items: center;
+      svg {
+        height: 15px;
+      }
+      a {
+        margin-left: 5px;
+      }
+    }
     a {
       font-style: italic;
-      font-size: 0.7rem;
+      font-size: 0.8rem;
       color: lightgray;
     }
     a:hover {
       color: white;
     }
   }
+
+  .contactCardWrapper {
+    display: flex;
+    width: 100%;
+    justify-content: center;
+  }
 </style>
 
-<Layout>
-  <SectionHeaderImage title="Contact" />
+<Layout title="Contact">
+  <SectionHeaderImage title="Contact" Image={placeholderImage} />
 
-  <BusinessCard />
-
+  <div class="contactCardWrapper">
+    <BusinessCard />
+  </div>
   <div class="contactMe">
-    <p>
+    <p class="mail">
       Feel free to get in touch with me via email at <a
         href="mailto:ranasahil98@gmail.com">ranasahil98@gmail.com</a
       >
@@ -39,25 +71,33 @@ import { links } from "@utils/constants";
       <ul>
         <small>
           <li>
-            Linkedin : <a target="_blank" href={links.linkedin}
-              >@sahilsinghrana</a>
-          </li>
-          <li>X : <a target="_blank" href={links.twitter}>@sahilrana010</a></li>
-          <li>
-            Github : <a target="_blank" href={links.github}>@sahilsinghrana</a>
+            <Linkedin /> Linkedin : <a target="_blank" href={links.linkedin}
+              >@sahilsinghrana</a
+            >
           </li>
           <li>
-            Instagram : <a target="_blank" href={links.instagram}
-              >@sahilrana0_0</a>
+            <Twitter /> X : <a target="_blank" href={links.twitter}
+              >@sahilrana010</a
+            >
+          </li>
+          <li>
+            <Github /> Github : <a target="_blank" href={links.github}
+              >@sahilsinghrana</a
+            >
+          </li>
+          <li>
+            <Instagram /> Instagram : <a target="_blank" href={links.instagram}
+              >@sahilrana0_0</a
+            >
           </li>
         </small>
       </ul>
     </div>
 
-    <p>
-      <i
-        >Please note that I'm not very active on social media, so my response
-        may be delayed.
+    <p class="note">
+      <i>
+        Please note that I'm not very active on social media, so my response may
+        be delayed.
       </i>
     </p>
   </div>
