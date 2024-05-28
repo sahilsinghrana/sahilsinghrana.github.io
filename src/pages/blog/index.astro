@@ -13,7 +13,7 @@ const blogEntries = await getCollection("blog");
 
 <Layout title="Blog">
   <SectionHeaderImage title="Blog" Image={placeholderImage} />
-  <div style="display:flex; gap : 10px; margin-top : 2rem;">
+  <div style="display:flex; gap : 10px; margin-top : 2rem; flex-wrap: wrap;">
     {
       blogEntries.map(async (post) => {
         const { title, description, image, pubDate, author } = post.data;
