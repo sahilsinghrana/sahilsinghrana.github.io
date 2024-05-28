@@ -6,6 +6,6 @@ export default defineConfig({
   site: "https://sahilsinghrana.github.io",
   integrations: [sitemap()],
   prefetch: {
-    defaultStrategy: "viewport",
+    defaultStrategy: "load",
   },
 });
