@@ -1,0 +1,27 @@
+---
+import { Breadcrumbs } from "astro-breadcrumbs";
+
+import Layout from "./index.astro";
+import "./blogPost.scss";
+
+const { entry } = Astro.props;
+
+const { data } = entry;
+const { title, image } = data;
+---
+
+<Layout title={title}>
+  <div class="blogPostHeading">
+    <div class="bg">
+      <img src={image.url} alt={image.alt} width="100%" height="157" />
+      <div class="head">
+        <h1>{title}</h1>
+        <Breadcrumbs
+          linkTextFormat="capitalized"
+          mainBemClass="blog-breadcrumbs"
+        />
+      </div>
+    </div>
+  </div>
+  <slot />
+</Layout>
