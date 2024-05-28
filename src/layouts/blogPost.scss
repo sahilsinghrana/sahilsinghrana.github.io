@@ -1,9 +1,21 @@
+$mobileBreakpoint: 486px;
+
 .blog-breadcrumbs {
   ol {
+    padding-inline-start: 0;
+    padding: 0 10px;
     list-style: none;
     display: flex;
     gap: 0;
+
     li {
+      &:last-child {
+        background-color: rgba(180, 180, 180, 0.476);
+        a {
+          color: white;
+        }
+      }
+
       margin: 0;
       clip-path: polygon(77% 0, 100% 50%, 75% 100%, 0% 100%, 11% 50%, 0% 0%);
       height: 100%;
@@ -12,16 +24,20 @@
       align-items: center;
       overflow: hidden;
     }
+
     a {
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.6);
-      padding: 10px 1.2rem 10px 1.3rem;
+      // padding: 10px 1rem 10px 1rem;
+      padding: 8px 20px;
       border-radius: 10px;
       color: rgba(241, 241, 241, 0.76);
       background: rgba(86, 86, 86, 0.492);
       font-size: 0.6rem;
-
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       height: 100%;
-      width: 100%;
+      width: 30px;
 
       &:hover {
         color: white;
@@ -36,10 +52,15 @@
 
   .bg {
     border-bottom: 4px groove #ffffff84;
-    border-radius: 20px;
+    border-radius: 0 0 20px 20px;
+    margin-top: 4px;
     overflow: hidden;
     height: 200px;
     width: 100%;
+    @media screen and (max-width: $mobileBreakpoint) {
+      height: 150px;
+    }
+
     img {
       object-fit: cover;
       height: 100%;
@@ -59,6 +80,9 @@
       flex-direction: column;
       background-color: rgba(0, 0, 0, 0.593);
       h1 {
+        @media screen and (max-width: $mobileBreakpoint) {
+          font-size: 1rem;
+        }
         font-size: 1.7rem;
         font-weight: bolder;
         font-weight: bold;

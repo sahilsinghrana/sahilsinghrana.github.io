@@ -5,7 +5,7 @@ image:
   url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemtlejl5bXhrNG1la3Npcmw5czF0b3g4c3BlZnJpMHE4OWlheDh1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FWtVYDHIxgGgE/giphy.webp"
   alt: "covert-string-to-literal placeholder image"
 pubDate: 2024-05-28
-title: How to convert string to string literal.
+title: How to convert string to string literal
 description: "A gist to show how to convert a normal string to string literal."
 slug: covert-string-to-literal
 tags: ["howTo", "javascript", "strings"]
