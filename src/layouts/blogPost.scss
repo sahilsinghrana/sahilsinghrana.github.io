@@ -79,10 +79,14 @@ $mobileBreakpoint: 486px;
       align-items: center;
       flex-direction: column;
       background-color: rgba(0, 0, 0, 0.593);
-      h1 {
+      h2 {
         @media screen and (max-width: $mobileBreakpoint) {
           font-size: 1rem;
         }
+        em {
+          font-style: normal;
+        }
+        text-align: center;
         font-size: 1.7rem;
         font-weight: bolder;
         font-weight: bold;

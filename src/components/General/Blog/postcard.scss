@@ -4,13 +4,13 @@
   overflow: hidden;
   outline: 1px solid rgba(128, 128, 128, 0.724);
   border-radius: 20px;
-  transition: 0.1s ease;
+  transition: 0.6s ease;
 
   &:hover {
     outline: 2px solid rgba(255, 255, 255, 0.671);
     h3 {
       color: white;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
     }
   }
 
@@ -31,7 +31,7 @@
   }
 
   h3 {
-    font-size: 1rem;
+    font-size: 0.8rem;
     margin: 0;
     text-wrap: wrap;
     border-bottom: 1px solid rgba(128, 128, 128, 0.524);
