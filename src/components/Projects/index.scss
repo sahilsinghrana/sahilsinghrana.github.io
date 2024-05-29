@@ -1,0 +1,57 @@
+.projectCard:hover {
+  outline: 2px solid rgba(191, 191, 191, 0.892);
+  img {
+    filter: grayscale(0);
+  }
+  transition: 1s;
+}
+.projectCard {
+  min-height: 200px;
+  width: 320px;
+  outline: 2px solid rgba(128, 128, 128, 0.653);
+
+  border-radius: 20px;
+  overflow: hidden;
+
+  .content {
+    padding: 0 20px;
+    width: 90%;
+  }
+
+  img {
+    height: 70px;
+    width: 100%;
+    object-fit: cover;
+    filter: grayscale(1);
+  }
+
+  h5,
+  p {
+    margin: 5px 0;
+  }
+  h5 {
+    font-size: 1rem;
+  }
+  p {
+    font-size: 0.75rem;
+    opacity: 0.9;
+  }
+
+  .links {
+    display: flex;
+    justify-content: end;
+    padding-right: 10px;
+    list-style: none;
+    li {
+      margin-left: 8px;
+
+      a {
+        color: gray;
+      }
+
+      a:hover {
+        color: lightgray;
+      }
+    }
+  }
+}

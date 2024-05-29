@@ -1,0 +1,42 @@
+.contactMe {
+  p {
+    font-size: 0.8rem;
+  }
+  .mail {
+    margin-bottom: 20px;
+    a {
+      font-size: 0.9rem;
+    }
+  }
+  .note {
+    margin-top: 2rem;
+    font-size: 0.67rem;
+    padding-left: 10px;
+    color: lightgray;
+  }
+  li {
+    margin-bottom: 7px;
+    display: flex;
+    align-items: center;
+    svg {
+      height: 15px;
+    }
+    a {
+      margin-left: 5px;
+    }
+  }
+  a {
+    font-style: italic;
+    font-size: 0.8rem;
+    color: lightgray;
+  }
+  a:hover {
+    color: white;
+  }
+}
+
+.contactCardWrapper {
+  display: flex;
+  width: 100%;
+  justify-content: center;
+}

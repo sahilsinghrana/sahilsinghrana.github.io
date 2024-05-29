@@ -6,55 +6,16 @@ import placeholderImage from "@images/placeholder5.webp";
 import BusinessCard from "@components/General/BusinessCard/index.astro";
 import { links } from "@utils/constants";
 import { Github, Instagram, Linkedin, Twitter } from "lucide-astro";
+
+import "@assets/styles/contact.scss";
 ---
 
-<style>
-  .contactMe {
-    p {
-      font-size: 0.8rem;
-    }
-    .mail {
-      margin-bottom: 20px;
-      a {
-        font-size: 0.9rem;
-      }
-    }
-    .note {
-      margin-top: 2rem;
-      font-size: 0.67rem;
-      padding-left: 10px;
-      color: lightgray;
-    }
-    li {
-      margin-bottom: 7px;
-      display: flex;
-      align-items: center;
-      svg {
-        height: 15px;
-      }
-      a {
-        margin-left: 5px;
-      }
-    }
-    a {
-      font-style: italic;
-      font-size: 0.8rem;
-      color: lightgray;
-    }
-    a:hover {
-      color: white;
-    }
-  }
-
-  .contactCardWrapper {
-    display: flex;
-    width: 100%;
-    justify-content: center;
-  }
-</style>
-
 <Layout title="Contact">
-  <SectionHeaderImage title="Contact" Image={placeholderImage} quote="The Moon is drifting away from the Earth" />
+  <SectionHeaderImage
+    title="Contact"
+    Image={placeholderImage}
+    quote="The Moon is drifting away from the Earth"
+  />
 
   <div class="contactCardWrapper">
     <BusinessCard />

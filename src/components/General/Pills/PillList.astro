@@ -4,16 +4,6 @@ import Pill from "./Pill.astro";
 const { title, pills = [], className = "" } = Astro.props;
 ---
 
-<style>
-  .pillSection {
-    ul {
-      display: flex;
-      flex-wrap: wrap;
-      width: 100%;
-    }
-  }
-</style>
-
 <section id={title} class={`pillSection ${className}`}>
   <h2>{title}</h2>
   <ul>
