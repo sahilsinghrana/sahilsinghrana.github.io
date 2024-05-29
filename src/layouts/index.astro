@@ -18,6 +18,12 @@ const { title, description, keywords } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
+<style is:global>
+  .astro-route-announcer {
+    display: none;
+  }
+</style>
+
 <html lang="en">
   <Head>
     <script type="application/ld+json">
@@ -40,7 +46,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
         "nationality": "Indian"
       }
     </script>
-    <ViewTransitions />
+    <ViewTransitions fallback="swap" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 

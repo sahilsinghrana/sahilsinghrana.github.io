@@ -11,16 +11,17 @@ import {
 } from "lucide-astro";
 
 import "./index.scss";
+import { Image } from "astro:assets";
 ---
 
 <div class="businessCard">
   <div class="front">
-    <img src={Mooon.src} alt="" />
+    <Image src={Mooon} alt="card bg" width={310} height={70} />
     <h3>Sahil Singh Rana</h3>
     <span>Software Developer</span>
   </div>
   <div class="back">
-    <img src={mailToQR.src} alt="" />
+    <Image src={mailToQR} alt="mail qr code" height={150} width={150} />
     <ul>
       <li>
         <a target="_blank" href={links.github}>

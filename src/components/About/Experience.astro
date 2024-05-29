@@ -1,12 +1,13 @@
 ---
 import WebDev from "@images/web-dev.webp";
+import { Image } from "astro:assets";
 ---
 
 <section id="experience" class="experience">
   <h2>Professional Experience</h2>
 
   <div class="experienceInfoWrapper">
-    <img class="companyLogo" src={WebDev.src} />
+    <Image class="companyLogo" src={WebDev} alt="companyHero" />
     <div class="experienceDetailsWrapper">
       <div class="companyInfo">
         <p>

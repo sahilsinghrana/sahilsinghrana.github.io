@@ -1,15 +1,20 @@
 ---
 import placeholder from "@images/placeholder2.webp";
 
-const { Image, title, quote } = Astro.props;
+const { Image: propImage, title, quote } = Astro.props;
 
-const placeHolderImagee = Image || placeholder;
+const placeHolderImagee = propImage || placeholder;
 
 import "./index.scss";
+import { Image } from "astro:assets";
 ---
 
 <div class="sectionHeaderImageWrapper">
-  <img src={placeHolderImagee.src} class="sectionHeaderImage" />
+  <Image
+    src={placeHolderImagee}
+    class="sectionHeaderImage"
+    alt="section header hero "
+  />
 
   <div class="titleWrapper">
     <h1 class="headerImageTitle">{title}</h1>
