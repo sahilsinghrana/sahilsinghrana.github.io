@@ -1,5 +1,6 @@
 {
   "extends": "astro/tsconfigs/base",
+  "lib": ["ESNext", "DOM", "DOM.Iterable"],
   "compilerOptions": {
     // Solid specific settings
     "jsx": "preserve",
@@ -12,5 +13,6 @@
       "@assets/*": ["src/assets/*"],
       "@images/*": ["src/assets/images/*"]
     }
-  }
+  },
+  "include": ["src"]
 }

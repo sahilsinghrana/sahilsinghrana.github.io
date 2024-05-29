@@ -4,144 +4,144 @@ import mailToQR from "@images/mailtoQR.png";
 import { links } from "@utils/constants";
 
 import {
-    Github as GithubIcon,
-    Linkedin,
-    Twitter,
-    Instagram,
+  Github as GithubIcon,
+  Linkedin,
+  Twitter,
+  Instagram,
 } from "lucide-astro";
 ---
 
 <style>
-    @import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap");
 
-    .businessCard {
-        height: 170px;
-        width: 310px;
-        border-radius: 20px;
-        margin: 20px;
-        position: relative;
-        font-family: "Libre Baskerville", serif;
+  .businessCard {
+    height: 170px;
+    width: 310px;
+    border-radius: 20px;
+    margin: 20px;
+    position: relative;
+    font-family: "Libre Baskerville", serif;
 
-        .front,
-        .back {
-            backface-visibility: hidden;
-            transition: 1s cubic-bezier(0.39, 0.575, 0.565, 1);
-            background-color: rgba(0, 0, 0, 0.828);
-            height: 100%;
-            width: 100%;
-            position: absolute;
-            outline: 1px solid rgba(255, 255, 255, 0.427);
-            border-radius: 20px;
-        }
-
-        .front {
-            transform: perspective(1000px) rotateY(0deg);
-            oveflow: hidden;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-
-            h3 {
-                font-style: italic;
-                font-size: 1.3rem;
-                margin: 0;
-            }
-
-            span {
-                font-size: 0.7rem;
-                color: lightgray;
-                margin-top: 5px;
-            }
-
-            img {
-                position: absolute;
-                height: 100%;
-                width: 100%;
-                z-index: -1;
-                opacity: 0.3;
-            }
-        }
-
-        .back {
-            transform: perspective(1000px) rotateY(-180deg);
-            /* transform: perspective(1000px) rotateY(0); */
-
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            justify-content: center;
-            align-content: center;
-
-            img {
-                height: 150px;
-            }
-
-            ul {
-                list-style: none;
-                font-size: 0.65rem;
-                font-style: italic;
-
-                padding-inline-start: 0;
-
-                display: grid;
-
-                place-items: center;
-
-                li {
-                    svg {
-                        margin-right : 2px;
-                    }
-                    a {
-                        display: flex;
-                        align-items: center;
-                        color: lightgray;
-                    }
-                    a:hover {
-                        color: white;
-                    }
-                }
-            }
-        }
-
-        &:hover .front {
-            transform: perspective(500px) rotateY(180deg);
-        }
-        &:hover .back {
-            transform: perspective(500px) rotateY(0deg);
-        }
+    .front,
+    .back {
+      backface-visibility: hidden;
+      transition: 1s cubic-bezier(0.39, 0.575, 0.565, 1);
+      background-color: rgba(0, 0, 0, 0.828);
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      outline: 1px solid rgba(255, 255, 255, 0.427);
+      border-radius: 20px;
     }
+
+    .front {
+      transform: perspective(1000px) rotateY(0deg);
+      overflow: hidden;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+
+      h3 {
+        font-style: italic;
+        font-size: 1.3rem;
+        margin: 0;
+      }
+
+      span {
+        font-size: 0.7rem;
+        color: lightgray;
+        margin-top: 5px;
+      }
+
+      img {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        z-index: -1;
+        opacity: 0.3;
+      }
+    }
+
+    .back {
+      transform: perspective(1000px) rotateY(-180deg);
+      /* transform: perspective(1000px) rotateY(0); */
+
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      justify-content: center;
+      align-content: center;
+
+      img {
+        height: 150px;
+      }
+
+      ul {
+        list-style: none;
+        font-size: 0.65rem;
+        font-style: italic;
+
+        padding-inline-start: 0;
+
+        display: grid;
+
+        place-items: center;
+
+        li {
+          svg {
+            margin-right: 2px;
+          }
+          a {
+            display: flex;
+            align-items: center;
+            color: lightgray;
+          }
+          a:hover {
+            color: white;
+          }
+        }
+      }
+    }
+
+    &:hover .front {
+      transform: perspective(500px) rotateY(180deg);
+    }
+    &:hover .back {
+      transform: perspective(500px) rotateY(0deg);
+    }
+  }
 </style>
 
 <div class="businessCard">
-    <div class="front">
-        <img src={Mooon.src} alt="" />
-        <h3>Sahil Singh Rana</h3>
-        <span>Software Developer</span>
-    </div>
-    <div class="back">
-        <img src={mailToQR.src} alt="" />
-        <ul>
-            <li>
-                <a target="_blank" href={links.github}>
-                    <GithubIcon /> @sahilsinghrana
-                </a>
-            </li>
-            <li>
-                <a target="_blank" href={links.linkedin}>
-                    <Linkedin /> @sahilsinghrana
-                </a>
-            </li>
-            <li>
-                <a target="_blank" href={links.twitter}>
-                    <Twitter /> @sahilrana010
-                </a>
-            </li>
-            <li>
-                <a target="_blank" href={links.instagram}>
-                    <Instagram /> @sahilrana0_0
-                </a>
-            </li>
-        </ul>
-    </div>
+  <div class="front">
+    <img src={Mooon.src} alt="" />
+    <h3>Sahil Singh Rana</h3>
+    <span>Software Developer</span>
+  </div>
+  <div class="back">
+    <img src={mailToQR.src} alt="" />
+    <ul>
+      <li>
+        <a target="_blank" href={links.github}>
+          <GithubIcon /> @sahilsinghrana
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href={links.linkedin}>
+          <Linkedin /> @sahilsinghrana
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href={links.twitter}>
+          <Twitter /> @sahilrana010
+        </a>
+      </li>
+      <li>
+        <a target="_blank" href={links.instagram}>
+          <Instagram /> @sahilrana0_0
+        </a>
+      </li>
+    </ul>
+  </div>
 </div>

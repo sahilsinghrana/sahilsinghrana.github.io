@@ -1,8 +1,7 @@
 {
-  "name": "@example/framework-solid",
-  "type": "module",
-  "version": "0.0.1",
-  "private": true,
+  "name": "sahilsinghrana.github.io",
+  "version": "1.0.0",
+  "private": false,
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,14 +9,43 @@
     "preview": "astro preview",
     "astro": "astro"
   },
+  "author": {
+    "name": "Sahil Rana",
+    "email": "ranasahil98@gmail.com",
+    "url": "https://sahilsinghrana.github.io"
+  },
+  "homepage": "https://sahilsinghrana.github.io",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sahilsinghrana/sahilsinghrana.github.io"
+  },
+  "keywords": [
+    "astro",
+    "starter",
+    "skeleton",
+    "playform"
+  ],
   "dependencies": {
     "@astrojs/sitemap": "^3.1.5",
+    "@playform/compress": "^0.0.10",
+    "@playform/inline": "^0.0.6",
     "astro": "^4.9.1",
     "astro-breadcrumbs": "^2.3.0",
-    "lucide-astro": "^0.379.0"
+    "astro-compressor": "^0.4.1",
+    "autoprefixer": "^10.4.19",
+    "cssnano": "^7.0.1",
+    "cssnano-preset-advanced": "^7.0.1",
+    "lucide-astro": "^0.379.0",
+    "postcss": "^8.4.38",
+    "postcss-combine-duplicated-selectors": "^10.0.3",
+    "postcss-combine-media-query": "^1.0.1",
+    "postcss-import": "^16.1.0",
+    "postcss-reporter": "^7.1.0",
+    "postcss-url": "^10.1.3"
   },
   "devDependencies": {
     "sass": "^1.77.2",
-    "sharp": "^0.33.4"
+    "sharp": "^0.33.4",
+    "ts-node": "^10.9.2"
   }
 }
