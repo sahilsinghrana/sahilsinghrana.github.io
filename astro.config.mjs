@@ -8,4 +8,9 @@ export default defineConfig({
   prefetch: {
     defaultStrategy: "load",
   },
+   markdown: {
+    shikiConfig: {
+      theme: 'dracula',
+    },
+  }
 });
