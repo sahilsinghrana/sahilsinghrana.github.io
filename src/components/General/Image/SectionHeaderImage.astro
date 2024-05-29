@@ -1,9 +1,10 @@
 ---
 import placeholder from "@images/placeholder2.webp";
 
-const { Image, title } = Astro.props;
+const { Image, title, quote } = Astro.props;
 
 const placeHolderImagee = Image || placeholder;
+
 ---
 
 <style>
@@ -61,6 +62,6 @@ const placeHolderImagee = Image || placeholder;
 
   <div class="titleWrapper">
     <h1 class="headerImageTitle">{title}</h1>
-    <q>The Moon’s surface is actually dark</q>
+    <q>{quote}</q>
   </div>
 </div>

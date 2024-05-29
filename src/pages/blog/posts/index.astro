@@ -14,7 +14,7 @@ const blogEntries = await getCollection("blog");
 <meta http-equiv="refresh" content={`0;URL=${Astro.url.origin}/blog`} />
 
 <Layout title="Blog">
-  <SectionHeaderImage title="Posts" Image={placeholderImage} />
+  <SectionHeaderImage title="Posts" Image={placeholderImage} quote="The Moon has quakes too" />
   <div style="display:flex; gap : 10px; margin-top : 2rem;">
     {
       blogEntries.map(async (post) => {

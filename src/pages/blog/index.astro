@@ -12,7 +12,7 @@ const blogEntries = await getCollection("blog");
 ---
 
 <Layout title="Blog">
-  <SectionHeaderImage title="Blog" Image={placeholderImage} />
+  <SectionHeaderImage title="Blog" Image={placeholderImage} quote="The Moon’s surface is actually dark" />
   <div style="display:flex; gap : 10px; margin-top : 2rem; flex-wrap: wrap;">
     {
       blogEntries.map(async (post) => {
