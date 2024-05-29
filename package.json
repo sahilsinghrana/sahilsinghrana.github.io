@@ -31,6 +31,7 @@
     "@playform/inline": "^0.0.6",
     "astro": "^4.9.1",
     "astro-breadcrumbs": "^2.3.0",
+    "astro-capo": "^0.0.1",
     "astro-compressor": "^0.4.1",
     "autoprefixer": "^10.4.19",
     "cssnano": "^7.0.1",

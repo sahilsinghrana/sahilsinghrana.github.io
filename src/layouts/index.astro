@@ -1,5 +1,7 @@
 ---
 import { ViewTransitions } from "astro:transitions";
+import { Head } from "astro-capo";
+
 import Header from "@components/Header/index.astro";
 import Footer from "@components/Footer/index.astro";
 
@@ -16,22 +18,28 @@ const { title, description, keywords } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org/",
-    "@type": "WebSite",
-    "name": "Sahil Singh Rana",
-    "url": "https://sahilsinghrana.github.io",
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": "{search_term_string}",
-      "query-input": "required name=search_term_string"
-    }
-  }
-</script>
-
 <html lang="en">
-  <head>
+  <Head>
+    <script type="application/ld+json">
+      {
+        "@context": "http://www.schema.org",
+        "@type": "person",
+        "name": "Sahil Singh Rana",
+        "jobTitle": "Sr. Software Developer",
+        "gender": "male",
+        "url": "https://sahilsinghrana.github.io",
+        "image": "https://avatars.githubusercontent.com/u/48375250?v=4",
+        "address": {
+          "@type": "PostalAddress",
+          "addressLocality": "Vadodara",
+          "addressRegion": "Gujarat",
+          "addressCountry": "India"
+        },
+        "email": "ranasahil98@gmail.com",
+        "birthPlace": "Uttarakhand",
+        "nationality": "Indian"
+      }
+    </script>
     <ViewTransitions />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -55,12 +63,12 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>{title}</title>
-  </head>
+  </Head>
 
   <body>
     <Header />
     <Moon />
-    <main>  
+    <main>
       <div class="content">
         <slot />
       </div>
