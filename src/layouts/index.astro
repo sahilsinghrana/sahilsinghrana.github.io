@@ -11,7 +11,7 @@ import Moon from "@components/General/Moon/index.astro";
 
 import "@styles/global.scss";
 
-const { title } = Astro.props;
+const { title, description, keywords } = Astro.props;
 
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -50,8 +50,8 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
     <meta name="language" content="English" />
 
     <GtagScripts />
-    <OgMeta title={title} />
-    <DescriptionMeta title={title} />
+    <OgMeta title={title} description={description} />
+    <DescriptionMeta title={title} description={description} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>{title}</title>
@@ -60,7 +60,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
   <body>
     <Header />
     <Moon />
-    <main>
+    <main>  
       <div class="content">
         <slot />
       </div>
