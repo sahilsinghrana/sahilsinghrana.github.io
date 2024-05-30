@@ -58,23 +58,33 @@
     grid-template-columns: 1fr 1fr;
     justify-content: center;
     align-content: center;
-
+    place-items: center;
+    svg {
+      height: 20px;
+      width: 20px;
+    }
     img {
-      height: 150px;
+      max-height: 150px;
+      width : 100%;
+      max-width: 150px;
     }
 
     ul {
       list-style: none;
-      font-size: 0.65rem;
+      font-size: 0.67rem;
       font-style: italic;
 
       padding-inline-start: 0;
 
-      display: grid;
-
-      place-items: center;
+      
 
       li {
+        margin-bottom: 10px;
+
+        &:last-child {
+          margin-bottom: 0;
+        }
+        
         svg {
           margin-right: 2px;
         }
