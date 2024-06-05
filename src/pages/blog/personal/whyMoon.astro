@@ -1,0 +1,92 @@
+---
+import Layout from "@layouts/index.astro";
+import chaseMoon from "@images/chase.gif";
+import { Breadcrumbs } from "astro-breadcrumbs";
+
+import "@layouts/blogPost.scss";
+---
+
+<Layout
+  title={"Why Moon?"}
+  description={"Why moon everywhere?"}
+  keywords={"Moon"}
+>
+  <div class="blogPostHeading">
+    <div class="bg">
+      <img src={chaseMoon.src} alt={"Moon"} width="100%" height="157" />
+      <div class="head">
+        <h2><em>{"Why Moon?"}</em></h2>
+        <Breadcrumbs
+          linkTextFormat="capitalized"
+          mainBemClass="blog-breadcrumbs"
+        />
+      </div>
+    </div>
+  </div>
+  <article
+    class="blogContent"
+    style="width: 100%; text-align: center; margin-top : 50px; margin-bottom : 50px;"
+  >
+    <q
+      style="text-align: center; color : lightgray; font-weight: 600;font-style: italic; font-size: 0.9rem"
+    >
+      In the midnight's quiet, soft and still,<br />
+      I chase the moon over hill and hill.<br />
+      Its silver glow, so distant, bright,<br />
+      Calls me through the velvet night.<br />
+      <br />
+      Oh, how I yearn to touch its face,<br />
+      To close the gap in our endless chase.<br />
+      Yet bound by chains of earthly ties,<br />
+      The flight I dream of is nothing but sighs.<br />
+      <br />
+      I love the moon, its gentle gleam,<br />
+      A beacon in my darkest dream.<br />
+      Its light, a whisper, soft and clear,<br />
+      Keeps my restless heart so near.<br />
+      <br />
+      But the more I run, the farther it glows,<br />
+      A dance of shadows that nobody knows.<br />
+      Each step I take, it slips away,<br />
+      In the realm of night, a playful dance's sway.<br />
+      <br />
+      Though I may never hold it tight,<br />
+      I'll cherish every beam of light.<br />
+      The moon's soft glow, a gift so rare,<br />
+      A tender touch, a loving stare.<br />
+      <br />
+      I've tried to flee its haunting call,<br />
+      Yet something binds me after all.<br />
+      A pull so strong, a force unseen,<br />
+      That draws me to the moon's serene.<br />
+      <br />
+      In this eternal night, I find,<br />
+      A solace in the moon's kind mind.<br />
+      For though its touch I may not feel,<br />
+      Its glow, its light, forever real.<br />
+      <br />
+      Beneath the moon's soft glow, I feel the weight,<br />
+      Of my mistakes, I accept my fate.<br />
+      I want to say sorry, but fear the reply,<br />
+      Yet under the moon, I still try.<br />
+      <br />
+      I know I messed up, I'm ready to learn,<br />
+      But the thought of forgiveness, I yearn.<br />
+      Even though it feels like I've done too much wrong,<br />
+      Beneath the moon, I hope to belong.<br />
+      <br />
+      Though my capabilities may falter and sway,<br />
+      I'll strive to improve, day by day.<br />
+      To offer my best, to honor the moon,<br />
+      In the quiet dance of night's sweet tune.<br />
+      <br />
+      In the stillness of midnight, as I persist,<br />
+      I strive to draw nearer, persistently insist.<br />
+      Though the moon seems distant, aloof, and high,<br />
+      I vow to approach it, to reach for the sky.
+    </q>
+    <p style="color : gray; font-size: 0.8rem; padding-left : 2rem;">
+      -- Hence the Moon.
+    </p>
+  </article>
+</Layout>

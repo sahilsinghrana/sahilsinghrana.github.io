@@ -5,6 +5,7 @@ import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.ast
 import Layout from "@layouts/index.astro";
 
 import placeholderImage from "@images/placeholder.webp";
+import chaseMoon from "@images/chase.gif";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
 
@@ -12,7 +13,11 @@ const blogEntries = await getCollection("blog");
 ---
 
 <Layout title="Blog">
-  <SectionHeaderImage title="Blog" Image={placeholderImage} quote="The Moon’s surface is actually dark" />
+  <SectionHeaderImage
+    title="Blog"
+    Image={placeholderImage}
+    quote="The Moon’s surface is actually dark"
+  />
   <div style="display:flex; gap : 10px; margin-top : 2rem; flex-wrap: wrap;">
     {
       blogEntries.map(async (post) => {
@@ -24,10 +29,21 @@ const blogEntries = await getCollection("blog");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={post.slug}
+            slug={"/blog/posts/" + post.slug}
           />
         );
       })
     }
+    <PostCard
+      title={"Why Moon?"}
+      description={"Why moon is so inspiring ?"}
+      image={{
+        url: chaseMoon,
+        alt: "Alt",
+      }}
+      pubDate={"17-01-2024"}
+      author={"Sahil Rana"}
+      slug={"/blog/personal/whyMoon"}
+    />
   </div>
 </Layout>

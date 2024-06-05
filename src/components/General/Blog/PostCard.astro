@@ -5,8 +5,8 @@ import { Image } from "astro:assets";
 import "./postcard.scss";
 ---
 
-<a href={"/blog/posts/" + slug} class="blogPostCard">
-  <Image src={image.url} alt={image.alt} width="76" height={280} />
+<a href={slug} class="blogPostCard">
+  <Image src={image.url} alt={image?.alt || "alt"} width="76" height={280} />
   <div class="content">
     <h3>{title}</h3>
     <p class="description">{description}</p>

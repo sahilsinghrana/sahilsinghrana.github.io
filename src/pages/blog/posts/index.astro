@@ -6,17 +6,21 @@ import Layout from "@layouts/index.astro";
 
 import placeholderImage from "@images/placeholder.webp";
 
-import PostCard from "@components/General/Blog/PostCard.astro";
+// import PostCard from "@components/General/Blog/PostCard.astro";
 
-const blogEntries = await getCollection("blog");
+// const blogEntries = await getCollection("blog");
 ---
 
 <meta http-equiv="refresh" content={`0;URL=${Astro.url.origin}/blog`} />
 
 <Layout title="Blog">
-  <SectionHeaderImage title="Posts" Image={placeholderImage} quote="The Moon has quakes too" />
+  <SectionHeaderImage
+    title="Posts"
+    Image={placeholderImage}
+    quote="The Moon has quakes too"
+  />
   <div style="display:flex; gap : 10px; margin-top : 2rem;">
-    {
+    <!-- {
       blogEntries.map(async (post) => {
         const { title, description, image, pubDate, author } = post.data;
         return (
@@ -30,6 +34,6 @@ const blogEntries = await getCollection("blog");
           />
         );
       })
-    }
+    } -->
   </div>
 </Layout>
