@@ -3,6 +3,8 @@ import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
 import esp32Car from "@images/projects/esp8266car.webp"
 import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp"
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp"
+import nextChat from "@images/projects/nextchat.webp"
+import ranexPlayer from "@images/projects/ranexPlayer.webp"
 
 const projects = [
     {
@@ -54,12 +56,27 @@ const projects = [
       },
     {
       title: "Chat Application",
-      image: "",
+      image: nextChat,
       content: "Built a chat application with Next.js as Frontend and Express.js as backend with websockets.",
       links: [
         {
+          Icon : ExternalLink,
+          link : "https://next-chat-phi.vercel.app/"
+        }
+      ]
+    },
+    {
+      title: "Music Player",
+      image: ranexPlayer,
+      content: "Building a Music Player with React as Frontend and Fastify as backend.",
+      links: [
+        {
           Icon: Github,
-          link: ""
+          link: "https://github.com/sahilsinghrana/ranexPlayer"
+        },
+        {
+          Icon : ExternalLink,
+          link : "https://sahilsinghrana.github.io/ranexPlayer/"
         }
       ]
     }
