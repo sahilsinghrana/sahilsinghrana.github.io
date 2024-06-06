@@ -17,18 +17,19 @@ In this post, we'll explore the integration of JavaScript generators with linked
 ## Understanding Linked Lists
 Let's start with the basics. Linked lists are abstract data structures, comprising a sequence of elements where each element points to the next one. They're like a chain, with each link connecting to the next.
 
-> **Utility:**  Linked lists have numerous applications, ranging from building basic structures like stacks and queues to supporting associative arrays..
-> **Variants:** Depending on your needs, you can implement different variants of Linked Lists like singly linked lists, doubly linked lists, or circular linked lists.
+**Utility:**  Linked lists have numerous applications, ranging from building basic structures like stacks and queues to supporting associative arrays..
+
+**Variants:** Depending on your needs, you can implement different variants of Linked Lists like singly linked lists, doubly linked lists, or circular linked lists.
 
 ## Understanding Generators and Iterators
 Generators and Iterators are like magic tools in JavaScript, simplifying how you handle iterable data structures.
 
 Generators are special functions in JavaScript that enable pausing and resuming execution, allowing for the creation of iterable sequences with custom iteration behavior. Iterators, on the other hand, define how you traverse through these sequences.
 
-> **Creating a Generator:** Generators use the ```function*``` syntax and the ```yield``` keyword to emit values one at a time. This helps with lazy evaluation and saves memory when dealing with large datasets.
+**Creating a Generator:** Generators use the ```function*``` syntax and the ```yield``` keyword to emit values one at a time. This helps with lazy evaluation and saves memory when dealing with large datasets.
 
 ## Linked List Implementation
-> I am implementing only append function so that focus of this post does not gets shifted.
+> I am implementing only ```append``` method so that the context of this post does not gets shifted.
 
 ```javascript
 class Node {
