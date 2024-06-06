@@ -2,27 +2,36 @@
 author: "Sahil Singh Rana"
 image:
   url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemtlejl5bXhrNG1la3Npcmw5czF0b3g4c3BlZnJpMHE4OWlheDh1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FWtVYDHIxgGgE/giphy.webp"
-  alt: "convert-string-to-literal placeholder image"
+  alt: "linked-list-with-generators"
 pubDate: 2024-05-29
-title: Convert Normal Strings to template literals in JavaScript
-description: "Learned how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."
-slug: convert-string-to-literal
-tags: ["howTo", "javascript", "strings", "interpolation", "template"]
+title: Linked List with Javascript Generators and Iterators
+description: "Learned how can we use Javascript generators in Linked Lists."
+slug: linked-list-with-generators
+tags: ["howTo", "javascript", "strings", "linked", "list", "generators", "iterators"]
 ---
 
-# How to Convert Normal Strings to String Literals in JavaScript ?
+# Combining the power of JS generators with Linked list.
 
-JavaScript strings are versatile, but wouldn't it be great if you could leverage the power of string literals for dynamic content interpolation? In this tutorial, we'll explore a simple method to achieve just that.
+lorem ipsum dor adore some aldd asj
 
-## The Problem
+## What are Linked Lists ?
 
-Consider a scenario where you have a string template with placeholders, and you want to dynamically insert values into those placeholders.
+- definition
+- Usage
+- Types
 
+## What are generators and Iterators ?
+
+- definition
+- ES6
+
+
+## Linked List Implementation structure
 ```javascript
 const templateInNormalString = "Hello, ${name}! Today is ${day}.";
 ```
 
-## The Solution
+## Adding generators to linked list
 
 We'll define a prototype method on the `String` object called `interpolate`, which will accept an object containing key-value pairs to replace placeholders with actual values.
 
