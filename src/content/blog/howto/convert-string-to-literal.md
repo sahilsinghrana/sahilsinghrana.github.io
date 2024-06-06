@@ -5,12 +5,12 @@ image:
   alt: "convert-string-to-literal placeholder image"
 pubDate: 2024-05-29
 title: Convert Normal Strings to template literals in JavaScript
-description: "Learn how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."
+description: "Learned how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."
 slug: convert-string-to-literal
 tags: ["howTo", "javascript", "strings", "interpolation", "template"]
 ---
 
-# How to Convert Normal Strings to String Literals in JavaScript
+# How to Convert Normal Strings to String Literals in JavaScript ?
 
 JavaScript strings are versatile, but wouldn't it be great if you could leverage the power of string literals for dynamic content interpolation? In this tutorial, we'll explore a simple method to achieve just that.
 
