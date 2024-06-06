@@ -7,28 +7,28 @@ pubDate: 2024-06-06
 title: Linked List with Javascript Generators and Iterators
 description: "Learned how to use Javascript generators in Linked Lists."
 slug: linked-list-with-generators
-tags: ["howTo", "javascript", "strings", "linked", "list", "generators", "iterators"]
+tags: ["howTo", "javascript", "strings", "linked", "list", "generators", "iterators", "js"]
 ---
 
-# Combining the power of JS generators with Linked lists.
+# Enhancing Linked Lists with JavaScript Generators
 
 In this post, we'll explore the integration of JavaScript generators with linked lists, enhancing their functionality and utility.
 
-## What are Linked Lists?
+## Understanding Linked Lists
+Let's start with the basics. Linked lists are abstract data structures, comprising a sequence of elements where each element points to the next one. They're like a chain, with each link connecting to the next.
 
-- **Definition:** Linked lists are a fundamental data structure consisting of a sequence of elements, where each element points to the next one in the sequence.
-- **Usage:** They are commonly used in scenarios where dynamic memory allocation is required, such as implementing stacks, queues, and associative arrays.
-- **Types:** Linked lists come in various types, including singly linked lists, doubly linked lists, and circular linked lists, each offering unique advantages depending on the use case.
+> **Utility:**  Linked lists have numerous applications, ranging from building basic structures like stacks and queues to supporting associative arrays..
+> **Variants:** Depending on your needs, you can implement different variants of Linked Lists like singly linked lists, doubly linked lists, or circular linked lists.
 
-## What are Generators and Iterators?
+## Understanding Generators and Iterators
+Generators and Iterators are like magic tools in JavaScript, simplifying how you handle iterable data structures.
 
-- **Definition:** Generators are functions in JavaScript that enable pausing and resuming execution, allowing for the creation of iterables with a custom iteration behavior. Iterators are objects that define a sequence and can be iterated upon using loops or other constructs.
-- **ES6 Introduction:** ECMAScript 6 (ES6) introduced generators and iterators as part of its enhanced iteration capabilities, providing a cleaner and more expressive way to work with iterable data structures.
-- **How to Create a Generator:** Generators are defined using function* syntax, and they use the yield keyword to yield values one at a time, facilitating lazy evaluation and efficient memory usage.
+Generators are special functions in JavaScript that enable pausing and resuming execution, allowing for the creation of iterable sequences with custom iteration behavior. Iterators, on the other hand, define how you traverse through these sequences.
+
+> **Creating a Generator:** Generators use the ```function*``` syntax and the ```yield``` keyword to emit values one at a time. This helps with lazy evaluation and saves memory when dealing with large datasets.
 
 ## Linked List Implementation
-
-- I am implementing only append function so that focus of this post does not gets shifted.
+> I am implementing only append function so that focus of this post does not gets shifted.
 
 ```javascript
 class Node {
@@ -76,7 +76,7 @@ class LinkedList {
 
 ## Add generator to linked list
 
-We'll define a generator function called entries() within the LinkedList class. This generator will iterate over the data in the list and yield tha data within the node for every iteration.
+We'll define a generator function called ```entries()``` within the LinkedList ```class```. This generator will iterate over the data in the list and yield tha data within the node for every iteration.
 
 ```javascript
  class LinkedList {
@@ -100,7 +100,7 @@ We'll define a generator function called entries() within the LinkedList class. 
 
 ## Usage
 
-Let's see how we can use our entries() generator to output the data stored in our linked list:
+Let's see how we can use our ```entries()``` generator to output the data stored in our linked list:
 
 ```javascript
 
