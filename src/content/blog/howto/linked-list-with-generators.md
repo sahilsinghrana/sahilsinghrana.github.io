@@ -102,8 +102,8 @@ We'll define a generator function called ```entries()``` within the LinkedList `
 
 Let's see how we can use our ```entries()``` generator to output the data stored in our linked list:
 
+### Append data to the list
 ```javascript
-
 const linkedList = new LinkedList();
 
 // Append some data to the list
@@ -112,20 +112,25 @@ linkedList.append("I");
 linkedList.append("N");
 linkedList.append("K");
 
+```
 
-// ------------------------------------
+### Convert linked list to array
+```javascript
 // Convert linked list to array
 const arrayFromLinkedList = Array.from(linkedList.entries());  
 console.log(arrayFromLinkedList) // [ 'L', 'I', 'N', 'K' ]
+```
 
-
-// ------------------------------------
+### Loop over linked list using for..of loop
+```javascript
 // Loop over linked list using for..of loop
 for (const val of linkedList.entries()) {
   console.log(val) // L, I, N, K
 }
+```
 
-// ------------------------------------
+### Get value one by one from the generator
+```javascript
 // Get value one by one from the generator
 const gen = linkedList.entries();
 
@@ -133,6 +138,5 @@ console.log(gen.next().value); // "L"
 console.log(gen.next().value); // "I"
 console.log(gen.next().value); // "N"
 console.log(gen.next().value); // "K"
-
 
 ```
