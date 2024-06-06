@@ -1,7 +1,7 @@
 ---
 author: "Sahil Singh Rana"
 image:
-  url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemtlejl5bXhrNG1la3Npcmw5czF0b3g4c3BlZnJpMHE4OWlheDh1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FWtVYDHIxgGgE/giphy.webp"
+  url: "https://i.giphy.com/ZoCr1L2HWCBTEJRuDY.webp"
   alt: "linked-list-with-generators"
 pubDate: 2024-05-29
 title: Linked List with Javascript Generators and Iterators
@@ -23,7 +23,8 @@ lorem ipsum dor adore some aldd asj
 ## What are generators and Iterators ?
 
 - definition
-- ES6
+- ES6 Introduction
+- How to create a generator 
 
 
 ## Linked List Implementation structure
