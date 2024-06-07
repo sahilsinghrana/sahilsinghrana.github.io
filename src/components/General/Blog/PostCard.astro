@@ -1,8 +1,10 @@
 ---
-const { title, description, image, pubDate, slug } = Astro.props;
-
 import { Image } from "astro:assets";
+
 import "./postcard.scss";
+
+const { title, description, image, slug } = Astro.props;
+
 ---
 
 <a href={slug} class="blogPostCard">
