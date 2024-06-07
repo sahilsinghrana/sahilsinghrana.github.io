@@ -18,7 +18,9 @@ const blogEntries = await getCollection("blog");
     Image={placeholderImage}
     quote="The Moon’s surface is actually dark"
   />
-  <div style="display:flex; gap : 1.2rem; margin-top : 2rem; flex-wrap: wrap; justify-content: space-around;">
+  <div
+    style="display:flex; gap : 1.2rem; margin-top : 2rem; flex-wrap: wrap; justify-content: space-around;"
+  >
     {
       blogEntries.map(async (post) => {
         const { title, description, image, pubDate, author } = post.data;

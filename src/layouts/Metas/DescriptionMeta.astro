@@ -8,7 +8,10 @@ const { title, description, keywords } = Astro.props;
 <link rel="manifest" href="/site.webmanifest?v=2" />
 <link rel="mask-icon" href="/safari-pinned-tab.svg?v=2" color="#5bbad5" />
 <link rel="shortcut icon" href="/favicon.ico?v=2" />
-<meta name="apple-mobile-web-app-title" content={"Sahil Singh Rana" + " | " + title} />
+<meta
+  name="apple-mobile-web-app-title"
+  content={"Sahil Singh Rana" + " | " + title}
+/>
 <meta name="application-name" content={"Sahil Singh Rana" + " | " + title} />
 <meta name="msapplication-TileColor" content="#da532c" />
 <meta name="theme-color" content="#000000" />
@@ -16,9 +19,12 @@ const { title, description, keywords } = Astro.props;
 <meta name="title" content={title} />
 <meta
   name="description"
-  content={description || "Explore the portfolio of Sahil Singh Rana, a software engineer specializing in Web development using technologies like React.JS and Node.js."}
+  content={description ||
+    "Explore the portfolio of Sahil Singh Rana, a software engineer specializing in Web development using technologies like React.JS and Node.js."}
 />
 <meta
   name="keywords"
-  content={Array.isArray(keywords) && keywords.length ? keywords.join(",") : "React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java, Sahil Rana, Sahil Singh Rana"}
+  content={Array.isArray(keywords) && keywords.length
+    ? keywords.join(",")
+    : "React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java, Sahil Rana, Sahil Singh Rana"}
 />

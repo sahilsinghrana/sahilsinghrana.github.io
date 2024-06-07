@@ -1,4 +1,3 @@
-
 export const links = {
   home: "/",
   about: "/about/",
@@ -12,4 +11,3 @@ export const links = {
   twitter: "https://x.com/sahilrana010",
   mail: "mailto:ranasahil98@gmail.com",
 };
-
