@@ -3,7 +3,6 @@ import sitemap from "@astrojs/sitemap";
 import compressor from "astro-compressor";
 import playformInline from "@playform/inline";
 import playformCompress from "@playform/compress";
-import { astroImageTools } from "astro-imagetools";
 
 import partytown from "@astrojs/partytown";
 
@@ -11,7 +10,7 @@ import partytown from "@astrojs/partytown";
 export default defineConfig({
   compressHTML: true,
   site: "https://sahilsinghrana.github.io",
-  integrations: [partytown(), sitemap(), astroImageTools, playformInline(), playformCompress(), compressor()],
+  integrations: [partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
   prefetch: {
     defaultStrategy: "viewport"
   },
