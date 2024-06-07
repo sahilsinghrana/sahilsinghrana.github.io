@@ -23,7 +23,7 @@ const { text } = Astro.props;
 
 <p class={"codeblock-command"}>
   <code>{text}</code>
-  <button id="copyBtn" data-value={text} data-copying="false" type="button">
+  <button id="copyBtn" aria-valuetext={"Copy Command"} data-value={text} data-copying="false" type="button">
     <Copy height={20} width={20} />
   </button>
 </p>
