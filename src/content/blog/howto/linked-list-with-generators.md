@@ -1,14 +1,13 @@
 ---
 author: "Sahil Singh Rana"
 image:
-  url: "https://i.giphy.com/ZoCr1L2HWCBTEJRuDY.webp"
+  url: "../../../assets/images/blog/linked-list-with-generators.webp"
   alt: "linked-list-with-generators"
 pubDate: 2024-06-06
-title: Linked List with Javascript Generators and Iterators
+title: "Linked List with Javascript Generators and Iterators"
 description: "Learned how to use Javascript generators in Linked Lists."
 slug: linked-list-with-generators
-tags:
-  [
+tags: [
     "howTo",
     "javascript",
     "strings",

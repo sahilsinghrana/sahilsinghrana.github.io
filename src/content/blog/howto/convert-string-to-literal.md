@@ -1,14 +1,13 @@
 ---
 author: "Sahil Singh Rana"
 image:
-  url: "https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExemtlejl5bXhrNG1la3Npcmw5czF0b3g4c3BlZnJpMHE4OWlheDh1aSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/FWtVYDHIxgGgE/giphy.webp"
+  url: "../../../assets/images/blog/convert-string-to-literal.webp"
   alt: "convert-string-to-literal placeholder image"
 pubDate: 2024-05-29
 title: Convert Normal Strings to template literals in JavaScript
 description: "Learned how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."
 slug: convert-string-to-literal
-tags:
-  [
+tags: [
     "howTo",
     "javascript",
     "strings",
