@@ -34,6 +34,7 @@
     "astro-breadcrumbs": "^2.3.0",
     "astro-capo": "^0.0.1",
     "astro-compressor": "^0.4.1",
+    "astro-imagetools": "^0.9.0",
     "autoprefixer": "^10.4.19",
     "cssnano": "^7.0.1",
     "cssnano-preset-advanced": "^7.0.1",
