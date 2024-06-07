@@ -7,7 +7,7 @@ pubDate: 2024-05-29
 title: Convert Normal Strings to template literals in JavaScript
 description: "Learned how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."
 slug: convert-string-to-literal
-tags: ["howTo", "javascript", "strings", "interpolation", "template"]
+tags: ["howTo", "javascript", "strings", "interpolation", "template","Sahil", "Rana"]
 ---
 
 # How to Convert Normal Strings to String Literals in JavaScript ?

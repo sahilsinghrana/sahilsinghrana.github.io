@@ -9,8 +9,27 @@ import placeholderImage from "@images/placeholder4.webp";
 import "@components/About/index.scss";
 ---
 
-<Layout title="About">
-  <SectionHeaderImage title="About" Image={placeholderImage} quote="The Moon makes the Earth move as well as the tides" />
+<Layout
+  title="About"
+  description="Explore my journey of as a budding software developer, as i shares some of my personal insights and aspirations in the world of coding on this About page."
+  keywords={[
+    "Sahil Rana",
+    "Software developer",
+    "Coding journey",
+    "Learning",
+    "Growth",
+    "Aspirations",
+    "Experience",
+    "Insights",
+    "Passion",
+    "Development career",
+  ]}
+>
+  <SectionHeaderImage
+    title="About"
+    Image={placeholderImage}
+    quote="The Moon makes the Earth move as well as the tides"
+  />
   <div class="aboutPage">
     <Experience />
     <Education />

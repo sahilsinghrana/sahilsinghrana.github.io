@@ -8,6 +8,7 @@ import Footer from "@components/Footer/index.astro";
 import GtagScripts from "./Metas/GtagScripts.astro";
 import OgMeta from "./Metas/OgMeta.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
+import SchemaLd from "./Metas/SchemaLd.astro";
 
 import Moon from "@components/General/Moon/index.astro";
 
@@ -25,34 +26,14 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
 </style>
 
 <html lang="en">
-  <Head>
-    <script type="application/ld+json">
-      {
-        "@context": "http://www.schema.org",
-        "@type": "person",
-        "name": "Sahil Singh Rana",
-        "jobTitle": "Sr. Software Developer",
-        "gender": "male",
-        "url": "https://sahilsinghrana.github.io",
-        "image": "https://avatars.githubusercontent.com/u/48375250?v=4",
-        "address": {
-          "@type": "PostalAddress",
-          "addressLocality": "Vadodara",
-          "addressRegion": "Gujarat",
-          "addressCountry": "India"
-        },
-        "email": "ranasahil98@gmail.com",
-        "birthPlace": "Uttarakhand",
-        "nationality": "Indian"
-      }
-    </script>
     <ViewTransitions fallback="swap" />
+    <Head>
+    <SchemaLd />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <link rel="canonical" href={currentUrl} />
 
-    <meta name="generator" content={Astro.generator} />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <meta
       name="google-site-verification"
@@ -65,7 +46,7 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
     <GtagScripts />
     <OgMeta title={title} description={description} />
-    <DescriptionMeta title={title} description={description} />
+    <DescriptionMeta title={title} description={description} keywords={keywords} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <title>{title}</title>

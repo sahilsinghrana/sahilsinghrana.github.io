@@ -20,5 +20,5 @@ const { title, description, keywords } = Astro.props;
 />
 <meta
   name="keywords"
-  content={Array.isArray(keywords) ? keywords.join(",") : "React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java, Sahil Rana, Sahil Singh Rana"}
+  content={Array.isArray(keywords) && keywords.length ? keywords.join(",") : "React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java, Sahil Rana, Sahil Singh Rana"}
 />
