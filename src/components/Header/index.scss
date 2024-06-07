@@ -12,17 +12,21 @@ header {
     align-items: center;
 
     img {
-      margin-right: 0.5em;
+      margin-right: 0.3em;
       border-radius: 100%;
     }
-
-    h1 {
-      font-size: 0.9em;
-      margin: 0;
-      a {
+    &:hover {
+      .homeTitle {
         color: white;
-        text-decoration: none;
       }
+    }
+
+    .homeTitle {
+      font-size: 0.8rem;
+      margin: 0;
+      color: rgba(255, 255, 255, 0.786);
+      text-decoration: none;
+      font-weight: 600;
     }
   }
 
@@ -34,7 +38,7 @@ header {
 
     a {
       font-size: 0.8em;
-      color: white;
+      color: rgba(255, 255, 255, 0.856);
       text-decoration: none;
 
       &:first-child {
@@ -42,7 +46,7 @@ header {
       }
 
       &:hover {
-        color: var(--accent1);
+        color: white;
         font-weight: 800;
       }
     }

@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "private": false,
   "scripts": {
-    "dev": "astro dev",
+    "dev": "astro dev --port 4232",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
