@@ -1,8 +1,13 @@
 ---
 import { Copyright as CopyrightIcon } from "lucide-astro";
+import Resources from "./Resources.astro";
 ---
 
-<p class="copyright">
-  <CopyrightIcon />
-  {new Date().getFullYear()} Sahil Singh Rana
-</p>
+<div class="copyrightWrapper">
+  <div></div>
+  <p class="copyright">
+    <CopyrightIcon />
+    {new Date().getFullYear()} Sahil Singh Rana
+  </p>
+  <Resources />
+</div>

@@ -58,13 +58,36 @@ footer {
     }
   }
 
-  .copyright {
-    display: flex;
-    align-items: center;
-    color: rgb(128, 128, 128);
-    .lucide-icon {
-      height: 15px;
-      width: 15px;
+  .copyrightWrapper {
+    display: grid;
+    grid-template-columns: 1fr 2fr 1fr;
+    width: 100%;
+    place-items: center;
+
+    .copyright {
+      width: 100%;
+      display: flex;
+      justify-self: center;
+      align-items: center;
+      justify-content: center;
+      color: rgb(128, 128, 128);
+      .lucide-icon {
+        height: 15px;
+        width: 15px;
+      }
+    }
+
+    .resources {
+      justify-self: end;
+      a {
+        color: rgba(139, 139, 139, 0.398);
+        font-size: 0.8rem;
+        padding: 0 10px;
+
+        &:hover {
+          color: rgba(245, 245, 245, 0.725);
+        }
+      }
     }
   }
 }
