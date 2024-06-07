@@ -8,9 +8,12 @@ import partytown from "@astrojs/partytown";
 
 // https://astro.build/config
 export default defineConfig({
-  compressHTML: true,
+  compressHTML: false,
   trailingSlash: "ignore",
   site: "https://sahilsinghrana.github.io",
+  build: {
+    format: "file",
+  },
   integrations: [
     partytown(),
     sitemap(),
