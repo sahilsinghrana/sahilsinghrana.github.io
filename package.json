@@ -1,13 +1,16 @@
 {
   "name": "sahilsinghrana.github.io",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": false,
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "lint": "eslint -c eslint.config.mjs ./src/**/*.ts ./src/**/*.astro --report-unused-disable-directives --max-warnings 0 --no-warn-ignored",
+    "stylelint": "stylelint **/*.css **/*.scss",
+    "prettier": "prettier 'src/**/*.{js,ts,mjs,cjs,json,astro,html,md}' --write"
   },
   "author": {
     "name": "Sahil Rana",
@@ -20,10 +23,14 @@
     "url": "git+https://github.com/sahilsinghrana/sahilsinghrana.github.io"
   },
   "keywords": [
-    "astro",
-    "starter",
-    "skeleton",
-    "playform"
+    "portfolio",
+    "Sahil Rana",
+    "blog",
+    "projects",
+    "Software Developer",
+    "Software Engineer",
+    "About",
+    "Contact"
   ],
   "dependencies": {
     "@astrojs/partytown": "^2.1.0",
@@ -46,8 +53,17 @@
     "postcss-url": "^10.1.3"
   },
   "devDependencies": {
+    "@eslint/js": "^9.4.0",
+    "eslint": "^9.4.0",
+    "eslint-plugin-astro": "^1.2.0",
+    "globals": "^15.4.0",
+    "postcss-html": "^1.7.0",
+    "prettier": "^3.3.1",
+    "prettier-plugin-astro": "^0.14.0",
     "sass": "^1.77.2",
     "sharp": "^0.33.4",
-    "ts-node": "^10.9.2"
+    "stylelint-config-html": "^1.1.0",
+    "ts-node": "^10.9.2",
+    "typescript-eslint": "^7.12.0"
   }
 }
