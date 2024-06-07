@@ -31,7 +31,7 @@ const blogEntries = await getCollection("blog");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={"/blog/posts/" + post.slug}
+            slug={"/blog/posts/" + post.slug + "/"}
           />
         );
       })
@@ -45,7 +45,7 @@ const blogEntries = await getCollection("blog");
       }}
       pubDate={"17-01-2024"}
       author={"Sahil Rana"}
-      slug={"/blog/whyMoon"}
+      slug={"/blog/whyMoon/"}
     />
   </div>
 </Layout>

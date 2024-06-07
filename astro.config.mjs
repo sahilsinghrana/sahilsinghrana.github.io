@@ -9,14 +9,21 @@ import partytown from "@astrojs/partytown";
 // https://astro.build/config
 export default defineConfig({
   compressHTML: true,
+  trailingSlash: "ignore",
   site: "https://sahilsinghrana.github.io",
-  integrations: [partytown(), sitemap(), playformInline(), playformCompress(), compressor()],
+  integrations: [
+    partytown(),
+    sitemap(),
+    playformInline(),
+    playformCompress(),
+    compressor(),
+  ],
   prefetch: {
-    defaultStrategy: "viewport"
+    defaultStrategy: "viewport",
   },
   markdown: {
     shikiConfig: {
-      theme: "github-dark"
-    }
-  }
+      theme: "github-dark",
+    },
+  },
 });
