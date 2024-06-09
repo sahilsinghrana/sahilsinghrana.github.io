@@ -43,7 +43,7 @@ const blogEntries = await getCollection("blog");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={post.slug}
+            slug={"/blog/posts/" + post.slug}
           />
         );
       })
