@@ -14,7 +14,20 @@ const blogEntries = await getCollection("blog");
 const snippetsEntries = await getCollection("snippets");
 ---
 
-<Layout title="Blog">
+<Layout
+  title="Blog"
+  description={"Welcome to my blog homepage. I write random stuff!"}
+  keywords={[
+    "Blog",
+    "Sahil Rana",
+    "Sahil",
+    "poems",
+    "story",
+    "poem",
+    "Technology",
+    "Javacript",
+  ]}
+>
   <SectionHeaderImage
     title="Blog"
     Image={placeholderImage}
@@ -50,7 +63,9 @@ const snippetsEntries = await getCollection("snippets");
       slug={"/blog/whyMoon"}
     />
   </div>
-  <div style="margin-top: 2em; ">
+  <div
+    style="margin-top: 2em; background: #79787850; padding : 20px; border-radius:8px;"
+  >
     <div
       style="display : flex; justify-content:space-between; align-items: center; font-size:1rem; width : 100%; "
     >

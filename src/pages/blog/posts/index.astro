@@ -1,26 +1,39 @@
 ---
-// import { getCollection } from "astro:content";
+import { getCollection } from "astro:content";
 
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "@layouts/index.astro";
 
-import placeholderImage from "@images/placeholder.webp";
+import placeholderImage from "@images/blogPostsPlaceholder.webp";
 
-// import PostCard from "@components/General/Blog/PostCard.astro";
+import PostCard from "@components/General/Blog/PostCard.astro";
 
-// const blogEntries = await getCollection("blog");
+const blogEntries = await getCollection("blog");
 ---
 
-<meta http-equiv="refresh" content={`0;URL=${Astro.url.origin}/blog`} />
-
-<Layout title="Blog">
+<Layout
+  title="Blog Posts"
+  description="Hey! here I am writing about random topics which i have learned along the way."
+  keywords={[
+    "Sahil Rana",
+    "Software developer",
+    "Blog posts",
+    "List",
+    "Technology",
+    "Technical",
+    "posts",
+  ]}
+>
   <SectionHeaderImage
-    title="Posts"
+    title="Blog Posts"
     Image={placeholderImage}
     quote="The Moon has quakes too"
+    showBreadcrumbs
   />
-  <div style="display:flex; gap : 10px; margin-top : 2rem;">
-    <!-- {
+  <div
+    style="display:flex; gap : 1.2rem; margin-top : 2rem; flex-wrap: wrap; justify-content: space-around;"
+  >
+    {
       blogEntries.map(async (post) => {
         const { title, description, image, pubDate, author } = post.data;
         return (
@@ -34,6 +47,6 @@ import placeholderImage from "@images/placeholder.webp";
           />
         );
       })
-    } -->
+    }
   </div>
 </Layout>
