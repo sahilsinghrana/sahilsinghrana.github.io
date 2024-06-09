@@ -1,0 +1,13 @@
+---
+const { title, description, image, slug } = Astro.props;
+import { Image } from "astro:assets";
+import "./index.scss";
+---
+
+<a class="snippetCard" href={"/blog/snippets/" + slug}>
+  <Image src={image.url} alt={image.alt} height={40} width={40} />
+  <div class="desc">
+    <h5>{title}</h5>
+    <p>{description}</p>
+  </div>
+</a>
