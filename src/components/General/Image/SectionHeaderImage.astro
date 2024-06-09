@@ -1,10 +1,9 @@
 ---
-import placeholder from "@images/placeholder2.webp";
+const { Image: propImage, title, quote, showBreadcrumbs } = Astro.props;
 
-const { Image: propImage, title, quote } = Astro.props;
+const placeHolderImagee = propImage;
 
-const placeHolderImagee = propImage || placeholder;
-
+import { Breadcrumbs } from "astro-breadcrumbs";
 import "./index.scss";
 import { Image } from "astro:assets";
 ---
@@ -19,5 +18,13 @@ import { Image } from "astro:assets";
   <div class="titleWrapper">
     <h1 class="headerImageTitle">{title}</h1>
     <q>{quote}</q>
+    {
+      showBreadcrumbs && (
+        <Breadcrumbs
+          linkTextFormat="capitalized"
+          mainBemClass="blog-breadcrumbs"
+        />
+      )
+    }
   </div>
 </div>

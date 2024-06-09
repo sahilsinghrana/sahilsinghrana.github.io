@@ -4,20 +4,36 @@ import { getCollection } from "astro:content";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "@layouts/index.astro";
 
-import placeholderImage from "@images/placeholder.webp";
+import placeholderImage from "@images/snippetsPlaceholder.webp";
 
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 
 const snippetsEntries = await getCollection("snippets");
 ---
 
-<Layout title="Blog">
+<Layout
+  title="Code Snippets"
+  description="I post code small code snippets here."
+  keywords={[
+    "Sahil Rana",
+    "Software developer",
+    "Code snippets",
+    "code",
+    "Snippets",
+    "Gists",
+    "List",
+    "Tech",
+    "Technology",
+    "Javascript",
+  ]}
+>
   <SectionHeaderImage
     title="Code Snippets"
     Image={placeholderImage}
-    quote="The Moon’s surface is actually dark"
+    quote="The Moon was made when a rock smashed into Earth"
+    showBreadcrumbs
   />
-  <div style="margin-top:30px">
+  <div style="margin-top:30px; background:">
     {
       snippetsEntries.map(async (post) => {
         const { title, description, image } = post.data;
