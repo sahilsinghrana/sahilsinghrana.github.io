@@ -1,7 +1,7 @@
 ---
 author: "Sahil Singh Rana"
 image:
-  url: "https://i.giphy.com/ZoCr1L2HWCBTEJRuDY.webp"
+  url: "./titleImage.webp"
   alt: "linked-list-with-generators"
 pubDate: 2024-06-06
 title: Linked List with Javascript Generators and Iterators

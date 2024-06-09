@@ -1,4 +1,5 @@
 ---
+import { Image } from "astro:assets";
 import Layout from "@layouts/index.astro";
 import chaseMoon from "@images/chase.gif";
 import { Breadcrumbs } from "astro-breadcrumbs";
@@ -13,7 +14,7 @@ import "@layouts/blogPost.scss";
 >
   <div class="blogPostHeading">
     <div class="bg">
-      <img src={chaseMoon.src} alt={"Moon"} width="100%" height="157" />
+      <Image src={chaseMoon} alt="my moon" />
       <div class="head">
         <h2><em>{"Why Moon?"}</em></h2>
         <Breadcrumbs

@@ -2,8 +2,8 @@
   "extends": "astro/tsconfigs/base",
   "lib": ["ESNext", "DOM", "DOM.Iterable"],
   "compilerOptions": {
-    // Solid specific settings
-    "jsx": "preserve",
+    "strictNullChecks": true,
+    "allowJs": true,
     "baseUrl": ".",
     "paths": {
       "@components/*": ["src/components/*"],

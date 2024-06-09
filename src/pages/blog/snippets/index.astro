@@ -1,0 +1,35 @@
+---
+import { getCollection } from "astro:content";
+
+import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
+import Layout from "@layouts/index.astro";
+
+import placeholderImage from "@images/placeholder.webp";
+
+import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
+
+const snippetsEntries = await getCollection("snippets");
+---
+
+<Layout title="Blog">
+  <SectionHeaderImage
+    title="Code Snippets"
+    Image={placeholderImage}
+    quote="The Moon’s surface is actually dark"
+  />
+  <div style="margin-top:30px">
+    {
+      snippetsEntries.map(async (post) => {
+        const { title, description, image } = post.data;
+        return (
+          <SnippetCard
+            title={title}
+            description={description}
+            image={image}
+            slug={post.slug}
+          />
+        );
+      })
+    }
+  </div>
+</Layout>
