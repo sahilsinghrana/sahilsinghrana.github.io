@@ -8,7 +8,6 @@ import Footer from "@components/Footer/index.astro";
 import GtagScripts from "./Metas/GtagScripts.astro";
 import OgMeta from "./Metas/OgMeta.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
-import SchemaLd from "./Metas/SchemaLd.astro";
 
 import Moon from "@components/General/Moon/index.astro";
 
@@ -22,7 +21,6 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
 <html lang="en">
   <Head>
     <ViewTransitions fallback="swap" />
-    <SchemaLd />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
