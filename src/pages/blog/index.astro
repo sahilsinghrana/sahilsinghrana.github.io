@@ -8,8 +8,10 @@ import placeholderImage from "@images/placeholder.webp";
 import chaseMoon from "@images/chase.gif";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
+import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 
 const blogEntries = await getCollection("blog");
+const snippetsEntries = await getCollection("snippets");
 ---
 
 <Layout title="Blog">
@@ -47,5 +49,29 @@ const blogEntries = await getCollection("blog");
       author={"Sahil Rana"}
       slug={"/blog/whyMoon"}
     />
+  </div>
+  <div style="margin-top: 2em; ">
+    <div
+      style="display : flex; justify-content:space-between; align-items: center; font-size:1rem; width : 100%; "
+    >
+      <h3 style="font-size:0.9rem">Snippets</h3>
+      <a href="/blog/snippets" style="font-size:0.75rem; color : lightgray;"
+        >View more
+      </a>
+    </div>
+
+    {
+      snippetsEntries.map(async (post) => {
+        const { title, description, image } = post.data;
+        return (
+          <SnippetCard
+            title={title}
+            description={description}
+            image={image}
+            slug={post.slug}
+          />
+        );
+      })
+    }
   </div>
 </Layout>

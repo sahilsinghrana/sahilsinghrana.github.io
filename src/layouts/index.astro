@@ -21,12 +21,6 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
 <html lang="en">
   <Head>
-    <style is:global>
-      .astro-route-announcer {
-        display: none;
-      }
-    </style>
-
     <ViewTransitions fallback="swap" />
     <SchemaLd />
     <meta charset="utf-8" />
