@@ -4,6 +4,24 @@ import Layout from "../layouts/index.astro";
 import About from "../components/About/index.astro";
 ---
 
+<head>
+  <script is:inline type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Sahil Rana",
+      "alternateName": [
+        "Sahil Portfolio",
+        "Sahil Rana Portfolio",
+        "SSR",
+        "Sahil Singh Rana"
+      ],
+      "url": "https://sahilsinghrana.github.io",
+      "image": "https://avatars.githubusercontent.com/u/48375250?v=4"
+    }
+  </script>
+</head>
+
 <Layout
   title="Sahil Singh Rana"
   description="Explore the portfolio of Sahil Singh Rana, a software engineer specializing in Web development using technologies like React JS, Node js, Mongo DB, RDBMS."

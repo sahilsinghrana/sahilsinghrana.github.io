@@ -11,7 +11,11 @@ const { data } = entry;
 const { title, image, description, tags } = data;
 ---
 
-<Layout title={title} description={description} keywords={tags}>
+<Layout
+  title={title + " | Sahil Singh Rana"}
+  description={description}
+  keywords={tags}
+>
   <div class="blogPostHeading">
     <div class="bg">
       <Image
