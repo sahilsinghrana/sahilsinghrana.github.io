@@ -1,12 +1,24 @@
 $mobileBreakpoint: 486px;
 
-.about {
+.aboutPage {
   width: 100%;
   display: flex;
   flex-direction: column;
   align-items: start;
-  margin-top: 3rem;
   margin-bottom: 20px;
+
+  a::after {
+    content: " 🔗";
+    font-size: 0.6rem;
+    opacity: 0.4;
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  a:hover {
+    color: lightgray;
+  }
 
   h2 {
     text-align: left;
@@ -89,10 +101,6 @@ section.experience {
     }
 
     .experienceDetailsWrapper {
-      a:hover {
-        color: lightgray;
-      }
-
       .companyInfo {
         display: flex;
         flex-direction: column;
@@ -102,9 +110,12 @@ section.experience {
           margin: 5px 0;
           text-align: center;
         }
-        p {
+        h3 {
           padding: 0;
           margin: 0;
+          margin-bottom: 5px;
+          margin-top: 5px;
+          font-size: 0.9rem;
         }
         span {
           font-size: 0.7rem;
@@ -133,7 +144,7 @@ section.experience {
       .subExperienceWrapper {
         .companyInfo {
           text-align: left;
-          h4 {
+          h3 {
             font-size: 0.92rem;
             margin: 2px 0;
             margin-top: 6px;
@@ -141,8 +152,8 @@ section.experience {
         }
         .projectInfo {
           padding-left: 10px;
-          h5 {
-            font-size: 0.7rem;
+          h4 {
+            font-size: 0.75rem;
             margin: 3px 0;
           }
         }
