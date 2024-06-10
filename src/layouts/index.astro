@@ -1,5 +1,4 @@
 ---
-import { ViewTransitions } from "astro:transitions";
 import { Head } from "astro-capo";
 
 import Header from "@components/Header/index.astro";
@@ -20,7 +19,6 @@ const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
 <html lang="en">
   <Head>
-    <ViewTransitions fallback="swap" />
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
