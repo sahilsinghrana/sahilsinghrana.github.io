@@ -26,6 +26,7 @@ article.blogContent {
 
   p {
     font-size: 0.89rem;
+    text-align: justify;
   }
 
   ol {
@@ -36,6 +37,8 @@ article.blogContent {
     font-size : 0.83rem;
     color : lightgray;
     font-style : italic;
+    word-break: break-all;
+
     &:hover {
       color : white;
     }
