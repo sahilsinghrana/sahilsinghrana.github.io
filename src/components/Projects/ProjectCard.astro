@@ -3,14 +3,15 @@ import RubiksCube from "@images/rubikscube.webp";
 const { title, content, image, links } = Astro.props;
 
 import "./index.scss";
+import { Image } from "astro:assets";
 
-const displayImage = image?.src || RubiksCube.src;
+const displayImage = image || RubiksCube;
 ---
 
 <div class="projectCard">
-  <img class="projectCardImg" src={displayImage} alt={title} />
+  <Image class="projectCardImg" src={displayImage} alt={title} />
   <div class="content">
-    <h5>{title}</h5>
+    <h2>{title}</h2>
     <p>{content}</p>
   </div>
   <ul class="links">

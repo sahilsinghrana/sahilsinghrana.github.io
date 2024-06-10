@@ -2,9 +2,10 @@
 image:
   url: "./titleImage.webp"
   alt: "expose-wsl-port"
-title: How to expose WSL Port.
-description: "Expose WSL Port to local network"
-tags: ["howTo", "expose port", "wsl", "expose local", "local", "windows"]
+title: Expose WSL Port
+description: "Expose WSL Port to other adapter interfaces"
+tags:
+  ["howTo", "expose port", "wsl", "port", "expose local", "local", "windows"]
 ---
 
 # How to expose wsl port to other interfaces

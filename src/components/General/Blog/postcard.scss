@@ -8,9 +8,8 @@
 
   &:hover {
     outline: 2px solid rgba(255, 255, 255, 0.671);
-    h3 {
+    .title {
       color: white;
-      font-size: 0.8rem;
     }
   }
 
@@ -30,8 +29,8 @@
     flex-direction: column;
   }
 
-  h3 {
-    font-size: 0.8rem;
+  .title {
+    font-size: 0.9rem;
     margin: 0;
     text-wrap: wrap;
     border-bottom: 1px solid rgba(128, 128, 128, 0.524);

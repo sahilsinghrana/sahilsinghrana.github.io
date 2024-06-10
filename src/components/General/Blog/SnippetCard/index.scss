@@ -17,22 +17,24 @@
   }
 
   img {
-    height: 35px;
-    width: 35px;
+    height: 45px;
+    width: 45px;
     object-fit: cover;
     outline: 1px solid gray;
     margin-right: 0.4em;
   }
 
   .desc {
-    h5 {
+    h2 {
       margin: 0;
+      font-size: 0.9rem;
     }
 
     p {
       margin: 0;
       font-size: 0.67rem;
       color: rgb(144, 153, 156);
+      font-style: italic;
     }
   }
 }

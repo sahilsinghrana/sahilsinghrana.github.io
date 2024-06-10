@@ -1,49 +1,64 @@
 .projectCard:hover {
-  outline: 2px solid rgba(191, 191, 191, 0.892);
+  outline: 1px solid rgba(191, 191, 191, 0.892);
   img {
     filter: grayscale(0);
   }
-  transition: 1s;
+  transition: 500ms ease-out;
 }
-.projectCard {
-  min-height: 200px;
-  width: 320px;
-  outline: 2px solid rgba(128, 128, 128, 0.653);
 
-  border-radius: 20px;
+.projectCard {
+  display: flex;
+  flex-direction: column;
+
+  min-height: 210px;
+  height: 230px;
+  width: 310px;
+  outline: 1px solid rgba(128, 128, 128, 0.553);
+  border-radius: 15px;
   overflow: hidden;
 
   .content {
-    padding: 0 20px;
-    width: 90%;
+    width: 100%;
+    flex-grow: 1;
   }
 
   img {
-    height: 70px;
+    height: 100px;
     width: 100%;
     object-fit: cover;
-    filter: grayscale(1);
+    filter: grayscale(0.6);
+    margin-bottom: 6px;
   }
 
-  h5,
+  h2,
   p {
-    margin: 5px 0;
+    margin: 3px 0;
+    word-wrap: break-word;
+    max-width: 100%;
+    padding: 0 20px;
   }
-  h5 {
+
+  h2 {
     font-size: 1rem;
   }
+
   p {
-    font-size: 0.75rem;
-    opacity: 0.9;
+    font-size: 0.7rem;
+    opacity: 0.67;
+    font-style: italic;
+    text-align: justify;
   }
 
   .links {
     display: flex;
     justify-content: end;
-    padding-right: 10px;
+    padding-right: 6px;
     list-style: none;
+    justify-self: flex-end;
+    margin: 3px 0;
+
     li {
-      margin-left: 8px;
+      margin-left: 3px;
 
       a {
         color: gray;
@@ -51,6 +66,9 @@
 
       a:hover {
         color: lightgray;
+      }
+      svg {
+        height: 20px;
       }
     }
   }

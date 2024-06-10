@@ -2,7 +2,7 @@
 image:
   url: "./titleImage.webp"
   alt: "download-file-with-curl"
-title: How to download file using curL
+title: Download file using curL
 description: "Command to download file using curl."
 tags:
   [
