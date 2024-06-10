@@ -18,6 +18,7 @@ $mobileBreakpoint: 486px;
       object-fit: cover;
       height: 100%;
       width: 100%;
+      filter: blur(0.3) brightness(0.8);
     }
     position: relative;
     .head {

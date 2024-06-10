@@ -1,27 +1,31 @@
 .snippetCard {
   display: flex;
   margin: 0;
-  margin-bottom: 18px;
+  padding: 8px;
+  margin-bottom: 10px;
   font-size: 0.9rem;
   align-items: center;
-  border-bottom: 1px solid rgba(211, 211, 211, 0.203);
+  border-top: 0.2px solid rgba(245, 245, 245, 0.02);
+  border-bottom: 1px solid rgba(211, 211, 211, 0.16);
   padding-bottom: 5px;
   cursor: pointer;
   color: lightgray;
-  transition: 500ms ease;
-  border-radius: 4px;
+  border-radius: 8px;
 
   &:hover {
-    border-bottom: 1px solid rgba(245, 245, 245, 0.544);
+    border-top: 0.2px solid rgba(245, 245, 245, 0.2);
+    border-bottom: 1px solid rgba(245, 245, 245, 0.34);
     color: white;
+    background-color: rgba(0, 0, 0, 0.22);
   }
 
   img {
     height: 45px;
     width: 45px;
     object-fit: cover;
-    outline: 1px solid gray;
-    margin-right: 0.4em;
+    outline: 5px solid rgba(128, 128, 128, 0.214);
+    margin-right: 0.8em;
+    border-radius: 8px;
   }
 
   .desc {
