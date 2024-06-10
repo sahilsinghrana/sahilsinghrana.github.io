@@ -56,14 +56,14 @@ Before using the `curl` command, ensure curL is installed in your system:
 To download a file using `curl`, you can use the following command:
 
 ```bash
-curl -o ./outputDir/filename.ext https://url-to-file.com
+curl -o ./outputDir/filename.ext url-to-resource
 ```
 
 #### Understanding commands
 
 Let's break down the keywords of the command:
 
-- **_curl_**: The invokes the curl tool.
+- **_curl_**: Invokes the curl tool.
 - **_-o ./outputDir/filename.ext_**: The -o flag specifies the output file path and name of the file. Replace ./outputDir/filename.ext with the desired directory and filename where you want to save the downloaded file.
 
-- **https://url-to-file.com**: This is the URL of the file you want to download. Replace https://url-to-file.com with the actual URL of the file.
+- **_url-to-resource_**: URL of the file you want to download. Replace url-to-resource with the actual URL of the file.

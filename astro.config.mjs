@@ -3,6 +3,7 @@ import sitemap from "@astrojs/sitemap";
 import compressor from "astro-compressor";
 import playformInline from "@playform/inline";
 import playformCompress from "@playform/compress";
+import rehypeExternalLinks from 'rehype-external-links';
 
 import partytown from "@astrojs/partytown";
 
@@ -28,5 +29,13 @@ export default defineConfig({
     shikiConfig: {
       theme: "github-dark",
     },
+    rehypePlugins: [
+      [
+        rehypeExternalLinks,
+        {
+          content: { type: 'text', value: ' 🔗' }
+        }
+      ],
+    ]
   },
 });

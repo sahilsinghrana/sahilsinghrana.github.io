@@ -27,4 +27,17 @@ article.blogContent {
   p {
     font-size: 0.89rem;
   }
+
+  ol {
+    font-size : 0.88rem;
+  }
+
+  a {
+    font-size : 0.83rem;
+    color : lightgray;
+    font-style : italic;
+    &:hover {
+      color : white;
+    }
+  }
 }
