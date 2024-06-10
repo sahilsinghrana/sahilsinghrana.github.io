@@ -2,6 +2,7 @@
 import { Image } from "astro:assets";
 
 import "./postcard.scss";
+// import { formatDate } from "@utils/date";
 
 const { title, description, image, slug } = Astro.props;
 ---
@@ -11,11 +12,12 @@ const { title, description, image, slug } = Astro.props;
   <div class="content">
     <h2 class="title" id={slug}>{title}</h2>
     <p class="description">{description}</p>
-    <!-- <div class="meta">
-      <>
-        <span>{pubDate}</span>
-        <span>{author}</span>
-      </>
-    </div> -->
+    <!-- {
+      pubDate && (
+        <div class="meta">
+          <span>{formatDate(pubDate)}</span>
+        </div>
+      )
+    } -->
   </div>
 </a>

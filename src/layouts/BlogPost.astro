@@ -4,11 +4,12 @@ import { Breadcrumbs } from "astro-breadcrumbs";
 import Layout from "./index.astro";
 import "./blogPost.scss";
 import { Image } from "astro:assets";
+import { formatDate } from "@utils/date";
 
 const { entry } = Astro.props;
 
 const { data } = entry;
-const { title, image, description, tags } = data;
+const { title, image, description, tags, pubDate } = data;
 ---
 
 <Layout
@@ -34,4 +35,14 @@ const { title, image, description, tags } = data;
     </div>
   </div>
   <slot />
+  {
+    pubDate && (
+      <div class="blogPostMeta">
+        <span class="pubDate">
+          Published On:{" "}
+          <time datetime={formatDate(pubDate)}>{formatDate(pubDate)}</time>
+        </span>
+      </div>
+    )
+  }
 </Layout>
