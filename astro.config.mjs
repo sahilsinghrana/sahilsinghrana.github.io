@@ -19,7 +19,7 @@ export default defineConfig({
     partytown(),
     sitemap(),
     playformInline(),
-    playformCompress(),
+    playformCompress({ brotli : false }),
     compressor(),
   ],
   prefetch: {
