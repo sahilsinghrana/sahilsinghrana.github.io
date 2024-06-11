@@ -1,34 +1,46 @@
+---
+import otherActivitiesPlaceholder from "@images/otherActivitiesPlaceholder.webp";
+import { Image } from "astro:assets";
+---
+
 <section id="otherActivities" class="otherActivities">
   <h2 id="otherActivities">Other Activities</h2>
-  <ul>
-    <li>
-      <h4 id="BFA">
-        <a href="https://barodafootballacademy.co.in/" target="_blank"
-          >Baroda Football Academy</a
-        >
-      </h4>
-      <p>
-        Played for and volunteered as a Football Coach, Social Media Head,
-        Graphic Designer and Website Designer at Baroda Football Academy
-      </p>
-    </li>
-    <li>
-      <h4 id="Football">Football</h4>
-      <p>
-        I had the opportunity to captain both my college and school football
-        teams, an experience I deeply cherished. Additionally, I had the
-        privilege of representing Gujarat Technological University (GTU) at the
-        All India University Football Tournament on multiple occasions.
-      </p>
-    </li>
-    <li>
-      <h4 id="CoCurricular">Co-Curricular</h4>
-      <p>
-        During my school days, I had the chance to take part in a variety of
-        athletic events like the 100m, 400m, high jump, and long jump. Alongside
-        sports, I also enjoyed engaging in activities such as debates, quiz
-        competitions, and Olympiads.
-      </p>
-    </li>
-  </ul>
+  <div class="otherActivitiesContentWrapper">
+    <Image
+      class="aboutPageSectionImage"
+      src={otherActivitiesPlaceholder}
+      alt="companyHero"
+    />
+    <ul>
+      <li>
+        <h4 id="BFA">
+          <a href="https://barodafootballacademy.co.in/" target="_blank"
+            >Baroda Football Academy</a
+          >
+        </h4>
+        <p>
+          Played for and volunteered as a Football Coach, Social Media Head,
+          Graphic Designer and Website Designer at Baroda Football Academy
+        </p>
+      </li>
+      <li>
+        <h4 id="Football">Football</h4>
+        <p>
+          I had the opportunity to captain both my college and school football
+          teams, an experience I deeply cherished. Additionally, I had the
+          privilege of representing Gujarat Technological University (GTU) at
+          the All India University Football Tournament on multiple occasions.
+        </p>
+      </li>
+      <li>
+        <h4 id="CoCurricular">Co-Curricular</h4>
+        <p>
+          During my school days, I had the chance to take part in a variety of
+          athletic events like the 100m, 400m, high jump, and long jump.
+          Alongside sports, I also enjoyed engaging in activities such as
+          debates, quiz competitions, and Olympiads.
+        </p>
+      </li>
+    </ul>
+  </div>
 </section>

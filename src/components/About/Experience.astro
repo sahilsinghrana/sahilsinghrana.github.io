@@ -1,5 +1,5 @@
 ---
-import WebDev from "@images/web-dev.webp";
+import WebDev from "@images/web-dev3.webp";
 import { Image } from "astro:assets";
 ---
 
@@ -7,7 +7,11 @@ import { Image } from "astro:assets";
   <h2>Professional Experience</h2>
 
   <div class="experienceInfoWrapper">
-    <Image class="companyLogo" src={WebDev} alt="companyHero" />
+    <Image
+      class="companyLogo aboutPageSectionImage"
+      src={WebDev}
+      alt="companyHero"
+    />
     <div class="experienceDetailsWrapper">
       <div class="companyInfo">
         <h3 id="WebmyneSystems">
@@ -46,13 +50,17 @@ import { Image } from "astro:assets";
             <section id="Panamax" class="subExperienceWrapper">
               <div class="companyInfo">
                 <h3 id="Panamax">
-                  <a href="https://www.panamaxil.com/">Panamax. Inc.</a>
+                  <a href="https://www.panamaxil.com/" target="_blank"
+                    >Panamax. Inc.</a
+                  >
                 </h3>
                 <span>Consultant; March 2022-Present</span>
               </div>
               <div class="projectInfo">
                 <h4 id="MobifinElite">
-                  <a href="https://www.mobifin.com/">Mobifin Elite</a>
+                  <a href="https://www.mobifin.com/" target="_blank"
+                    >Mobifin Elite</a
+                  >
                 </h4>
                 <p>
                   Worked on the web application, including both the CMS backend

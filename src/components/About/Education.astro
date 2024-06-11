@@ -1,27 +1,45 @@
+---
+import educationPlaceholder from "@images/educationPlaceholder.webp";
+import { Image } from "astro:assets";
+---
+
 <section id="education" class="education">
   <h2>Education</h2>
-  <ul>
-    <li>
-      <h4 id="Sigma">
-        <a href="https://sigmauniversity.ac.in/" target="_blank"
-          >Sigma Institute of Engineering (Gujarat Technological University)</a
-        >
-      </h4>
-      <p>Information Technology - Bachelor Of Engineering</p>
-    </li>
-    <li>
-      <h4 id="Shreyas">
-        <a href="http://shreyas.edu.in/">Shreyas Vidhyalay</a>
-      </h4>
-      <p>Higher Secondary</p>
-    </li>
-    <li>
-      <h4 id="BHS">
-        <a href="https://barodahighschool.com/" target="_blank"
-          >Baroda High School</a
-        >
-      </h4>
-      <p>Secondary Education</p>
-    </li>
-  </ul>
+  <div class="otherActivitiesContentWrapper">
+    <Image
+      class="aboutPageSectionImage"
+      src={educationPlaceholder}
+      alt="companyHero"
+    />
+    <ul>
+      <li>
+        <h4 id="Sigma">
+          <a href="https://sigmauniversity.ac.in/" target="_blank"
+            >Sigma Institute of Engineering</a
+          >
+        </h4>
+        <p>
+          <b
+            ><a href="https://www.gtu.ac.in/" target="_blank"
+              >(Gujarat Technological University)</a
+            ></b>
+        </p>
+        <p>Information Technology - Bachelor Of Engineering</p>
+      </li>
+      <li>
+        <h4 id="Shreyas">
+          <a href="http://shreyas.edu.in/" target="_blank">Shreyas Vidhyalay</a>
+        </h4>
+        <p>Higher Secondary</p>
+      </li>
+      <li>
+        <h4 id="BHS">
+          <a href="https://barodahighschool.com/" target="_blank"
+            >Baroda High School</a
+          >
+        </h4>
+        <p>Secondary Education</p>
+      </li>
+    </ul>
+  </div>
 </section>

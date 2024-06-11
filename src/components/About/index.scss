@@ -2,7 +2,7 @@ $mobileBreakpoint: 486px;
 
 .about {
   margin-top: 3.4em;
-  margin-bottom: 3.4em;
+  margin-bottom: 3em;
 }
 
 .aboutPage {
@@ -10,7 +10,7 @@ $mobileBreakpoint: 486px;
   display: flex;
   flex-direction: column;
   align-items: start;
-  margin-bottom: 3.4em;
+  margin-bottom: 2em;
 
   a::after {
     content: " 🔗";
@@ -95,24 +95,6 @@ section.experience {
     @media screen and (max-width: $mobileBreakpoint) {
       grid-template-columns: 1fr;
     }
-    img.companyLogo {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      filter : brightness(0.9);
-      opacity: 0.8;
-      margin-right : 10px;
-      &:hover {
-        opacity: 1;
-      }
-
-      @media screen and (max-width: $mobileBreakpoint) {
-        width: 100%;
-        height: 130px;
-        margin-right : 0;
-    }
-    }
-
     .experienceDetailsWrapper {
       .companyInfo {
         display: flex;
@@ -161,6 +143,7 @@ section.experience {
         .companyInfo {
           text-align: left;
           h3 {
+            text-align: left;
             font-size: 0.92rem;
             margin: 2px 0;
             margin-top: 6px;
@@ -183,22 +166,54 @@ section.otherActivities {
   h2 {
     margin: 0;
   }
-  ul {
-    list-style: none;
-    li {
-      margin-bottom: 10px;
-      h4 {
-        margin: 0;
-        font-size: 0.85rem;
-      }
-      p {
-        margin: 0;
-        margin-top: 2px;
-        padding-left: 2px;
-        font-size: 0.7rem;
-        color: lightgray;
-        text-align: justify;
+  .otherActivitiesContentWrapper {
+    display: flex;
+    margin-top: 10px;
+    @media screen and (max-width: $mobileBreakpoint) {
+      flex-direction: column;
+      margin-top: 10px;
+      img {
+        margin : 10px 0;
       }
     }
+
+    ul {
+      list-style: none;
+      padding-inline-start: 0;
+      margin-top: 0;
+      li {
+        margin-bottom: 10px;
+        h4 {
+          margin: 0;
+          font-size: 0.85rem;
+        }
+        p {
+          margin: 0;
+          margin-top: 2px;
+          padding-left: 2px;
+          font-size: 0.7rem;
+          color: lightgray;
+          text-align: justify;
+        }
+      }
+    }
+  }
+}
+
+.aboutPageSectionImage {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  filter: brightness(0.9);
+  opacity: 0.8;
+  margin-right: 10px;
+  &:hover {
+    opacity: 1;
+  }
+
+  @media screen and (max-width: $mobileBreakpoint) {
+    width: 100%;
+    height: 130px;
+    margin-right: 0;
   }
 }
