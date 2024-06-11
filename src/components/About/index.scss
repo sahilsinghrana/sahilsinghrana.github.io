@@ -1,7 +1,7 @@
 $mobileBreakpoint: 486px;
 
 .about {
-  margin-top: 3.4em;
+  margin-top: 3em;
   margin-bottom: 3em;
 }
 
@@ -27,6 +27,8 @@ $mobileBreakpoint: 486px;
 
   h2 {
     text-align: left;
+    font-size: 1.06rem;
+    margin : 10px 0;
   }
 
   .pillSection {
@@ -130,6 +132,7 @@ section.experience {
         h4 {
           font-size: 0.8rem;
           margin: 5px 0;
+          color: rgba(218, 218, 218, 0.904);
         }
         p {
           margin: 0;
@@ -164,18 +167,14 @@ section.experience {
 section.education,
 section.otherActivities {
   width: 100%;
-  h2 {
-    margin: 0;
-  }
+ 
   .contentWrapper {
     display: flex;
-    margin-top: 10px;
     width: 100%;
     @media screen and (max-width: $mobileBreakpoint) {
       flex-direction: column;
-      margin-top: 10px;
       img {
-        margin : 10px 0;
+        margin-bottom: 10px;
       }
     }
 
