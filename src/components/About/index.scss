@@ -15,7 +15,7 @@ $mobileBreakpoint: 486px;
   a::after {
     content: " 🔗";
     font-size: 0.6rem;
-    opacity: 0.4;
+    opacity: 0.6;
     &:hover {
       opacity: 1;
     }
@@ -99,10 +99,18 @@ section.experience {
       width: 50px;
       height: 50px;
       object-fit: cover;
+      filter : brightness(0.9);
+      opacity: 0.8;
+      margin-right : 10px;
+      &:hover {
+        opacity: 1;
+      }
+
       @media screen and (max-width: $mobileBreakpoint) {
         width: 100%;
-        height: 100px;
-      }
+        height: 130px;
+        margin-right : 0;
+    }
     }
 
     .experienceDetailsWrapper {
@@ -119,8 +127,11 @@ section.experience {
           padding: 0;
           margin: 0;
           margin-bottom: 5px;
-          margin-top: 5px;
           font-size: 0.9rem;
+          @media screen and (max-width: $mobileBreakpoint) {
+            margin-top: 0.5em;
+            text-align: center;
+          }
         }
         span {
           font-size: 0.7rem;
