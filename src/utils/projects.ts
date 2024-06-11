@@ -5,6 +5,7 @@ import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
 import nextChat from "@images/projects/nextchat.webp";
 import ranexPlayer from "@images/projects/ranexPlayer.webp";
+import iwl from "@images/projects/iwl.webp";
 
 const projects = [
   {
@@ -83,6 +84,18 @@ const projects = [
       {
         Icon: ExternalLink,
         link: "https://sahilsinghrana.github.io/ranexPlayer/",
+      },
+    ],
+  },
+  {
+    title: "IWL 2021 Sponsorship Brochure",
+    image: iwl,
+    content:
+      "Designed AIFF Indian Women's League 2021 Sponsorship Brochure for Baroda Football Academy using Adobe InDesign.",
+    links: [
+      {
+        Icon: ExternalLink,
+        link: "https://sahilsinghrana.github.io/IWL-sponsorship-brochure/",
       },
     ],
   },

@@ -1,0 +1,15 @@
+---
+import { Picture } from "astro:assets";
+
+const { className = "", src, alt, height, width, widths } = Astro.props;
+---
+
+<Picture
+  formats={["avif", "webp"]}
+  widths={widths || [80, 450]}
+  class={className}
+  src={src}
+  alt={alt}
+  height={height}
+  width={width}
+/>

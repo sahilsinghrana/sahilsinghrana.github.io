@@ -9,7 +9,13 @@ const displayImage = image || RubiksCube;
 ---
 
 <div class="projectCard">
-  <Image class="projectCardImg" src={displayImage} alt={title} />
+  <Image
+    class="projectCardImg"
+    src={displayImage}
+    alt={title}
+    width={410}
+    height={150}
+  />
   <div class="content">
     <h2>{title}</h2>
     <p>{content}</p>

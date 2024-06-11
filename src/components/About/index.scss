@@ -28,7 +28,7 @@ $mobileBreakpoint: 486px;
   h2 {
     text-align: left;
     font-size: 1.06rem;
-    margin : 10px 0;
+    margin: 10px 0;
   }
 
   .pillSection {
@@ -132,7 +132,7 @@ section.experience {
         h4 {
           font-size: 0.8rem;
           margin: 5px 0;
-          color: rgba(218, 218, 218, 0.904);
+          color: #e6e6e6;
         }
         p {
           margin: 0;
@@ -167,7 +167,7 @@ section.experience {
 section.education,
 section.otherActivities {
   width: 100%;
- 
+
   .contentWrapper {
     display: flex;
     width: 100%;
@@ -198,9 +198,11 @@ section.otherActivities {
 
           b {
             a {
-              color : lightgray;
+              opacity: 0.9;
+              color: rgba(211, 211, 211, 0.757);
               &:hover {
-                color: rgb(110, 143, 196);
+                opacity: 1;
+                color: rgba(135, 146, 164, 0.755);
               }
             }
           }
@@ -216,14 +218,14 @@ section.otherActivities {
   object-fit: cover;
   filter: brightness(0.9);
   opacity: 0.8;
-  margin-right: 10px;
+  margin-right: 0;
   &:hover {
     opacity: 1;
   }
 
   @media screen and (max-width: $mobileBreakpoint) {
     width: 100%;
-    height: 130px;
-    margin-right: 0;
+    height: 140px;
+    margin-right: 10px;
   }
 }

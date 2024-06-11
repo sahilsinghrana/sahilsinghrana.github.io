@@ -1,13 +1,13 @@
 ---
 import educationPlaceholder from "@images/educationPlaceholder.webp";
-import { Image } from "astro:assets";
+import SubSectionImage from "./SubSectionImage.astro";
 ---
 
 <section id="education" class="education">
   <h2>Education</h2>
   <div class="contentWrapper">
-    <Image
-      class="aboutPageSectionImage"
+    <SubSectionImage
+      className="aboutPageSectionImage"
       src={educationPlaceholder}
       alt="companyHero"
     />
@@ -22,7 +22,8 @@ import { Image } from "astro:assets";
           <b
             ><a href="https://www.gtu.ac.in/" target="_blank"
               >(Gujarat Technological University)</a
-            ></b>
+            ></b
+          >
         </p>
         <p>Information Technology - Bachelor Of Engineering</p>
       </li>

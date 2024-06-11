@@ -1,13 +1,13 @@
 ---
 import Command from "@components/General/CodeBlock/Command/index.astro";
 import { links } from "@utils/constants";
-import { Image } from "astro:assets";
 import { Linkedin } from "lucide-astro";
+import SubSectionImage from "./SubSectionImage.astro";
 ---
 
 <section id="about" class="heading">
-  <Image
-    class="profileImage"
+  <SubSectionImage
+    className="profileImage"
     src={links.profilePic}
     alt="Sahil Rana"
     height={150}

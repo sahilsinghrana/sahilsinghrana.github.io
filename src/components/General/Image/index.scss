@@ -16,7 +16,7 @@
   object-fit: cover;
 
   // filter: grayscale(0.5);
-  filter: grayscale(0.4) blur(0.2px) brightness(0.7);
+  filter: grayscale(0.4) blur(0.2px) brightness(0.8);
 } /* opacity: 0.4; */
 
 .titleWrapper {
@@ -30,7 +30,7 @@
   flex-direction: column;
   justify-content: center;
 
-  background-color: rgba(23, 28, 37, 0.65);
+  background-color: rgba(23, 28, 37, 0.45);
   text-align: center;
 
   q {

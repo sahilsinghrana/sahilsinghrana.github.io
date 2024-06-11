@@ -1,15 +1,14 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import compressor from "astro-compressor";
 import playformInline from "@playform/inline";
 import playformCompress from "@playform/compress";
-import rehypeExternalLinks from 'rehype-external-links';
-
+import rehypeExternalLinks from "rehype-external-links";
 import partytown from "@astrojs/partytown";
+import purgecss from "astro-purgecss";
 
 // https://astro.build/config
 export default defineConfig({
-  compressHTML: false,
+  compressHTML: true,
   trailingSlash: "ignore",
   site: "https://sahilsinghrana.github.io",
   build: {
@@ -18,9 +17,11 @@ export default defineConfig({
   integrations: [
     partytown(),
     sitemap(),
+    purgecss(),
     playformInline(),
-    playformCompress({ brotli : false }),
-    compressor(),
+    playformCompress({
+      brotli: false,
+    }),
   ],
   prefetch: {
     defaultStrategy: "viewport",
@@ -33,9 +34,12 @@ export default defineConfig({
       [
         rehypeExternalLinks,
         {
-          content: { type: 'text', value: ' 🔗' }
-        }
+          content: {
+            type: "text",
+            value: " 🔗",
+          },
+        },
       ],
-    ]
+    ],
   },
 });
