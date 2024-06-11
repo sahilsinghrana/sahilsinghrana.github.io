@@ -163,12 +163,14 @@ section.experience {
 
 section.education,
 section.otherActivities {
+  width: 100%;
   h2 {
     margin: 0;
   }
-  .otherActivitiesContentWrapper {
+  .contentWrapper {
     display: flex;
     margin-top: 10px;
+    width: 100%;
     @media screen and (max-width: $mobileBreakpoint) {
       flex-direction: column;
       margin-top: 10px;
@@ -179,7 +181,7 @@ section.otherActivities {
 
     ul {
       list-style: none;
-      padding-inline-start: 0;
+      padding-inline-start: 5px;
       margin-top: 0;
       li {
         margin-bottom: 10px;
@@ -194,6 +196,15 @@ section.otherActivities {
           font-size: 0.7rem;
           color: lightgray;
           text-align: justify;
+
+          b {
+            a {
+              color : lightgray;
+              &:hover {
+                color: rgb(110, 143, 196);
+              }
+            }
+          }
         }
       }
     }
