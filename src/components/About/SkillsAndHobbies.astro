@@ -2,6 +2,7 @@
 import PillList from "@components/General/Pills/PillList.astro";
 
 const skills = [
+  ["Javascript", "https://www.java.com/en/"],
   ["React.js", "https://react.dev/"],
   ["Node.js", "https://nodejs.org/en"],
   ["MongoDB", "https://www.mongodb.com/"],
@@ -13,6 +14,10 @@ const hobbies = [["Music"], ["Travelling"], ["Technology"], ["Football"]];
 ---
 
 <>
-  <PillList title="Skills" className="Skills" pills={skills} />
-  <PillList title="Hobbies" className="Hobbies" pills={hobbies} />
+  <PillList title="Tech I Understand" className="Skills" pills={skills} />
+  <PillList
+    title="Materials I am attached to"
+    className="Hobbies"
+    pills={hobbies}
+  />
 </>

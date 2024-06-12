@@ -84,6 +84,20 @@ section.intro {
   font-size: small;
   color: rgba(255, 255, 255, 0.74);
   text-align: justify;
+  p {
+    margin: 5px 0;
+  }
+  a {
+    font-size: 0.7rem;
+    opacity: 0.9;
+    font-style: italic;
+    text-decoration: underline;
+    text-decoration-color: #e6e6e6d2;
+    &:hover {
+      color: white;
+      opacity: 1;
+    }
+  }
 }
 
 section.experience {

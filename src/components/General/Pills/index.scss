@@ -1,6 +1,8 @@
 .pillSection {
+  margin-top: 20px;
   h2 {
-    font-size: 1rem;
+    font-size: 0.8rem;
+    color: rgb(234, 234, 234);
   }
 
   ul {
@@ -17,9 +19,9 @@
     li {
       list-style: none;
       background-color: rgba(124, 124, 124, 0.726);
-      padding: 7px 15px;
+      padding: 6px 13px;
       border-radius: 25px;
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       margin: 0;
 
       a {

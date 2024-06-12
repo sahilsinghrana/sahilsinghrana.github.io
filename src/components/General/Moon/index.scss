@@ -4,11 +4,11 @@
   height: 20em;
   top: 0;
   left: 0;
-  opacity: 0.3;
+  opacity: 0.25;
   z-index: -1;
   offset-path: ellipse(64vw 25vh at center);
   animation: spin 25s infinite linear;
-  will-change:  offset-distance;
+  will-change: offset-distance;
 }
 
 @keyframes spin {
