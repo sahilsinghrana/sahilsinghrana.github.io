@@ -1,14 +1,14 @@
 .blogPostCard {
   width: 280px;
-  height: 190px;
+  height: 195px;
   overflow: hidden;
   outline: 1px solid rgba(128, 128, 128, 0.724);
   border-radius: 20px;
-  transition: 0.6s ease;
+  transition: 0.4s ease;
 
   &:hover {
     outline: 2px solid rgba(255, 255, 255, 0.671);
-    .title {
+    .title, .description {
       color: white;
     }
   }
@@ -41,11 +41,10 @@
   }
 
   .description {
-    font-size: 0.7rem;
-    color: rgba(211, 211, 211, 0.757);
-    font-style: italic;
+    font-size: 0.68rem;
+    color: rgba(211, 211, 211, 0.76);
     margin: 0;
-    margin-top: 8px;
+    margin-top: 4px;
     text-wrap: wrap;
     width: 100%;
   }
