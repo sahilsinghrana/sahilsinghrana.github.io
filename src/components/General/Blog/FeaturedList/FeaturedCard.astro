@@ -1,0 +1,22 @@
+---
+import { Image } from "astro:assets";
+
+import "./index.scss";
+
+const { title, description, image, slug } = Astro.props;
+---
+
+<a href={slug} class="featuredPostCard">
+  <Image src={image.url} alt={image?.alt || "alt"} width={70} height={70} />
+  <div class="content">
+    <h3 class="title" id={slug}>{title}</h3>
+    <p class="description">{description}</p>
+    <!-- {
+      pubDate && (
+        <div class="meta">
+          <span>{formatDate(pubDate)}</span>
+        </div>
+      )
+    } -->
+  </div>
+</a>

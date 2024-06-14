@@ -5,8 +5,9 @@ image:
   alt: "linked-list-with-generators"
 pubDate: 2024-06-06
 title: Linked List with Javascript Generators and Iterators
-description: "Learned how to use Javascript generators in Linked Lists."
+description: "Linked list combined with Javascript Generators and Iterators"
 slug: linked-list-with-generators
+featured: true
 tags:
   [
     "howTo",

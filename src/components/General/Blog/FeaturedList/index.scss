@@ -1,0 +1,101 @@
+.featuredPostCard {
+  display: flex;
+  align-items: center;
+  img {
+    min-height: 40px;
+    max-height: 70px;
+    height: 100%;
+    width: 73px;
+    object-fit: cover;
+    border-radius: 4px;
+
+    @media screen and (min-width: 486px) {
+      max-height: 50px;
+    }
+  }
+
+  .content {
+    color: lightgray;
+    margin-left: 10px;
+    h3 {
+      font-size: 0.76rem;
+      margin: 0;
+      opacity: 0.95;
+      margin-bottom: 0.1em;
+    }
+
+    p {
+      font-size: 0.72rem;
+      opacity: 0.9;
+      margin: 0;
+    }
+
+    &:hover {
+      opacity: 0.98;
+      color: whitesmoke;
+    }
+  }
+}
+
+.featuredList {
+  gap: 2rem;
+
+  ul {
+    list-style: none;
+    padding-inline-start: 0;
+    li {
+      margin-bottom: 15px;
+    }
+  }
+
+  .headings {
+    background-color: rgba(128, 128, 128, 0.05);
+    border-radius: 25px;
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    align-items: center;
+    h2 {
+      text-align: left;
+      color: #eaeaea;
+      font-size: 0.85rem;
+      margin: 0;
+    }
+    a {
+      text-align: right;
+      color: rgb(155, 165, 174);
+      font-size: 0.68rem;
+      margin-top: 0;
+      padding: 0;
+      font-weight: 600;
+      &:hover {
+        color: #eaeaea;
+      }
+    }
+  }
+
+  .blogLinks {
+    display: flex;
+    gap: 1rem;
+    justify-self: center;
+    justify-content: center;
+
+    flex-wrap: wrap;
+
+    .linkBtn {
+      transition: outline 100ms linear;
+      padding: 5px 7px;
+      font-size: 0.65rem;
+      background-color: rgba(86, 86, 86, 0.679);
+      color: whitesmoke;
+      border-radius: 18px;
+      outline: 2px solid rgba(255, 255, 255, 0.18);
+      border: 3px solid rgba(0, 0, 0, 0);
+
+      &:hover {
+        outline: 2px solid rgba(255, 255, 255, 0.9);
+      }
+    }
+  }
+}

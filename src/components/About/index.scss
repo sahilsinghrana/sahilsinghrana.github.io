@@ -2,7 +2,7 @@ $mobileBreakpoint: 486px;
 
 .about {
   margin-top: 3em;
-  margin-bottom: 3em;
+  margin-bottom: 1em;
 }
 
 .aboutPage {
@@ -92,7 +92,6 @@ section.intro {
     opacity: 0.9;
     font-style: italic;
     text-decoration: underline;
-    text-decoration-color: #e6e6e6d2;
     &:hover {
       color: white;
       opacity: 1;

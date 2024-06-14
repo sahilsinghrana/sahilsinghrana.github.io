@@ -13,6 +13,7 @@ const blogCollection = defineCollection({
         alt: z.string(),
       }),
       tags: z.array(z.string()),
+      featured: z.optional(z.boolean()),
     }),
 });
 
@@ -27,6 +28,7 @@ const snippetsCollection = defineCollection({
         alt: z.string(),
       }),
       tags: z.array(z.string()),
+      featured: z.optional(z.boolean()),
     }),
 });
 

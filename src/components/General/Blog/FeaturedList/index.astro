@@ -1,0 +1,55 @@
+---
+import { getCollection } from "astro:content";
+
+import FeaturedCard from "./FeaturedCard.astro";
+
+const blogEntries = await getCollection("blog", ({ data }) => !!data.featured);
+const snippetsEntries = await getCollection(
+  "snippets",
+  ({ data }) => !!data.featured,
+);
+---
+
+<div class="featuredList">
+  <div class="headings">
+    <h2>Sometimes I write too!</h2>
+    <a href="/blog">See More!</a>
+  </div>
+  <ul>
+    {
+      blogEntries.map(async (post) => {
+        const { title, description, image } = post.data;
+        return (
+          <li>
+            <FeaturedCard
+              title={title}
+              description={description}
+              image={image}
+              slug={"/blog/posts/" + post.slug}
+            />
+          </li>
+        );
+      })
+    }
+    {
+      snippetsEntries.map(async (post) => {
+        const { title, description, image } = post.data;
+        return (
+          <li>
+            <FeaturedCard
+              title={title}
+              description={description}
+              image={image}
+              slug={"/blog/snippets/" + post.slug}
+            />
+          </li>
+        );
+      })
+    }
+  </ul>
+
+  <div class="blogLinks">
+    <a class="linkBtn" href="/blog/posts">See more blog posts..</a>
+    <a class="linkBtn" href="/blog/snippets">Check out code snippets..</a>
+  </div>
+</div>
