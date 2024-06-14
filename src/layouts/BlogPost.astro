@@ -19,12 +19,7 @@ const { title, image, description, tags, pubDate } = data;
 >
   <div class="blogPostHeading">
     <div class="bg">
-      <Image
-        src={image.url}
-        alt={image.alt}
-        height={image.url.height || 100}
-        width={image.url.width || 300}
-      />
+      <Image src={image.url} alt={image.alt} height={300} width={800} />
       <div class="head">
         <h2><em>{title}</em></h2>
         <Breadcrumbs
