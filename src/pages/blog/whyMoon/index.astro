@@ -1,47 +1,17 @@
 ---
 import { Image } from "astro:assets";
-import Layout from "@layouts/index.astro";
-import chaseMoon from "@images/chase.gif";
+import { getCollection } from "astro:content";
 import { Breadcrumbs } from "astro-breadcrumbs";
+
+import Layout from "@layouts/index.astro";
+
+import chaseMoon from "@images/chase.gif";
 import walkingTowardsMoon from "@images/walkingTowardsMoon.webp";
 
 import "@layouts/blogPost.scss";
----
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org/",
-    "@type": "BlogPosting",
-    "mainEntityOfPage": {
-      "@type": "WebPage",
-      "@id": "https://sahilsinghrana.github.io/blog/whyMoon"
-    },
-    "headline": "Why Moon?",
-    "description": "Moon is so inspiring. Isn't it?",
-    "image": {
-      "@type": "ImageObject",
-      "url": "https://sahilsinghrana.github.io/_astro/chase.CE8UovXo_25YWBc.webp",
-      "width": "699",
-      "height": "200"
-    },
-    "author": {
-      "@type": "Person",
-      "name": "Sahil Rana"
-    },
-    "publisher": {
-      "@type": "Organization",
-      "name": "Sahil Singh Rana",
-      "logo": {
-        "@type": "ImageObject",
-        "url": "https://sahilsinghrana.github.io/_astro/logo.Bj3URTd-_ZFTgCk.webp",
-        "width": "20",
-        "height": "20"
-      }
-    },
-    "datePublished": "2024-05-29",
-    "dateModified": "2024-05-29"
-  }
-</script>
+const listEntries = await getCollection("whyMoon");
+---
 
 <Layout
   title={"Why Moon?"}
@@ -148,4 +118,19 @@ import "@layouts/blogPost.scss";
       </div>
     </div>
   </article>
+
+  <nav>
+    <ul>
+      {
+        listEntries.map(async (post) => {
+          const { date } = post.data;
+          return (
+            <li>
+              <a href={`/blog/whyMoon/${date}`}>{date}</a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </nav>
 </Layout>

@@ -33,11 +33,11 @@
     "Contact"
   ],
   "dependencies": {
-    "@astrojs/partytown": "^2.1.0",
-    "@astrojs/sitemap": "^3.1.5",
+    "@astrojs/partytown": "^2.1.1",
+    "@astrojs/sitemap": "^3.1.6",
     "@playform/compress": "^0.0.10",
     "@playform/inline": "^0.0.6",
-    "astro": "^4.10.1",
+    "astro": "^4.11.1",
     "astro-breadcrumbs": "^2.3.0",
     "astro-capo": "^0.0.1",
     "astro-purgecss": "^4.1.1",

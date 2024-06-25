@@ -12,6 +12,41 @@ const { data } = entry;
 const { title, image, description, tags, pubDate } = data;
 ---
 
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org/",
+    "@type": "BlogPosting",
+    "mainEntityOfPage": {
+      "@type": "WebPage",
+      "@id": "https://sahilsinghrana.github.io/blog/whyMoon"
+    },
+    "headline": "Why Moon?",
+    "description": "Moon is so inspiring. Isn't it?",
+    "image": {
+      "@type": "ImageObject",
+      "url": "https://sahilsinghrana.github.io/_astro/chase.CE8UovXo_25YWBc.webp",
+      "width": "699",
+      "height": "200"
+    },
+    "author": {
+      "@type": "Person",
+      "name": "Sahil Rana"
+    },
+    "publisher": {
+      "@type": "Organization",
+      "name": "Sahil Singh Rana",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://sahilsinghrana.github.io/_astro/logo.Bj3URTd-_ZFTgCk.webp",
+        "width": "20",
+        "height": "20"
+      }
+    },
+    "datePublished": "2024-05-29",
+    "dateModified": "2024-05-29"
+  }
+</script>
+
 <Layout
   title={title + " | Sahil Rana"}
   description={description}
