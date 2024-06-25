@@ -1,12 +1,15 @@
 article.blogContent {
-  
   font-family: "Manrope", sans-serif;
   font-optical-sizing: auto;
   font-style: normal;
 
-  color: rgba(245, 245, 245, 0.90);
+  color: rgba(245, 245, 245, 0.9);
 
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     color: rgba(255, 255, 255, 0.94);
   }
 
@@ -30,17 +33,17 @@ article.blogContent {
   }
 
   ol {
-    font-size : 0.88rem;
+    font-size: 0.88rem;
   }
 
   a {
-    font-size : 0.83rem;
-    color : lightgray;
-    font-style : italic;
+    font-size: 0.83rem;
+    color: lightgray;
+    font-style: italic;
     word-break: break-all;
 
     &:hover {
-      color : white;
+      color: white;
     }
   }
 }

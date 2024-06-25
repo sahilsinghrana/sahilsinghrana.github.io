@@ -1,0 +1,64 @@
+---
+import { Image } from "astro:assets";
+import Layout from "@layouts/index.astro";
+import { Breadcrumbs } from "astro-breadcrumbs";
+
+import "@layouts/blogPost.scss";
+import { getCollection } from "astro:content";
+
+export async function getStaticPaths() {
+  const snippetEntries = await getCollection("whyMoon");
+  return snippetEntries.map((entry) => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+const { date, title, image, footnote, description } = entry.data;
+---
+
+<Layout
+  title={title}
+  description={description}
+  keywords={["Moon", "Why", "Why Moon", "Sahil", "Rana", date]}
+>
+  <div class="blogPostHeading">
+    <div class="bg">
+      <Image src={image.url} alt={image.alt} />
+      <div class="head">
+        <h2><em>{title}</em></h2>
+        <Breadcrumbs
+          linkTextFormat="capitalized"
+          mainBemClass="blog-breadcrumbs"
+        />
+      </div>
+    </div>
+  </div>
+  <div style="width: 100%; text-align: right;">
+    <time
+      style="text-align: right; color:lightgray; font-size:0.8rem"
+      datetime={date}>{date}</time
+    >
+  </div>
+  <article
+    class="blogContent moon"
+    style="width: 100%; text-align: center; margin-top : 50px; margin-bottom : 50px;"
+  >
+    <div style="margin-bottom: 30px; text-align:center;">
+      <p style="font-weight: 200; opacity : 0.7; font-size: 0.7rem;">
+        {description}
+      </p>
+    </div>
+
+    <q
+      style="text-align: center; color : lightgray; font-weight: 600;font-style: italic; font-size: 0.9rem;"
+    >
+      <Content />
+    </q>
+    <p style="color : gray; font-size: 0.8rem; padding-left : 2rem;">
+      {footnote}
+    </p>
+  </article>
+</Layout>
