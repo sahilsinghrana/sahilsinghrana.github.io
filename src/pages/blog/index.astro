@@ -57,17 +57,6 @@ const snippetsEntries = await getCollection("snippets");
         );
       })
     }
-    <PostCard
-      title={"Why Moon?"}
-      description={"Why moon is so inspiring ?"}
-      image={{
-        url: chaseMoon,
-        alt: "Alt",
-      }}
-      pubDate={new Date("17-01-2024")}
-      author={"Sahil Rana"}
-      slug={"/blog/whyMoon"}
-    />
   </div>
   <div
     style="margin-top: 2em; background: #79787850; padding : 20px; border-radius:8px;"
@@ -94,5 +83,11 @@ const snippetsEntries = await getCollection("snippets");
         );
       })
     }
+  </div>
+
+  <div
+    style="text-align:right; margin : 20px; opacity: 0.8; color : whitesmoke; font-size: 0.8rem"
+  >
+    <a href="/blog/whyMoon">Moon as Inspiration!</a>
   </div>
 </Layout>
