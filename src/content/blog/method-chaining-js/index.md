@@ -27,6 +27,8 @@ tags:
 
 Method chaining in JavaScript allows us to link multiple method calls together in a single statement, enhancing code readability and modularity. In this blog post, we'll delve into how method chaining works and why it's beneficial for building modular features.
 
+### Table of Contents
+
 - [Method Chaining in Javascript](#method-chaining-in-javascript)
   - [Why and How?](#why-and-how)
   - [Our own custom form schema validator](#our-own-custom-form-schema-validator)
