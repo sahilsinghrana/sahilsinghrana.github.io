@@ -3,18 +3,19 @@ author: "Sahil Rana"
 image:
   url: "./titleImage.webp"
   alt: "chain-methods"
-pubDate: 2024-06-15
+pubDate: 2024-06-28
 title: Method Chaining in Javascript
 description: "Chain Methods to add modularity"
 slug: chain-javascript-methods
 featured: true
 tags:
   [
-    "chain",
+    "method",
+    "chaining",
     "javascript",
-    "methods",
     "modules",
     "oops",
+    "oopj",
     "object",
     "oriented",
     "js",
@@ -27,6 +28,17 @@ tags:
 
 Method chaining in JavaScript allows us to link multiple method calls together in a single statement, enhancing code readability and modularity. In this blog post, we'll delve into how method chaining works and why it's beneficial for building modular features.
 
+### Table Of Contents
+
+- [Method Chaining in Javascript](#method-chaining-in-javascript)
+  - [Why?](#why)
+  - [How?](#how)
+  - [Create form schema validator](#our-own-custom-form-schema-validator)
+    - [FormValidator.js](#formvalidatorjs)
+    - [FormValidationSchema.js](#formvalidationschemajs)
+    - [ValidationMethods.js](#validationmethodsjs)
+  - [Usage](#usage)
+
 ## Why?
 
 Method chaining promotes modularity in code by allowing us to sequentially call methods on an object or a function's return value. This approach streamlines the process of adding or removing functionalities in a structured manner.
@@ -36,15 +48,17 @@ Method chaining promotes modularity in code by allowing us to sequentially call 
 ```javascript
 // example -- here we are chaining methods here
 const formSchema = {
-  firstName: customValidator.string().isRequired(),
+  firstName: new FormValidationSchema().string().isRequired(),
 };
 ```
 
-In the example above, customValidator.string().isRequired() demonstrates method chaining by sequentially invoking methods (string() and isRequired()) on the customValidator object. This chaining technique allows us to define validation rules in a concise and readable manner.
+In the example above, ```FormValidationSchema.string().isRequired()``` demonstrates method chaining by sequentially invoking methods (```string()``` and ```isRequired()```) on the FormValidationSchema object. This chaining technique allows us to define validation rules in a concise and readable manner.
 
 ## Our own custom form schema validator
 
-> FormValidator.js
+To understand how it works we'll create our own schema validator like zod.
+
+#### FormValidator.js
 
 ```javascript
 // FormValidator.js
@@ -180,7 +194,25 @@ export class FormValidator {
 }
 ```
 
-> FormValidationSchema.js
+1. Class Definition:
+
+   - The FormValidator class is exported to provide form validation functionality.
+
+2. Constructor:
+
+   - Initializes instance variables such as isSubmitted, errors, formObject, and validationSchema.
+   - Validates that the validations parameter is an object of FormValidationSchema.
+
+3. Methods:
+   - `resetValidation()`: Resets validation state by clearing isSubmitted, errors, and formObject.
+   - `submitted()`: Sets isSubmitted flag to true.
+   - submit(obj): Marks form as submitted, sets formObject, and triggers validation.
+   - `hasErrors()`: Checks if any errors exist; returns false if no errors, otherwise returns this.errors.
+   - `setFormObj(obj)`: Sets formObject if obj is a valid object.
+   - `observer(latestObj, callback)`: Observes changes in formObject after submission, validates, and calls callback with errors if provided.
+   - `validate()`: Main validation function that iterates over formObject keys, validates each field according to validationSchema, and populates errors accordingly.
+
+#### FormValidationSchema.js
 
 ```javascript
 // FormValidationSchema.js
@@ -270,7 +302,7 @@ export class FormValidationSchema {
 }
 ```
 
-> ValidationMethods.js
+#### ValidationMethods.js
 
 ```javascript
 // ValidationMethods.js
@@ -316,7 +348,7 @@ export class ValidationMethods {
 ## Usage
 
 ```javascript
-import { FormValidation, FormValidationSchema } from "./FormValidations";
+import { FormValidation, FormValidationSchema } from "./FormValidator";
 
 const loginValidationSchema = {
   email: new FormValidationSchema()
@@ -337,5 +369,5 @@ function onSubmit(e) {
     return;
   }
   handleLogin(loginFormData);
-};
+}
 ```
