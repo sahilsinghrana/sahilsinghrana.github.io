@@ -7,7 +7,6 @@ pubDate: 2024-06-28
 title: Method Chaining in Javascript
 description: "Chain Methods to add modularity"
 slug: chain-javascript-methods
-featured: true
 tags:
   [
     "method",
@@ -46,7 +45,7 @@ Method chaining promotes modularity in code by allowing us to sequentially call 
 ## How?
 
 ```javascript
-// example -- here we are chaining methods here
+// example -- chaining methods
 const formSchema = {
   firstName: new FormValidationSchema().string().isRequired(),
 };
@@ -71,14 +70,8 @@ export class FormValidator {
    * }
    */
   constructor(validations) {
-    // Keeps a check if a form is submitted
-    this.isSubmitted = false;
-
     // Main Error Object
     this.errors = {};
-
-    // The Object To be Validated
-    this.formObject = {};
 
     if (!isObject(validations))
       throw new Error(
@@ -86,32 +79,6 @@ export class FormValidator {
       );
 
     this.validationSchema = validations;
-  }
-
-  /**
-   * Sets isSubmitted to false & resets the validation objects.
-   */
-  resetValidation() {
-    this.isSubmitted = false;
-    this.errors = {};
-    this.formObject = {};
-  }
-
-  /**
-   * Sets isSubmitted to true
-   */
-  submitted() {
-    this.isSubmitted = true;
-  }
-
-  /**
-   * Called when the form is submitted.
-   * @param {object} obj latest form Object while Submitting the form.
-   */
-  submit(obj) {
-    this.submitted();
-    this.setFormObj(obj);
-    this.validate();
   }
 
   /**
@@ -124,41 +91,13 @@ export class FormValidator {
   }
 
   /**
-   *
-   * @param {object} obj Explictly set the new form object to the formObject
-   */
-  setFormObj(obj) {
-    if (isObject(obj)) this.formObject = obj;
-  }
-
-  /**
-   *
-   * @param {object} latestObj observes the latest changes
-   * @param {function} callback a callback function to run after new objects are updated and validated
-   */
-  observer(latestObj, callback) {
-    if (
-      this.isSubmitted &&
-      isObject(latestObj) &&
-      !isEqual(latestObj, this.formObject)
-    ) {
-      this.setFormObj(latestObj);
-      this.validate();
-
-      if (callback && typeof callback === "function") {
-        callback(this.errors);
-      }
-    }
-  }
-
-  /**
    * Main Validation Function
    */
-  validate() {
+  validate(formData) {
     /**
      * Main Loop over form object KEYS and VALUES
      */
-    Object.entries(this.formObject).forEach(([key, value]) => {
+    Object.entries(formData).forEach(([key, value]) => {
       if (
         // Checks if a key with the FormObject exists in the schema
         this.validationSchema[key] &&
@@ -200,17 +139,12 @@ export class FormValidator {
 
 2. Constructor:
 
-   - Initializes instance variables such as isSubmitted, errors, formObject, and validationSchema.
+   - Initializes instance variables such as errors and validationSchema.
    - Validates that the validations parameter is an object of FormValidationSchema.
 
 3. Methods:
-   - `resetValidation()`: Resets validation state by clearing isSubmitted, errors, and formObject.
-   - `submitted()`: Sets isSubmitted flag to true.
-   - submit(obj): Marks form as submitted, sets formObject, and triggers validation.
    - `hasErrors()`: Checks if any errors exist; returns false if no errors, otherwise returns this.errors.
-   - `setFormObj(obj)`: Sets formObject if obj is a valid object.
-   - `observer(latestObj, callback)`: Observes changes in formObject after submission, validates, and calls callback with errors if provided.
-   - `validate()`: Main validation function that iterates over formObject keys, validates each field according to validationSchema, and populates errors accordingly.
+   - `validate(formData)`: Main validation function that iterates over formData keys, validates each field according to validationSchema, and populates errors accordingly.
 
 #### FormValidationSchema.js
 
@@ -302,6 +236,22 @@ export class FormValidationSchema {
 }
 ```
 
+1. Imports and Class Definition:
+
+    - The FormValidationSchema class is defined to manage validation rules for form fields.
+
+2. Constructor:
+
+    - Initializes the FormValidationSchema class with an empty validations array in the constructor.
+
+3. Methods:
+    - ```getValidations()``` retrieves the array of validation rules (this.validations).
+    isRequired(message) Method:
+
+    - ```isRequired(message)``` defines a validation rule for required fields. It pushes an object into this.validations array with properties method, message, and type specific to "required" validation.
+
+    - Similarly other validations methods like ```object```, ```min``` and ```max``` are defined
+
 #### ValidationMethods.js
 
 ```javascript
@@ -345,6 +295,17 @@ export class ValidationMethods {
 }
 ```
 
+### BD
+
+- Defines a `ValidationMethods` class with static methods for various validation checks.
+- **`isRequired(value)`**: Checks if the `value` is not empty, undefined, or null.
+- **`validEmail(value)`**: Validates if the `value` is a valid email address.
+- **`isObject(value)`**: Checks if the `value` is an object.
+- **`min(value, minLength)`**: Validates if a string `value` meets a minimum length requirement.
+- **`max(value, maxLength)`**: Validates if a string `value` meets a maximum length requirement.
+
+Each method performs a specific validation based on its parameters and returns a boolean indicating the validation result.
+
 ## Usage
 
 ```javascript
@@ -362,7 +323,7 @@ const loginValidationSchema = {
 const loginValidation = new FormValidation(loginValidationSchema);
 
 function onSubmit(e) {
-  loginValidation.submit(loginFormData);
+  loginValidation.validate(loginFormData);
   if (loginValidation.hasErrors()) {
     // Handle error
     // Prevent submit
@@ -371,3 +332,39 @@ function onSubmit(e) {
   handleLogin(loginFormData);
 }
 ```
+
+### Breakdown
+
+#### Import Statements
+
+```javascript
+import { FormValidation, FormValidationSchema } from "./FormValidator";
+```
+- Imports `FormValidation` and `FormValidationSchema` classes from the `FormValidator.js` module.
+
+#### loginValidationSchema Definition
+
+```javascript
+const loginValidationSchema = {
+  email: new FormValidationSchema()
+    .isRequired("Email is Required")
+    .email("Please Enter Valid Email"),
+  password: new FormValidationSchema()
+    .isRequired("Password is Required")
+    .min(6),
+};
+```
+- Defines `loginValidationSchema` object:
+  - **email**: Sets up validation rules for the email field using `FormValidationSchema`:
+    - `.isRequired("Email is Required")`: Specifies that the email field must not be empty.
+    - `.email("Please Enter Valid Email")`: Ensures the input conforms to a valid email format.
+  - **password**: Configures validation rules for the password field using `FormValidationSchema`:
+    - `.isRequired("Password is Required")`: Ensures the password field must not be empty.
+    - `.min(6)`: Specifies a minimum length requirement of 6 characters for the password.
+
+#### FormValidation Instance
+
+```javascript
+const loginValidation = new FormValidation(loginValidationSchema);
+```
+- Creates an instance of `FormValidation` with `loginValidationSchema` to validate form data based on defined rules.
