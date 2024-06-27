@@ -27,22 +27,17 @@ tags:
 
 Method chaining in JavaScript allows us to link multiple method calls together in a single statement, enhancing code readability and modularity. In this blog post, we'll delve into how method chaining works and why it's beneficial for building modular features.
 
-### Table Of Contents
-
 - [Method Chaining in Javascript](#method-chaining-in-javascript)
-  - [Why?](#why)
-  - [How?](#how)
-  - [Create form schema validator](#our-own-custom-form-schema-validator)
+  - [Why and How?](#why-and-how)
+  - [Our own custom form schema validator](#our-own-custom-form-schema-validator)
     - [FormValidator.js](#formvalidatorjs)
     - [FormValidationSchema.js](#formvalidationschemajs)
-    - [ValidationMethods.js](#validationmethodsjs)
+    - [ValidationMethods](#validationmethods)
   - [Usage](#usage)
 
-## Why?
+## Why and How?
 
 Method chaining promotes modularity in code by allowing us to sequentially call methods on an object or a function's return value. This approach streamlines the process of adding or removing functionalities in a structured manner.
-
-## How?
 
 ```javascript
 // example -- chaining methods
@@ -51,7 +46,7 @@ const formSchema = {
 };
 ```
 
-In the example above, ```FormValidationSchema.string().isRequired()``` demonstrates method chaining by sequentially invoking methods (```string()``` and ```isRequired()```) on the FormValidationSchema object. This chaining technique allows us to define validation rules in a concise and readable manner.
+In the example above, `FormValidationSchema.string().isRequired()` demonstrates method chaining by sequentially invoking methods (`string()` and `isRequired()`) on the FormValidationSchema object. This chaining technique allows us to define validation rules in a concise and readable manner.
 
 ## Our own custom form schema validator
 
@@ -59,18 +54,17 @@ To understand how it works we'll create our own schema validator like zod.
 
 #### FormValidator.js
 
+Create a new file `FormValidator.js`
+
 ```javascript
 // FormValidator.js
-export class FormValidator {
+class FormValidator {
   /**
    * constructor
    * @param {object} validations An Object of keys to be validated
-   * {
-   *   first_name : new FormValidationSchema().isRequired().email(),
-   * }
    */
   constructor(validations) {
-    // Main Error Object
+    // This object will hold all the errors
     this.errors = {};
 
     if (!isObject(validations))
@@ -82,7 +76,7 @@ export class FormValidator {
   }
 
   /**
-   *
+   * Method to check if the form is having errors
    * @returns false if there are no errors else an Object of errors.
    */
   hasErrors() {
@@ -129,28 +123,30 @@ export class FormValidator {
         }
       }
     });
+
+    // Return true if form is having errors otherwise true
+    return !this.hasErrors();
   }
 }
+export default FormValidator;
 ```
 
-1. Class Definition:
+The FormValidator class is exported to provide form validation functionality.
 
-   - The FormValidator class is exported to provide form validation functionality.
+- Constructor:
 
-2. Constructor:
+  - Initializes instance variables such as errors and validationSchema.
+  - Validates that the validations parameter is an object of FormValidationSchema.
 
-   - Initializes instance variables such as errors and validationSchema.
-   - Validates that the validations parameter is an object of FormValidationSchema.
-
-3. Methods:
-   - `hasErrors()`: Checks if any errors exist; returns false if no errors, otherwise returns this.errors.
-   - `validate(formData)`: Main validation function that iterates over formData keys, validates each field according to validationSchema, and populates errors accordingly.
+- Methods:
+  - `hasErrors()`: Checks if any errors exist; returns false if no errors, otherwise returns this.errors.
+  - `validate(formData)`: Main validation function that iterates over formData keys, validates each field according to validationSchema, and populates errors accordingly.
 
 #### FormValidationSchema.js
 
 ```javascript
 // FormValidationSchema.js
-export class FormValidationSchema {
+class FormValidationSchema {
   constructor() {
     this.validations = [];
   }
@@ -234,29 +230,28 @@ export class FormValidationSchema {
     return this;
   }
 }
+
+export default FormValidationSchema;
 ```
 
-1. Imports and Class Definition:
+- The FormValidationSchema class is defined to manage validation rules for form fields.
 
-    - The FormValidationSchema class is defined to manage validation rules for form fields.
+- Constructor:
 
-2. Constructor:
+  - Initializes the FormValidationSchema class with an empty validations array in the constructor.
 
-    - Initializes the FormValidationSchema class with an empty validations array in the constructor.
-
-3. Methods:
-    - ```getValidations()``` retrieves the array of validation rules (this.validations).
+- Methods:
+  - `getValidations()` retrieves the array of validation rules (this.validations).
     isRequired(message) Method:
+  - `isRequired(message)` defines a validation rule for required fields. It pushes an object into this.validations array with properties method, message, and type specific to "required" validation.
+  - Similarly other validations methods like `object`, `min` and `max` are defined
 
-    - ```isRequired(message)``` defines a validation rule for required fields. It pushes an object into this.validations array with properties method, message, and type specific to "required" validation.
+#### ValidationMethods
 
-    - Similarly other validations methods like ```object```, ```min``` and ```max``` are defined
-
-#### ValidationMethods.js
+Add the following class Implementation inside FormValidationSchema file
 
 ```javascript
-// ValidationMethods.js
-export class ValidationMethods {
+class ValidationMethods {
   static isRequired(value) {
     if (value === "" || value === undefined || value === null) return false;
     return true;
@@ -295,21 +290,56 @@ export class ValidationMethods {
 }
 ```
 
-### BD
-
 - Defines a `ValidationMethods` class with static methods for various validation checks.
-- **`isRequired(value)`**: Checks if the `value` is not empty, undefined, or null.
-- **`validEmail(value)`**: Validates if the `value` is a valid email address.
-- **`isObject(value)`**: Checks if the `value` is an object.
-- **`min(value, minLength)`**: Validates if a string `value` meets a minimum length requirement.
-- **`max(value, maxLength)`**: Validates if a string `value` meets a maximum length requirement.
+  - **`isRequired(value)`**: Checks if the `value` is not empty, undefined, or null.
+  - **`validEmail(value)`**: Validates if the `value` is a valid email address.
+  - **`isObject(value)`**: Checks if the `value` is an object.
+  - **`min(value, minLength)`**: Validates if a string `value` meets a minimum length requirement.
+  - **`max(value, maxLength)`**: Validates if a string `value` meets a maximum length requirement.
 
 Each method performs a specific validation based on its parameters and returns a boolean indicating the validation result.
 
 ## Usage
 
+Import `FormValidation` and `FormValidationSchema` classes from the `FormValidator.js` module.
+
 ```javascript
-import { FormValidation, FormValidationSchema } from "./FormValidator";
+import FormValidator from "./FormValidator";
+import FormValidationSchema from "./ FormValidationSchema";
+```
+
+Define `loginValidationSchema` object:
+
+```javascript
+const loginValidationSchema = {
+  email: new FormValidationSchema()
+    .isRequired("Email is Required")
+    .email("Please Enter Valid Email"),
+  password: new FormValidationSchema()
+    .isRequired("Password is Required")
+    .min(6),
+};
+```
+
+- **email**: Sets up validation rules for the email field using `FormValidationSchema`:
+  - `.isRequired("Email is Required")`: Specifies that the email field must not be empty.
+  - `.email("Please Enter Valid Email")`: Ensures the input conforms to a valid email format.
+- **password**: Configures validation rules for the password field using `FormValidationSchema`:
+
+  - `.isRequired("Password is Required")`: Ensures the password field must not be empty.
+  - `.min(6)`: Specifies a minimum length requirement of 6 characters for the password.
+
+- Then create an instance of `FormValidator` with `loginValidationSchema` to validate form data based on defined rules.
+
+```javascript
+const loginValidator = new FormValidator(loginValidationSchema);
+```
+
+Final usage
+
+```javascript
+import FormValidator from "./FormValidator";
+import FormValidationSchema from "./ FormValidationSchema";
 
 const loginValidationSchema = {
   email: new FormValidationSchema()
@@ -320,11 +350,11 @@ const loginValidationSchema = {
     .min(6),
 };
 
-const loginValidation = new FormValidation(loginValidationSchema);
+const loginValidator = new FormValidator(loginValidationSchema);
 
 function onSubmit(e) {
-  loginValidation.validate(loginFormData);
-  if (loginValidation.hasErrors()) {
+  const isValid = loginValidation.validate(loginFormData);
+  if (!isValid) {
     // Handle error
     // Prevent submit
     return;
@@ -332,39 +362,3 @@ function onSubmit(e) {
   handleLogin(loginFormData);
 }
 ```
-
-### Breakdown
-
-#### Import Statements
-
-```javascript
-import { FormValidation, FormValidationSchema } from "./FormValidator";
-```
-- Imports `FormValidation` and `FormValidationSchema` classes from the `FormValidator.js` module.
-
-#### loginValidationSchema Definition
-
-```javascript
-const loginValidationSchema = {
-  email: new FormValidationSchema()
-    .isRequired("Email is Required")
-    .email("Please Enter Valid Email"),
-  password: new FormValidationSchema()
-    .isRequired("Password is Required")
-    .min(6),
-};
-```
-- Defines `loginValidationSchema` object:
-  - **email**: Sets up validation rules for the email field using `FormValidationSchema`:
-    - `.isRequired("Email is Required")`: Specifies that the email field must not be empty.
-    - `.email("Please Enter Valid Email")`: Ensures the input conforms to a valid email format.
-  - **password**: Configures validation rules for the password field using `FormValidationSchema`:
-    - `.isRequired("Password is Required")`: Ensures the password field must not be empty.
-    - `.min(6)`: Specifies a minimum length requirement of 6 characters for the password.
-
-#### FormValidation Instance
-
-```javascript
-const loginValidation = new FormValidation(loginValidationSchema);
-```
-- Creates an instance of `FormValidation` with `loginValidationSchema` to validate form data based on defined rules.
