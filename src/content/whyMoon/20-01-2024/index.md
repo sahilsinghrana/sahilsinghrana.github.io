@@ -3,9 +3,9 @@ image:
   url: "./titleImage.webp"
   alt: "I saw the moon."
 title: I saw the Moon!
-description: Embraced the moon after so long!
+description: Embraced the moon!
 date: 20-01-2024
-footnote: Oh ! Beautiful Moon.
+footnote: That touch! That's unforgettable.
 ---
 
 > I got to meet the moon again, for a whole day,

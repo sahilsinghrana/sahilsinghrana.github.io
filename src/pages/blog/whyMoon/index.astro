@@ -128,7 +128,9 @@ const listEntries = await getCollection("whyMoon");
   </article>
 
   <nav>
-    <ul>
+    <ul
+      style="font-size:0.7rem; display: flex; flex-wrap: wrap; gap : 20px; opacity: 0.7; font-weight: bolder;"
+    >
       {
         listEntries.map(async (post) => {
           const { date } = post.data;
