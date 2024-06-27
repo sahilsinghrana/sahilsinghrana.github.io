@@ -19,17 +19,13 @@ env:
   BUILD_PATH: "."
 
 jobs:
-  wait:
-    name: wait
-    steps:
-      - name: Sleep for 30 seconds
-        run: sleep 30s
-        shell: bash
-
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
+      - name: Sleep for 30 seconds
+        run: sleep 30s
+        shell: bash
       - name: Checkout
         uses: actions/checkout@v4
       - name: Detect package manager
