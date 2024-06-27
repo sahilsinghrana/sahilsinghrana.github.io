@@ -20,9 +20,11 @@ env:
 
 jobs:
   wait:
-    name: Sleep for 30 seconds
-    run: sleep 30s
-    shell: bash
+    name: wait
+    steps:
+      name: Sleep for 30 seconds
+      run: sleep 30s
+      shell: bash
 
   build:
     name: Build
