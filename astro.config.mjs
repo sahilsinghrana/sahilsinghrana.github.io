@@ -8,7 +8,9 @@ import purgecss from "astro-purgecss";
 
 // https://astro.build/config
 export default defineConfig({
-  "experimental.contentCollectionCache": true,
+  experimental: {
+    contentCollectionCache: true,
+  },
   compressHTML: true,
   trailingSlash: "ignore",
   site: "https://sahilsinghrana.github.io",
