@@ -45,7 +45,7 @@
     "cssnano": "^7.0.1",
     "cssnano-preset-advanced": "^7.0.1",
     "lucide-astro": "^0.379.0",
-    "postcss": "^8.4.38",
+    "postcss": "^8.4.39",
     "postcss-combine-duplicated-selectors": "^10.0.3",
     "postcss-combine-media-query": "^1.0.1",
     "postcss-import": "^16.1.0",
