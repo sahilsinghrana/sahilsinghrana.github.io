@@ -1,8 +1,8 @@
 ---
 image:
   url: "./titleImage.webp"
-  alt: "I saw the moon."
-title: I saw the Moon!
+  alt: "Embraced the moon."
+title: Moon embraced me!
 description: Embraced the moon!
 date: 20-01-2024
 footnote: That touch! That's unforgettable.
