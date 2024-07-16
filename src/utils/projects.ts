@@ -1,10 +1,10 @@
 import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
 
-import esp32Car from "@images/projects/esp8266car.webp";
+import esp32Car from "@images/projects/esp8266car.jpg";
 import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
 import nextChat from "@images/projects/nextchat.webp";
-import ranexPlayer from "@images/projects/ranexPlayer.webp";
+import diziPlayer from "@images/projects/diziPlayer.png";
 import iwl from "@images/projects/iwl.webp";
 
 const projects = [
@@ -60,22 +60,10 @@ const projects = [
     ],
   },
   {
-    title: "Chat Application",
-    image: nextChat,
+    title: "Dizi Player",
+    image: diziPlayer,
     content:
-      "Built a chat application with Next.js as Frontend and Express.js as backend with websockets.",
-    links: [
-      {
-        Icon: ExternalLink,
-        link: "https://next-chat-phi.vercel.app/",
-      },
-    ],
-  },
-  {
-    title: "Music Player",
-    image: ranexPlayer,
-    content:
-      "Building a Music Player with React as Frontend and Fastify as backend.",
+      "Building a Music Player using React as Frontend and Fastify as backend.",
     links: [
       {
         Icon: Github,
@@ -84,6 +72,18 @@ const projects = [
       {
         Icon: ExternalLink,
         link: "https://sahilsinghrana.github.io/ranexPlayer/",
+      },
+    ],
+  },
+  {
+    title: "Chat Application",
+    image: nextChat,
+    content:
+      "Built a chat application using Next.js as Frontend and Express.js.",
+    links: [
+      {
+        Icon: ExternalLink,
+        link: "https://next-chat-phi.vercel.app/",
       },
     ],
   },
