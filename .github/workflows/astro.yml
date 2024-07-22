@@ -16,16 +16,13 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  BUILD_PATH: "."
+  BUILD_PATH: "./dist"
 
 jobs:
-  build:
-    name: Build
+  deploy:
     runs-on: ubuntu-latest
+    name: Deploy
     steps:
-      # - name: Sleep for 30 seconds
-      #   run: sleep 30s
-      #   shell: bash
       - name: Checkout
         uses: actions/checkout@v4
       - name: Detect package manager
@@ -65,19 +62,9 @@ jobs:
             --site "${{ steps.pages.outputs.origin }}" \
             --base "${{ steps.pages.outputs.base_path }}"
         working-directory: ${{ env.BUILD_PATH }}
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        if: github.ref == 'refs/heads/main'
         with:
-          path: ${{ env.BUILD_PATH }}/dist
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    needs: build
-    runs-on: ubuntu-latest
-    name: Deploy
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
