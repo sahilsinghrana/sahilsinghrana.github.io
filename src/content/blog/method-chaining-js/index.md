@@ -7,6 +7,7 @@ pubDate: 2024-06-28
 title: Method Chaining in Javascript
 description: "Chain Methods to add modularity"
 slug: chain-javascript-methods
+featured: true
 tags:
   [
     "method",

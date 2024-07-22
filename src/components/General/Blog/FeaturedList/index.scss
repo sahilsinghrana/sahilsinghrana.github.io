@@ -2,16 +2,11 @@
   display: flex;
   align-items: center;
   img {
-    min-height: 40px;
-    max-height: 70px;
-    height: 100%;
-    width: 73px;
+    height: 60px;
+    width: 60px;
     object-fit: cover;
     border-radius: 4px;
-
-    @media screen and (min-width: 486px) {
-      max-height: 50px;
-    }
+    outline: 3px solid rgba(143, 143, 143, 0.2);
   }
 
   .content {
