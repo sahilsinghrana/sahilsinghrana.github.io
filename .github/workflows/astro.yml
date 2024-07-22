@@ -32,8 +32,7 @@ jobs:
       - name: Install dependencies
         run: "npm install"
       - name: Build with Astro
-        run: astro build \
-          --site "${{ steps.pages.outputs.origin }}"
+        run: npm run build
       - name: FinalDeploy
         uses: peaceiris/actions-gh-pages@v4
         if: github.ref == 'refs/heads/main'
