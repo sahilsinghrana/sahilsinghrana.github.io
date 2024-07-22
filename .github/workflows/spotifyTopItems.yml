@@ -25,32 +25,38 @@ jobs:
         run: |
           pip install requests
 
-      - name: Get Spotify Token
-        id: get-token
+      - name: Refresh Spotify Token
+        id: refresh-token
         env:
           SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
           SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+          SPOTIFY_REFRESH_TOKEN: ${{ secrets.SPOTIFY_REFRESH_TOKEN }}
         run: |
-          echo "import requests, base64, os" > get_token.py
-          echo "try:" >> get_token.py
-          echo "    CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']" >> get_token.py
-          echo "    CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']" >> get_token.py
-          echo "    auth_url = 'https://accounts.spotify.com/api/token'" >> get_token.py
-          echo "    auth_header = {'Authorization': 'Basic ' + base64.b64encode(f'{CLIENT_ID}:{CLIENT_SECRET}'.encode()).decode()}" >> get_token.py
-          echo "    auth_data = {'grant_type': 'client_credentials'}" >> get_token.py
-          echo "    response = requests.post(auth_url, headers=auth_header, data=auth_data)" >> get_token.py
-          echo "    response.raise_for_status()" >> get_token.py
-          echo "    access_token = response.json()['access_token']" >> get_token.py
-          echo "    print(f'::set-output name=access_token::{access_token}')" >> get_token.py
-          echo "except Exception as e:" >> get_token.py
-          echo "    print(f'Error getting Spotify token: {str(e)}')" >> get_token.py
-          echo "    exit(1)" >> get_token.py
-          python get_token.py
+          echo "import requests, os" > refresh_token.py
+          echo "try:" >> refresh_token.py
+          echo "    CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']" >> refresh_token.py
+          echo "    CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']" >> refresh_token.py
+          echo "    REFRESH_TOKEN = os.environ['SPOTIFY_REFRESH_TOKEN']" >> refresh_token.py
+          echo "    auth_url = 'https://accounts.spotify.com/api/token'" >> refresh_token.py
+          echo "    auth_data = {" >> refresh_token.py
+          echo "        'grant_type': 'refresh_token'," >> refresh_token.py
+          echo "        'refresh_token': REFRESH_TOKEN," >> refresh_token.py
+          echo "        'client_id': CLIENT_ID," >> refresh_token.py
+          echo "        'client_secret': CLIENT_SECRET" >> refresh_token.py
+          echo "    }" >> refresh_token.py
+          echo "    response = requests.post(auth_url, data=auth_data)" >> refresh_token.py
+          echo "    response.raise_for_status()" >> refresh_token.py
+          echo "    access_token = response.json()['access_token']" >> refresh_token.py
+          echo "    print(f'::set-output name=access_token::{access_token}')" >> refresh_token.py
+          echo "except Exception as e:" >> refresh_token.py
+          echo "    print(f'Error refreshing Spotify token: {str(e)}')" >> refresh_token.py
+          echo "    exit(1)" >> refresh_token.py
+          python refresh_token.py
 
       - name: Fetch Top Artists and Songs
         id: fetch-data
         env:
-          ACCESS_TOKEN: ${{ steps.get-token.outputs.access_token }}
+          ACCESS_TOKEN: ${{ steps.refresh-token.outputs.access_token }}
         run: |
           echo "import requests, json, os" > fetch_data.py
           echo "try:" >> fetch_data.py
@@ -74,8 +80,8 @@ jobs:
 
       - name: Commit and Push Spotify Data
         run: |
-          git config --global user.name 'Sahil Singh Rana'
-          git config --global user.email 'ranasahil98@gmail.com'
+          git config --global user.name 'github-actions'
+          git config --global user.email 'github-actions@github.com'
           git add public/spotifyData.json
           git commit -m 'Update Spotify Data'
           git push origin gh-pages
