@@ -4,9 +4,6 @@ on:
   schedule:
     - cron: "25 17 * * 0-6"
   workflow_dispatch:
-  push:
-    branches:
-      - gh-pages
 
 permissions:
   contents: write
@@ -20,7 +17,6 @@ jobs:
   update-spotify-data:
     runs-on: ubuntu-latest
     environment: github-pages
-    if: '!contains(github.event.head_commit.message, "Update Spotify Data")'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
