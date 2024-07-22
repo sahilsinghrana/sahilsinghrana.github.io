@@ -1,0 +1,108 @@
+name: Refresh Spotify Top Items
+
+on:
+  schedule:
+    - cron: "25 17 * * 0-6"
+  workflow_dispatch:
+  push:
+    branches:
+      - gh-pages
+
+permissions:
+  contents: write
+
+env:
+  SPOTIFY_CLIENT_ID: ${{ secrets.SPOTIFY_CLIENT_ID }}
+  SPOTIFY_CLIENT_SECRET: ${{ secrets.SPOTIFY_CLIENT_SECRET }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  update-spotify-data:
+    runs-on: ubuntu-latest
+    environment: github-pages
+    if: '!contains(github.event.head_commit.message, "Update Spotify Data")'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Get Spotify Token
+        id: get-token
+        run: |
+          import requests
+          import base64
+          import os
+
+          try:
+            CLIENT_ID = os.environ['SPOTIFY_CLIENT_ID']
+            CLIENT_SECRET = os.environ['SPOTIFY_CLIENT_SECRET']
+
+            auth_url = 'https://accounts.spotify.com/api/token'
+            auth_header = {
+                'Authorization': 'Basic ' + base64.b64encode(f'{CLIENT_ID}:{CLIENT_SECRET}'.encode()).decode()
+            }
+            auth_data = {
+                'grant_type': 'client_credentials'
+            }
+
+            response = requests.post(auth_url, headers=auth_header, data=auth_data)
+            response.raise_for_status()
+
+            access_token = response.json()['access_token']
+            print(f'::set-output name=access_token::{access_token}')
+          except Exception as e:
+            print(f'Error getting Spotify token: {str(e)}')
+            exit(1)
+
+      - name: Fetch Top Artists and Songs
+        id: fetch-data
+        run: |
+          import requests
+          import json
+          import os
+
+          try:
+            access_token = '${{ steps.get-token.outputs.access_token }}'
+            headers = {
+                'Authorization': f'Bearer {access_token}',
+                'Content-Type': 'application/json'
+            }
+
+            top_artists_url = 'https://api.spotify.com/v1/me/top/artists'
+            top_tracks_url = 'https://api.spotify.com/v1/me/top/tracks'
+
+            artists_response = requests.get(top_artists_url, headers=headers)
+            tracks_response = requests.get(top_tracks_url, headers=headers)
+
+            artists_response.raise_for_status()
+            tracks_response.raise_for_status()
+
+            top_artists = artists_response.json()
+            top_tracks = tracks_response.json()
+
+            spotify_data = {
+                'top_artists': top_artists,
+                'top_tracks': top_tracks
+            }
+
+            with open('public/spotifyData.json', 'w') as f:
+                json.dump(spotify_data, f, indent=2)
+          except Exception as e:
+            print(f'Error fetching Spotify data: {str(e)}')
+            exit(1)
+
+      - name: Commit and Deploy
+        run: |
+          git config --global user.name 'Sahil Singh Rana'
+          git config --global user.email 'ranasahil98@gmail.com'
+          git add public/spotifyData.json
+          git commit -m 'Update Spotify Data'
+          git push origin gh-pages
