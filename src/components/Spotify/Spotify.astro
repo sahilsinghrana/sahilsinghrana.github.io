@@ -1,5 +1,6 @@
 ---
-
+import PlayerStatus from "./PlayerStatus.astro";
+import "./spotify.scss";
 ---
 
 <script>
@@ -13,4 +14,6 @@
     });
 </script>
 
-<div>Spotify Crd</div>
+<div class="spotifyData">
+  <PlayerStatus />
+</div>
