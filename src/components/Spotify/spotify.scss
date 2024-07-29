@@ -1,3 +1,4 @@
+$mobileBreakpoint: 486px;
 .spotifyData {
   display: flex;
   justify-content: center;
@@ -32,8 +33,8 @@
   }
   .spotifyLogoContainer {
     position: absolute;
-    top: 0.3rem;
-    right: 0.3rem;
+    top: 0.4rem;
+    right: 0.4rem;
     opacity: 0.8;
   }
 
@@ -65,14 +66,15 @@
       font-size: 0.7rem;
       opacity: 0.6;
       font-weight: bolder;
-      margin-bottom: 7px;
+      margin-bottom: 4px;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
 
     h4 {
-      font-size: 0.75rem;
+      font-size: 0.8rem;
       margin-bottom: 2px;
+      font-weight: bold;
     }
 
     h5 {
@@ -132,48 +134,86 @@
   }
 }
 
+.topTrackAndArtistContainer {
+  display: flex;
+  justify-content: space-between;
+}
+@media screen and (max-width: $mobileBreakpoint) {
+  .topTrackAndArtistContainer {
+    flex-direction: column;
+
+    .topArtistsContainer,
+    .topTracksContainer {
+      width: 100%;
+    }
+  }
+}
 .topArtistsContainer,
 .topTracksContainer {
   outline: 1px solid rgba(255, 255, 255, 0.37);
   border-radius: 12px;
   margin-top: 1.4rem;
-  width: 46%;
+  width: 48%;
+
   h3 {
     margin: 0;
     font-size: 0.8rem;
     text-align: center;
     background-color: rgba(128, 128, 128, 0.334);
-    padding: 5px;
+    padding: 8px;
+    backdrop-filter: blur(1.5px);
   }
 
   img {
-    height: 40px;
-    width: 40px;
+    height: 55px;
+    width: 55px;
     background: black;
     border-radius: 12px;
   }
 
   .cardContainer {
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     margin: 0;
-    height: 115px;
+    height: 180px;
+    min-width: 150px;
     overflow-y: auto;
     scroll-snap-type: y mandatory;
+    scroll-snap-points-y: repeat(60px);
     list-style: none;
+    overflow-x: hidden;
   }
 
   .card {
+    scroll-snap-align: start;
     display: flex;
     align-items: center;
-    margin: 5px 0;
-    height: 50px;
-    a {
-      margin-left: 10px;
-      font-size: 0.8rem;
-      color: rgba(245, 245, 245, 0.926);
-      h4 {
-        margin: 0;
+    height: 60px;
+
+    h4 {
+      margin: 0;
+      font-weight: normal;
+      color: white;
+    }
+
+    div {
+      margin-left: 7px;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      a {
+        margin-left: 0;
       }
+    }
+
+    span {
+      font-size: 0.56rem;
+      opacity: 0.7;
+    }
+
+    a {
+      margin-left: 7px;
+      font-size: 0.72rem;
+      color: rgba(245, 245, 245, 0.926);
     }
   }
 }

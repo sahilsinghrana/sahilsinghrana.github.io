@@ -47,25 +47,39 @@ import "./spotify.scss";
     topTracksContainer.innerHTML = "";
 
     topTracks.forEach((track = {}) => {
-      const { album = {}, name, external_urls } = track;
+      const { album = {}, name, external_urls, artists } = track;
       const { images = [] } = album;
-      const li = document.createElement("li");
-      const img = document.createElement("img");
-      const h4 = document.createElement("h4");
-      const a = document.createElement("a");
+      const cardContainerEl = document.createElement("li");
+      const coverArtEl = document.createElement("img");
 
-      li.className = "card trackCard";
-      img.src = images[1]?.url || images[0]?.url;
+      const songTitleEl = document.createElement("h4");
+      const songTitleContainerEl = document.createElement("a");
 
-      a.href = external_urls?.spotify;
-      a.target = "_blank";
+      const metaDiv = document.createElement("div");
 
-      h4.innerText = name;
-      a.appendChild(h4);
+      const artistContainer = document.createElement("span");
 
-      li.appendChild(img);
-      li.appendChild(a);
-      topTracksContainer?.appendChild(li);
+      artists.forEach((artist, index) => {
+        artistContainer.innerText = artistContainer.innerText.concat(
+          artist.name,
+          artists.length - 1 !== index ? ", " : "",
+        );
+      });
+
+      cardContainerEl.className = "card trackCard";
+      coverArtEl.src = images[1]?.url || images[0]?.url;
+
+      songTitleContainerEl.href = external_urls?.spotify;
+      songTitleContainerEl.target = "_blank";
+
+      songTitleEl.innerText = name;
+      songTitleContainerEl.appendChild(songTitleEl);
+      metaDiv.appendChild(songTitleContainerEl);
+      metaDiv.appendChild(artistContainer);
+
+      cardContainerEl.appendChild(coverArtEl);
+      cardContainerEl.appendChild(metaDiv);
+      topTracksContainer?.appendChild(cardContainerEl);
     });
   }
 
@@ -84,7 +98,7 @@ import "./spotify.scss";
 
 <div class="spotifyData">
   <NowPlaying />
-  <div style="display: flex; justify-content: space-around">
+  <div class="topTrackAndArtistContainer">
     <TopArtists />
     <TopTracks />
   </div>
