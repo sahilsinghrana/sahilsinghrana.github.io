@@ -8,6 +8,10 @@
   --top-spacing: 15px;
 }
 
+.displayNone {
+  display: none !important;
+}
+
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
