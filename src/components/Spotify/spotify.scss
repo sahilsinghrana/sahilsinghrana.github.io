@@ -5,7 +5,7 @@
 }
 
 .nowPlaying {
-  min-width: 200px;
+  min-width: 240px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,10 +17,22 @@
   position: relative;
   background: rgba(43, 43, 43, 0.425);
 
+  .spotifyLogoContainer,
+  a {
+    color: whitesmoke;
+    opacity: 1;
+    border: none;
+
+    &:hover {
+      color: orange;
+      text-decoration: none;
+      border: none;
+    }
+  }
   .spotifyLogoContainer {
     position: absolute;
-    top: 0.5rem;
-    right: 0.5rem;
+    top: 0.3rem;
+    right: 0.3rem;
     opacity: 0.8;
   }
 
@@ -46,33 +58,24 @@
       margin: 0;
       padding: 0;
       font-weight: normal;
-
-      a {
-        color: whitesmoke;
-        opacity: 1;
-        border: none;
-
-        &:hover {
-          color: orange;
-          text-decoration: none;
-          border: none;
-        }
-      }
     }
 
     h3 {
       font-size: 0.7rem;
-      opacity: 0.7;
+      opacity: 0.6;
+      font-weight: bolder;
       margin-bottom: 7px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
     }
 
     h4 {
-      font-size: 0.7rem;
-      margin-bottom: 5px;
+      font-size: 0.75rem;
+      margin-bottom: 2px;
     }
 
     h5 {
-      font-size: 0.55rem;
+      font-size: 0.58rem;
       opacity: 0.8;
     }
   }
@@ -80,6 +83,8 @@
   .trackVinyl {
     position: relative;
     margin: 10px auto;
+    min-width: 80px;
+    min-height: 80px;
     width: 80px;
     height: 80px;
     border-radius: 50%;
@@ -93,7 +98,6 @@
       50% 100%,
       100% 50%,
       100% 100%;
-
     box-shadow: 0px 1px 7px 0px #ffffff8f;
     background-size: cover;
   }
@@ -101,14 +105,11 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    margin: -9px;
-    border: solid 3px white;
+    transform: translate(-50%, -50%);
+    border: 3px solid white;
     width: 12px;
     height: 12px;
     border-radius: 50%;
-    // box-shadow:
-    //   0 0 0 4px #da5b33,
-    //   inset 0 0 0 27px #575757;
     background: black;
     content: "";
   }

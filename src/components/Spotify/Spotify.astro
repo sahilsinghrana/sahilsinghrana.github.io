@@ -59,12 +59,30 @@ import "./spotify.scss";
   fetch("https://mytopsongs.sahilsinghrana.workers.dev/")
     .then((res) => res.json())
     .then((res) => {
-      const { currentPlayerStatus = {}, myProfile } = res;
-      fillNowPlaying(currentPlayerStatus);
+      const { myProfile } = res;
       spotifyLogoAnchorEl.href = myProfile?.external_urls?.spotify;
     })
     .catch((err) => {
       console.log(err);
+    });
+
+  fetch("https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying")
+    .then((res) => res.json())
+    .then(fillNowPlaying)
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      setInterval(
+        () =>
+          fetch("https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying")
+            .then((res) => res.json())
+            .then(fillNowPlaying)
+            .catch((err) => {
+              console.log(err);
+            }),
+        100000,
+      );
     });
 </script>
 
