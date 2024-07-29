@@ -131,3 +131,49 @@
     transform: rotate(360deg);
   }
 }
+
+.topArtistsContainer,
+.topTracksContainer {
+  outline: 1px solid rgba(255, 255, 255, 0.37);
+  border-radius: 12px;
+  margin-top: 1.4rem;
+  width: 46%;
+  h3 {
+    margin: 0;
+    font-size: 0.8rem;
+    text-align: center;
+    background-color: rgba(128, 128, 128, 0.334);
+    padding: 5px;
+  }
+
+  img {
+    height: 40px;
+    width: 40px;
+    background: black;
+    border-radius: 12px;
+  }
+
+  .cardContainer {
+    padding: 0 1rem;
+    margin: 0;
+    height: 115px;
+    overflow-y: auto;
+    scroll-snap-type: y mandatory;
+    list-style: none;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    margin: 5px 0;
+    height: 50px;
+    a {
+      margin-left: 10px;
+      font-size: 0.8rem;
+      color: rgba(245, 245, 245, 0.926);
+      h4 {
+        margin: 0;
+      }
+    }
+  }
+}
