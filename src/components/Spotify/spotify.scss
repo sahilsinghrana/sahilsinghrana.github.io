@@ -1,0 +1,131 @@
+.spotifyData {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.nowPlaying {
+  min-width: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  outline: 1px solid rgba(245, 245, 245, 0.427);
+  border-radius: 12px;
+  margin-top: 40px;
+  padding: 0.5rem 2rem;
+  padding-left: 1rem;
+  position: relative;
+  background: rgba(43, 43, 43, 0.425);
+
+  .spotifyLogoContainer {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    opacity: 0.8;
+  }
+
+  .notPlaying {
+    flex-grow: 1;
+    font-size: 0.6rem;
+    opacity: 0.7;
+    margin-left: 10px;
+    padding: 0 1rem;
+  }
+
+  .nowPlayingInfo {
+    flex-grow: 1;
+    margin-left: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+
+    h3,
+    h4,
+    h5 {
+      margin: 0;
+      padding: 0;
+      font-weight: normal;
+
+      a {
+        color: whitesmoke;
+        opacity: 1;
+        border: none;
+
+        &:hover {
+          color: orange;
+          text-decoration: none;
+          border: none;
+        }
+      }
+    }
+
+    h3 {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      margin-bottom: 7px;
+    }
+
+    h4 {
+      font-size: 0.7rem;
+      margin-bottom: 5px;
+    }
+
+    h5 {
+      font-size: 0.55rem;
+      opacity: 0.8;
+    }
+  }
+
+  .trackVinyl {
+    position: relative;
+    margin: 10px auto;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background:
+      linear-gradient(30deg, transparent 40%, rgba(42, 41, 40, 0.85) 40%)
+        no-repeat 100% 0,
+      linear-gradient(60deg, rgba(42, 41, 40, 0.85) 60%, transparent 60%)
+        no-repeat 0 100%,
+      repeating-radial-gradient(#2a2928, #2a2928 4px, #ada9a0 5px, #2a2928 6px);
+    background-size:
+      50% 100%,
+      100% 50%,
+      100% 100%;
+
+    box-shadow: 0px 1px 7px 0px #ffffff8f;
+    background-size: cover;
+  }
+  .trackVinyl:after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: -9px;
+    border: solid 3px white;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    // box-shadow:
+    //   0 0 0 4px #da5b33,
+    //   inset 0 0 0 27px #575757;
+    background: black;
+    content: "";
+  }
+}
+
+.spinVinyl {
+  animation-name: spinVinyl;
+  animation-duration: 10000ms;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spinVinyl {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
