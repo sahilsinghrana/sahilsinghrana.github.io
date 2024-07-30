@@ -36,7 +36,6 @@ footnote: Initiating apology if you mean it, lightens you out.
 
 > <br />
 
-
 > Told her I never meant to hurt,
 
 > Couldn't write how big mess I am,
