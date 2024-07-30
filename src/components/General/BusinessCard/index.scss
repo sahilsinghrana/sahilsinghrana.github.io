@@ -65,7 +65,7 @@
     }
     img {
       max-height: 150px;
-      width : 100%;
+      width: 100%;
       max-width: 150px;
     }
 
@@ -76,15 +76,13 @@
 
       padding-inline-start: 0;
 
-      
-
       li {
         margin-bottom: 10px;
 
         &:last-child {
           margin-bottom: 0;
         }
-        
+
         svg {
           margin-right: 2px;
         }
