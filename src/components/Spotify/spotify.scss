@@ -163,7 +163,12 @@ $mobileBreakpoint: 486px;
     padding: 8px;
     backdrop-filter: blur(1.5px);
   }
-
+  .smallInfo {
+    font-size: 0.52rem;
+    opacity: 0.85;
+    padding: 0 0.25rem;
+    margin-top: 0.5px;
+  }
   img {
     height: 55px;
     width: 55px;
