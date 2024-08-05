@@ -169,6 +169,17 @@ $mobileBreakpoint: 486px;
     width: 55px;
     background: black;
     border-radius: 12px;
+
+    &.hasPreview {
+      cursor: pointer;
+      position: relative;
+      &:hover {
+        outline: 1px solid rgba(255, 99, 71, 0.519);
+      }
+      &.playing {
+        // TODO
+      }
+    }
   }
 
   .cardContainer {
