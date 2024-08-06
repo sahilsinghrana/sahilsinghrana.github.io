@@ -1,6 +1,6 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-import playformInline from "@playform/inline";
+// import playformInline from "@playform/inline";
 // import playformCompress from "@playform/compress";
 import rehypeExternalLinks from "rehype-external-links";
 import partytown from "@astrojs/partytown";
@@ -21,7 +21,7 @@ export default defineConfig({
     partytown(),
     sitemap(),
     purgecss(),
-    playformInline(),
+    // playformInline(),
     // playformCompress({
     //   brotli: false,
     // }),

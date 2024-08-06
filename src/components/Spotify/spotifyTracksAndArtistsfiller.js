@@ -1,8 +1,8 @@
+const previewAudioEl = new Audio();
+
 const spotifyLogoAnchorEl = document.querySelector(
   "body > main > div > div.spotifyData > div > a.spotifyLogoContainer",
 );
-
-const previewAudioEl = new Audio();
 
 function populateTopArtists(topArtists = []) {
   const topArtistContainer = document.querySelector(
