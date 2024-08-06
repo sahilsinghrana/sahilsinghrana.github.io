@@ -36,7 +36,7 @@ function populateTopArtists(topArtists = []) {
 
 function populateTopTracks(topTracks = []) {
   const topTracksContainer = document.querySelector(
-    "body > main > div > div.spotifyData > div:nth-child(2) > div.topTracksContainer > ul",
+    "body > main > div > div.spotifyData > div.topTrackAndArtistContainer > div.topTracksContainer > ul",
   );
   topTracksContainer.innerHTML = "";
 

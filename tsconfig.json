@@ -14,5 +14,9 @@
       "@images/*": ["src/assets/images/*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src",
+    "src/components/Spotify/nowPlaying.js",
+    "src/components/Spotify/spotifyTracksAndArtistsfiller.js"
+  ]
 }
