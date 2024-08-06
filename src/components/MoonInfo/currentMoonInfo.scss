@@ -4,9 +4,20 @@
   margin: 1.2rem 0;
   margin-bottom: 0;
   border-radius: 10px;
-  padding: 6px;
   min-width: 300px;
   background: rgba(0, 0, 0, 0.5);
+
+  summary {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.248);
+    padding: 6px;
+    padding-bottom: 8px;
+    padding-top: 8px;
+    margin: 0;
+    &::marker {
+      margin-right: 10px;
+    }
+  }
+
   ul {
     list-style: none;
     padding-inline-start: 0;
@@ -21,6 +32,7 @@
     align-items: start;
     background: rgba(0, 0, 0, 0.7);
     padding: 5px;
+    margin-left: 10px;
     color: rgb(0, 212, 0);
     b {
       font-weight: 800;

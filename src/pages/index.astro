@@ -4,6 +4,7 @@ import Layout from "@layouts/index.astro";
 import About from "@components/About/index.astro";
 import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import Spotify from "@components/Spotify/Spotify.astro";
+import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 ---
 
 <head>
@@ -65,7 +66,7 @@ import Spotify from "@components/Spotify/Spotify.astro";
   ]}
 >
   <About />
+  <CurrentMoonInfo />
   <FeaturedBlogs />
-
   <Spotify />
 </Layout>

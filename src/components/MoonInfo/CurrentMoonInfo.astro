@@ -1,18 +1,48 @@
 ---
 import "./currentMoonInfo.scss";
-// https://www.meteomatics.com/en/api/available-parameters/moon/
 ---
 
 <details open class="currentMoonInfo">
-  <summary>Moon</summary>
+  <summary>Moonfull insights</summary>
   <div class="moonInfo">
     <ul>
-      <li>&gt; Phase: <b>Crescent</b></li>
-      <li>&gt; Age: <b>25</b></li>
-      <li>&gt; Distance: <b>25</b></li>
-      <li>&gt; Moonrise: <b>25</b></li>
-      <li>&gt; Moonset: <b>25</b></li>
-      <li>&gt; Visible Area: <b>25</b></li>
+      <li id="moonInfo_waxWane">&gt; Phase: <b></b></li>
+      <li id="moonInfo_phase">&gt; Current Phase: <b></b></li>
+      <li id="moonInfo_age">&gt; Age: <b></b></li>
+      <li id="moonInfo_agePercent">&gt; Age Percent: <b></b></li>
+      <li id="moonInfo_distance">&gt; Lunar Distance: <b></b></li>
     </ul>
   </div>
 </details>
+
+<script>
+  import { Moon } from "lunarphase-js";
+  const phase = Moon.lunarPhase();
+  const isWaxing = Moon.isWaxing();
+  const isWaning = Moon.isWaning();
+  const lunarAge = Moon.lunarAge().toFixed(2);
+  const emojiForLunarPhase = Moon.emojiForLunarPhase(phase);
+  const lunarDistance = Moon.lunarDistance().toFixed(2);
+  const lunarAgePercent = Moon.lunarAgePercent().toFixed(2);
+
+  const phaseEl = document.getElementById("moonInfo_phase")?.querySelector("b");
+  phaseEl.innerText = emojiForLunarPhase.concat(" ", phase);
+
+  const ageEl = document.getElementById("moonInfo_age")?.querySelector("b");
+  ageEl.innerText = lunarAge + " Days";
+
+  const waxWane = document
+    .getElementById("moonInfo_waxWane")
+    ?.querySelector("b");
+  waxWane.innerText = isWaxing ? "Waxing" : isWaning ? "Waning" : "";
+
+  const distanceEl = document
+    .getElementById("moonInfo_distance")
+    ?.querySelector("b");
+  distanceEl.innerText = lunarDistance;
+
+  const agePercentEl = document
+    .getElementById("moonInfo_agePercent")
+    ?.querySelector("b");
+  agePercentEl.innerText = lunarAgePercent + "%";
+</script>
