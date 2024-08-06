@@ -1,7 +1,7 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
 import playformInline from "@playform/inline";
-import playformCompress from "@playform/compress";
+// import playformCompress from "@playform/compress";
 import rehypeExternalLinks from "rehype-external-links";
 import partytown from "@astrojs/partytown";
 import purgecss from "astro-purgecss";
@@ -22,9 +22,9 @@ export default defineConfig({
     sitemap(),
     purgecss(),
     playformInline(),
-    playformCompress({
-      brotli: false,
-    }),
+    // playformCompress({
+    //   brotli: false,
+    // }),
   ],
   prefetch: {
     defaultStrategy: "viewport",
