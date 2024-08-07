@@ -135,19 +135,21 @@ h2 {
   margin-top: 2rem;
   font-family: sans-serif;
   font-style: italic;
-  color: rgba(245, 245, 245, 0.849);
+  color: rgba(245, 245, 245, 0.68);
 
-  background-color: rgba(180, 180, 180, 0.226);
-  outline: 1px solid rgba(255, 255, 255, 0.185);
+  background-color: rgba(110, 110, 110, 0.2);
+  outline: 2px solid rgba(56, 56, 56, 0.1);
   border-radius: 12px;
   padding: 14px;
   padding-left: 7px;
 
-  backdrop-filter: blur(4px) sepia(60%);
+  font-size: 0.75rem;
+
+  backdrop-filter: blur(4px) sepia(90%);
 
   &::before {
     content: '"';
-    font-size: 2rem;
+    font-size: 1.2rem;
     font-weight: bold;
   }
 }
