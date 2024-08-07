@@ -91,6 +91,7 @@ $mobileBreakpoint: 486px;
     width: 80px;
     height: 80px;
     border-radius: 50%;
+    outline: 3px solid rgb(27, 27, 27);
     background:
       linear-gradient(30deg, transparent 40%, rgba(42, 41, 40, 0.85) 40%)
         no-repeat 100% 0,
@@ -101,7 +102,6 @@ $mobileBreakpoint: 486px;
       50% 100%,
       100% 50%,
       100% 100%;
-    box-shadow: 0px 1px 7px 0px #ffffff8f;
     background-size: cover;
   }
   .trackVinyl:after {
@@ -109,9 +109,10 @@ $mobileBreakpoint: 486px;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 3px solid white;
-    width: 12px;
-    height: 12px;
+    border: 1.5px solid rgb(185, 185, 185);
+    outline: 0.5px solid rgb(0, 0, 0);
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
     background: black;
     content: "";
@@ -154,14 +155,14 @@ $mobileBreakpoint: 486px;
   border-radius: 12px;
   margin-top: 1.4rem;
   width: 48%;
-
+  overflow: hidden;
   h3 {
     margin: 0;
     font-size: 0.8rem;
     text-align: center;
     background-color: rgba(128, 128, 128, 0.334);
     padding: 8px;
-    backdrop-filter: blur(1.5px);
+    backdrop-filter: blur(2.5px) sepia(70%);
   }
   .smallInfo {
     font-size: 0.52rem;
