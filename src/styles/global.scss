@@ -129,3 +129,25 @@ h2 {
   color: rgba(245, 245, 245, 0.89);
   font-weight: 500;
 }
+
+.moonFact {
+  text-align: center;
+  margin-top: 2rem;
+  font-family: sans-serif;
+  font-style: italic;
+  color: rgba(245, 245, 245, 0.849);
+
+  background-color: rgba(180, 180, 180, 0.226);
+  outline: 1px solid rgba(255, 255, 255, 0.185);
+  border-radius: 12px;
+  padding: 14px;
+  padding-left: 7px;
+
+  backdrop-filter: blur(4px) sepia(60%);
+
+  &::before {
+    content: '"';
+    font-size: 2rem;
+    font-weight: bold;
+  }
+}
