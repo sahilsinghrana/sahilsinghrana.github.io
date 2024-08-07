@@ -137,15 +137,15 @@ h2 {
   font-style: italic;
   color: rgba(245, 245, 245, 0.68);
 
-  background-color: rgba(110, 110, 110, 0.2);
-  outline: 2px solid rgba(56, 56, 56, 0.1);
+  background-color: rgba(73, 73, 73, 0.3);
+  outline: 3px solid rgba(105, 105, 105, 0.2);
   border-radius: 12px;
   padding: 14px;
   padding-left: 7px;
 
-  font-size: 0.75rem;
+  font-size: 0.72rem;
 
-  backdrop-filter: blur(4px) sepia(90%);
+  backdrop-filter: blur(10px) sepia(90%);
 
   &::before {
     content: '"';
