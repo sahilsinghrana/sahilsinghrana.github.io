@@ -1,4 +1,3 @@
-import { API_URLS } from "@utils/constants";
 import { hideElement, showElement } from "src/scripts/domHelpers";
 
 class NowPlayingVinyl {
@@ -99,8 +98,4 @@ export class NowPlayingDom {
   static showNotPlayingWrapper() {
     showElement(this.getNotPlayingMessageWrapperEl());
   }
-}
-
-export async function fetchCurrentPlayerStatus() {
-  return fetch(API_URLS.currentPlayerStatus).then((res) => res.json());
 }

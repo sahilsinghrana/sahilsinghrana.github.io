@@ -1,5 +1,5 @@
+import { fetchCurrentPlayerStatus } from "src/scripts/fetchers";
 import { fillNowPlaying } from "./helpers/handlers";
-import { fetchCurrentPlayerStatus } from "./helpers/NowPlayingDom";
 
 async function fetchAndFillNowPlaying() {
   clearTimeout(window.topSongsTimeout);

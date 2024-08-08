@@ -1,5 +1,5 @@
-import { API_URLS } from "@utils/constants";
 import TopTracksDom from "./helpers/CurrentTopTracksDom";
+import { fetchTopTracksAndArtists } from "src/scripts/fetchers";
 
 const spotifyLogoAnchorEl = document.querySelector(
   "body > main > div > div.spotifyData > div > a.spotifyLogoContainer",
@@ -40,8 +40,7 @@ function populateTopTracks(topTracks = []) {
   topTracks.forEach((track = {}) => TopTracksDom.addTrack(track));
 }
 
-fetch(API_URLS.topSpotifySongsAndTracks)
-  .then((res) => res.json())
+fetchTopTracksAndArtists()
   .then((res) => {
     const { myProfile, artists, tracks } = res;
     populateTopArtists(artists);
