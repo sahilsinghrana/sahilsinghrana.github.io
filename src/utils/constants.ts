@@ -13,7 +13,7 @@ export const links = {
 };
 
 export const API_URLS = {
-  topSpotifySongs: "",
+  topSpotifySongsAndTracks: "https://mytopsongs.sahilsinghrana.workers.dev/",
   currentPlayerStatus:
     "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",
 };
