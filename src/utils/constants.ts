@@ -11,3 +11,9 @@ export const links = {
   twitter: "https://x.com/sahilrana010",
   mail: "mailto:ranasahil98@gmail.com",
 };
+
+export const API_URLS = {
+  topSpotifySongs: "",
+  currentPlayerStatus:
+    "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",
+};

@@ -1,14 +1,15 @@
 .currentMoonInfo {
   font-family: monospace;
-  outline: 1px solid rgba(255, 255, 255, 0.425);
+  outline: 1px solid rgba(255, 255, 255, 0.4);
   margin: 1.2rem 0;
   margin-bottom: 0;
   border-radius: 10px;
   min-width: 300px;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.6);
+  overflow: hidden;
 
   summary {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.248);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
     padding: 6px;
     padding-bottom: 8px;
     padding-top: 8px;
@@ -17,27 +18,28 @@
       margin-right: 10px;
     }
   }
-
-  ul {
-    list-style: none;
-    padding-inline-start: 0;
-    margin: 0;
-    li {
-      margin: 5px 0;
-    }
-  }
-
   .moonInfo {
     justify-content: start;
     align-items: start;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 5px;
-    margin-left: 10px;
-    color: rgba(0, 189, 0, 0.7);
-    opacity: 0.9;
-    b {
-      font-weight: 800;
+    background: rgba(0, 0, 0, 0.5);
+    margin: 10px;
+    list-style: none;
+    padding-inline-start: 0;
+
+    dd {
+      margin-inline-start: 10px;
+      opacity: 0.9;
       color: rgba(0, 189, 0, 0.8);
+      &::before {
+        content: "> ";
+        font-weight: bold;
+      }
+
+      b {
+        opacity: 0.95;
+        font-weight: 800;
+        color: rgba(0, 189, 0, 0.9);
+      }
     }
   }
 }

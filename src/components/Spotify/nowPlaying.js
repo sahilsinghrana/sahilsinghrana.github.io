@@ -1,66 +1,49 @@
-const notPlayingMessageEl = document.querySelector(
-  "body > main > div > div.spotifyData > div > div.notPlaying",
-);
-const nowPlayingInfoEl = document.querySelector(
-  "body > main > div > div.spotifyData > div > div.nowPlayingInfo",
-);
-const songTitleEl = document.querySelector("#nowPlayingTitle");
-const artistsEl = document.querySelector("#nowPlayingArtists");
+import { fetchCurrentPlayerStatus, NowPlayingDom } from "./helpers";
 
-const trackVinylEl = document.querySelector(
-  "body > main > div > div.spotifyData > div > div.trackVinyl",
-);
-
-nowPlayingInfoEl?.classList.add("displayNone");
+function main() {
+  fetchCurrentPlayerStatus()
+    .then(fillNowPlaying)
+    .catch((err) => {
+      console.log(err);
+    })
+    .finally(() => {
+      clearInterval(window.topSongsFetchInterval);
+      window.topSongsFetchInterval = setInterval(
+        () =>
+          fetchCurrentPlayerStatus()
+            .then(fillNowPlaying)
+            .catch((err) => {
+              console.log(err);
+            }),
+        60000,
+      );
+    });
+}
 
 function fillNowPlaying(currentPlayerStatus = {}) {
-  const { is_playing, item } = currentPlayerStatus;
+  const { is_playing, item = {} } = currentPlayerStatus;
+  const { name: songTitle, artists, external_urls, album = {} } = item;
+  const { images } = album;
+
   if (!is_playing) {
-    notPlayingMessageEl?.classList.remove("displayNone");
-    nowPlayingInfoEl?.classList.add("displayNone");
-    trackVinylEl?.classList.remove("spinVinyl");
+    NowPlayingDom.hideNowPlayingWrapper();
+    NowPlayingDom.showNotPlayingWrapper();
+
+    NowPlayingDom.vinyl.stopSpin();
     return;
   }
-  nowPlayingInfoEl?.classList.remove("displayNone");
-  notPlayingMessageEl?.classList.add("displayNone");
 
-  const { name: songTitle, artists = [], external_urls, album = {} } = item;
+  NowPlayingDom.showNowPlayingWrapper();
+  NowPlayingDom.hideNotPlayingWrapper();
 
-  songTitleEl.innerHTML = songTitle;
-  songTitleEl.href = external_urls.spotify;
-  songTitleEl.target = "_blank";
+  NowPlayingDom.title.setTitle(songTitle);
+  NowPlayingDom.title.setLink(external_urls.spotify);
 
-  artistsEl.innerHTML = "";
+  NowPlayingDom.vinyl.updateImage(images);
+  NowPlayingDom.vinyl.spin();
 
-  const { images = [] } = album;
-  trackVinylEl?.classList.add("spinVinyl");
-  trackVinylEl.style.backgroundImage = `url('${images[1]?.url || images[0]?.url}')`;
-
-  artists.forEach((artist = {}, idx) => {
-    const { name = "", external_urls } = artist;
-    const newArtistEl = document.createElement("a");
-    newArtistEl.innerText = name + (idx === artists.length - 1 ? "" : ", ");
-    newArtistEl.href = external_urls.spotify;
-    newArtistEl.target = "_blank";
-    artistsEl?.append(newArtistEl);
-  });
+  NowPlayingDom.artists.clear();
+  artists?.forEach((artist) => NowPlayingDom.artists.add(artist));
 }
-fetch("https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying")
-  .then((res) => res.json())
-  .then(fillNowPlaying)
-  .catch((err) => {
-    console.log(err);
-  })
-  .finally(() => {
-    clearInterval(window.topSongsFetchInterval);
-    window.topSongsFetchInterval = setInterval(
-      () =>
-        fetch("https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying")
-          .then((res) => res.json())
-          .then(fillNowPlaying)
-          .catch((err) => {
-            console.log(err);
-          }),
-      60000,
-    );
-  });
+
+main();
