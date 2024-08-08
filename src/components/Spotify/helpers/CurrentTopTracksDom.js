@@ -13,11 +13,13 @@ class TopTracksDom {
     const { album = {}, name, external_urls, artists, preview_url } = track;
     const { images = [] } = album;
 
-    const trackDom = new Track();
-    artists.forEach((artist) => trackDom.addArtist(artist));
-    trackDom.updateCoverArt(images, preview_url);
-    trackDom.updateSongTitle(name, external_urls?.spotify);
-    trackDom.apppendToDom(this.getWrapperEl());
+    const trackCard = new Track();
+
+    artists.forEach((artist) => trackCard.addArtist(artist));
+
+    trackCard.updateCoverArt(images, preview_url);
+    trackCard.updateSongTitle(name, external_urls?.spotify);
+    trackCard.apppendToDom(this.getWrapperEl());
   }
 }
 
