@@ -1,48 +1,15 @@
-import {
-  fetchCurrentPlayerStatus,
-  NowPlayingDom,
-} from "./helpers/NowPlayingDom";
+import { fillNowPlaying } from "./helpers/handlers";
+import { fetchCurrentPlayerStatus } from "./helpers/NowPlayingDom";
 
-fetchCurrentPlayerStatus()
-  .then(fillNowPlaying)
-  .catch((err) => {
-    console.log(err);
-  })
-  .finally(() => {
-    clearInterval(window.topSongsFetchInterval);
-    window.topSongsFetchInterval = setInterval(
-      () =>
-        fetchCurrentPlayerStatus()
-          .then(fillNowPlaying)
-          .catch((err) => {
-            console.log(err);
-          }),
-      60000,
-    );
-  });
-
-function fillNowPlaying(currentPlayerStatus = {}) {
-  const { is_playing, item = {} } = currentPlayerStatus;
-  const { name: songTitle, artists, external_urls, album = {} } = item;
-  const { images } = album;
-
-  if (!is_playing) {
-    NowPlayingDom.hideNowPlayingWrapper();
-    NowPlayingDom.showNotPlayingWrapper();
-
-    NowPlayingDom.vinyl.stopSpin();
-    return;
+async function fetchAndFillNowPlaying() {
+  clearTimeout(window.topSongsTimeout);
+  try {
+    fillNowPlaying(await fetchCurrentPlayerStatus());
+  } catch (err) {
+    console.error(err);
+  } finally {
+    window.topSongsTimeout = setTimeout(fetchAndFillNowPlaying, 60000);
   }
-
-  NowPlayingDom.showNowPlayingWrapper();
-  NowPlayingDom.hideNotPlayingWrapper();
-
-  NowPlayingDom.title.setTitle(songTitle);
-  NowPlayingDom.title.setLink(external_urls.spotify);
-
-  NowPlayingDom.vinyl.updateImage(images);
-  NowPlayingDom.vinyl.spin();
-
-  NowPlayingDom.artists.clear();
-  artists?.forEach((artist) => NowPlayingDom.artists.add(artist));
 }
+
+fetchAndFillNowPlaying();
