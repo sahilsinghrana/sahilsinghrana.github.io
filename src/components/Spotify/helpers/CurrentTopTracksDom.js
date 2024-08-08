@@ -13,7 +13,7 @@ class TopTracksDom {
     const { album = {}, name, external_urls, artists, preview_url } = track;
     const { images = [] } = album;
 
-    const trackCard = new Track();
+    const trackCard = new TrackCard();
 
     artists.forEach((artist) => trackCard.addArtist(artist));
 
@@ -25,7 +25,7 @@ class TopTracksDom {
 
 export default TopTracksDom;
 
-class Track {
+class TrackCard {
   constructor() {
     this.createElements();
   }
