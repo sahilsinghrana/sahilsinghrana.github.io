@@ -1,10 +1,11 @@
 import { fetchCurrentPlayerStatus } from "src/scripts/fetchers";
-import { fillNowPlaying } from "./helpers/handlers";
+import { populateNowPlaying } from "./helpers/handlers";
 
 async function fetchAndFillNowPlaying() {
   clearTimeout(window.topSongsTimeout);
+
   try {
-    fillNowPlaying(await fetchCurrentPlayerStatus());
+    populateNowPlaying(await fetchCurrentPlayerStatus());
   } catch (err) {
     console.error(err);
   } finally {

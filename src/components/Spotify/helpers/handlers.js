@@ -1,6 +1,8 @@
+import CurrentTopArtistsDom from "./CurrentTopArtistsDom";
+import TopTracksDom from "./CurrentTopTracksDom";
 import { NowPlayingDom } from "./NowPlayingDom";
 
-export function fillNowPlaying(currentPlayerStatus = {}) {
+export function populateNowPlaying(currentPlayerStatus = {}) {
   const { is_playing, item = {} } = currentPlayerStatus;
   const { name: songTitle, artists, external_urls, album = {} } = item;
   const { images } = album;
@@ -24,4 +26,22 @@ export function fillNowPlaying(currentPlayerStatus = {}) {
 
   NowPlayingDom.artists.clear();
   artists?.forEach((artist) => NowPlayingDom.artists.add(artist));
+}
+
+export function populateTopArtists(topArtists = []) {
+  CurrentTopArtistsDom.clear();
+  topArtists.forEach((artist = {}) => CurrentTopArtistsDom.addArtist(artist));
+}
+
+export function populateTopTracks(topTracks = []) {
+  TopTracksDom.clear();
+  topTracks.forEach((track = {}) => TopTracksDom.addTrack(track));
+}
+
+export function addProfileLinkToSpotifyLogo(url) {
+  const spotifyLogoAnchorEl = document.querySelector(
+    "body > main > div > div.spotifyData > div > a.spotifyLogoContainer",
+  );
+
+  spotifyLogoAnchorEl.href = url;
 }
