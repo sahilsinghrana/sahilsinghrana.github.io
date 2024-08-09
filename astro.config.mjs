@@ -1,10 +1,9 @@
 import { defineConfig } from "astro/config";
 import sitemap from "@astrojs/sitemap";
-// import playformInline from "@playform/inline";
-// import playformCompress from "@playform/compress";
 import rehypeExternalLinks from "rehype-external-links";
 import partytown from "@astrojs/partytown";
 import purgecss from "astro-purgecss";
+import { astroImageTools } from "astro-imagetools";
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,15 +16,7 @@ export default defineConfig({
   build: {
     format: "file",
   },
-  integrations: [
-    partytown(),
-    sitemap(),
-    purgecss(),
-    // playformInline(),
-    // playformCompress({
-    //   brotli: false,
-    // }),
-  ],
+  integrations: [astroImageTools, partytown(), sitemap(), purgecss()],
   prefetch: {
     defaultStrategy: "viewport",
   },
