@@ -15,7 +15,15 @@ export default defineConfig({
   build: {
     format: "file",
   },
-  integrations: [partytown(), sitemap(), purgecss()],
+  integrations: [
+    sitemap(),
+    purgecss(),
+    partytown({
+      config: {
+        forward: ["dataLayer.push"],
+      },
+    }),
+  ],
   prefetch: {
     defaultStrategy: "viewport",
   },

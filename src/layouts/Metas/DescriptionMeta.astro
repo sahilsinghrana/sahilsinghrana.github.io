@@ -1,5 +1,6 @@
 ---
-const { title, description, keywords } = Astro.props;
+import { DEFAULT_META_KEYWORDS } from "../../utils/constants";
+const { title, description, keywords = [] } = Astro.props;
 ---
 
 <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png?v=2" />
@@ -17,7 +18,7 @@ const { title, description, keywords } = Astro.props;
 <meta name="description" content={description} />
 <meta
   name="keywords"
-  content={Array.isArray(keywords) && keywords.length
-    ? keywords.join(",")
-    : "React.js, Node.js, Software, Engineer, Developer, Sahil, Singh, Rana, Programmer, Javascript, html, css, java, Sahil Rana, Sahil Singh Rana"}
+  content={Array.from(new Set([...keywords, ...DEFAULT_META_KEYWORDS])).join(
+    ",",
+  )}
 />
