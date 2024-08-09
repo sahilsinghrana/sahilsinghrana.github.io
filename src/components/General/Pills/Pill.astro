@@ -4,11 +4,14 @@ const { text, link } = Astro.props;
 import "./index.scss";
 ---
 
-<a
-  class="pill"
-  target={link ? "_blank" : "_self"}
-  href={link || "#"}
-  aria-valuetext={text}
->
-  {text}
-</a>
+<>
+  {
+    link ? (
+      <a class="pill" target={link ? "_blank" : "_self"} href={link || "#"}>
+        {text}
+      </a>
+    ) : (
+      <span class="pill">{text}</span>
+    )
+  }
+</>

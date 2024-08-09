@@ -2,7 +2,7 @@
 author: "Sahil Singh Rana"
 image:
   url: "./titleImage.webp"
-  alt: "convert-string-to-literal placeholder image"
+  alt: "Convert Normal Strings to template literals in JavaScript"
 pubDate: 2024-05-29
 title: Convert Normal Strings to template literals in JavaScript
 description: "Learned how to enhance JavaScript strings by converting them into string literals for dynamic content interpolation."

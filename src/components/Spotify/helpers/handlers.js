@@ -21,7 +21,7 @@ export function populateNowPlaying(currentPlayerStatus = {}) {
   NowPlayingDom.title.setTitle(songTitle);
   NowPlayingDom.title.setLink(external_urls.spotify);
 
-  NowPlayingDom.vinyl.updateImage(images);
+  NowPlayingDom.vinyl.updateImage(images, songTitle);
   NowPlayingDom.vinyl.spin();
 
   NowPlayingDom.artists.clear();

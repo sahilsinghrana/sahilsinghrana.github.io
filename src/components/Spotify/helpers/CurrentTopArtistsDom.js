@@ -9,6 +9,7 @@ class ArtistCard {
 
     li.className = "card artistCard";
     img.src = images[1]?.url || images[0]?.url;
+    img.alt = name;
 
     a.href = external_urls?.spotify;
     a.target = "_blank";

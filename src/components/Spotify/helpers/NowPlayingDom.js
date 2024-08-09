@@ -13,8 +13,9 @@ class NowPlayingVinyl {
     this.getVinylEl()?.classList.remove("spinVinyl");
   }
 
-  static updateImage(images = []) {
+  static updateImage(images = [], alt) {
     this.getVinylEl().style.backgroundImage = `url('${images[1]?.url || images[0]?.url}')`;
+    this.getVinylEl().alt = alt;
   }
 }
 

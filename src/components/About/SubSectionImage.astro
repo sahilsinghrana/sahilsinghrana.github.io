@@ -1,7 +1,15 @@
 ---
 import { Picture } from "astro:assets";
 
-const { className = "", src, alt, height, width, widths } = Astro.props;
+const {
+  className = "",
+  src,
+  alt,
+  height,
+  width,
+  widths,
+  loading,
+} = Astro.props;
 ---
 
 <Picture
@@ -12,4 +20,5 @@ const { className = "", src, alt, height, width, widths } = Astro.props;
   alt={alt}
   height={height}
   width={width}
+  loading={loading}
 />

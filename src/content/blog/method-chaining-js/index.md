@@ -2,7 +2,7 @@
 author: "Sahil Rana"
 image:
   url: "./titleImage.webp"
-  alt: "chain-methods"
+  alt: "Method Chaining in Javascript"
 pubDate: 2024-06-28
 title: Method Chaining in Javascript
 description: "Chain Methods to add modularity"

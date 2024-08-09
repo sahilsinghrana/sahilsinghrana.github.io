@@ -2,7 +2,7 @@
 author: "Sahil Singh Rana"
 image:
   url: "./titleImage.webp"
-  alt: "linked-list-with-generators"
+  alt: "Linked List with Javascript Generators and Iterators"
 pubDate: 2024-06-06
 title: Linked List with Javascript Generators and Iterators
 description: "Linked list combined with Javascript Generators and Iterators"

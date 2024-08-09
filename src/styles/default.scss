@@ -1,0 +1,81 @@
+:root {
+  --content-width: 80vw;
+  --content-max-width: 700px;
+
+  --accent1: brown;
+
+  --bottom-spacing: 15px;
+  --top-spacing: 15px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+
+  ::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
+    background-color: #000000 !important;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px !important;
+    background-color: #000000 !important;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: #d3d3d3c7 !important;
+    border: 2px solid #555555 !important;
+  }
+}
+
+body {
+  position: relative;
+  margin: 0;
+  padding: 0;
+
+  background-color: black;
+  color: rgba(245, 245, 245, 0.9);
+
+  font-family: "Manrope", "Roboto", "Inter", Arial, sans-serif;
+  font-optical-sizing: auto;
+  font-kerning: auto;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  .content {
+    max-width: 700px;
+    width: 80vw;
+  }
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  &:hover {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.43);
+    cursor: pointer;
+    color: white;
+  }
+}
+
+h2 {
+  font-size: 1rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: rgba(245, 245, 245, 0.9);
+}

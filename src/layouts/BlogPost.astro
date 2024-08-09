@@ -59,6 +59,7 @@ const { title, image, description, tags, pubDate } = data;
         alt={image.alt}
         height={image.url.height || 100}
         width={image.url.width || 300}
+        loading="eager"
       />
       <div class="head">
         <h2><em>{title}</em></h2>

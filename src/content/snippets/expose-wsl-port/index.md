@@ -1,7 +1,7 @@
 ---
 image:
   url: "./titleImage.webp"
-  alt: "expose-wsl-port"
+  alt: "Expose WSL Port to other adapter interfaces"
 title: Expose WSL Port
 description: "Expose WSL Port to other adapter interfaces"
 tags:

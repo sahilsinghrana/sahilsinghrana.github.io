@@ -1,76 +1,12 @@
-:root {
-  --content-width: 80vw;
-  --content-max-width: 700px;
-
-  --accent1: brown;
-
-  --bottom-spacing: 15px;
-  --top-spacing: 15px;
-}
+@import url("./fonts.scss");
+@import url("./default.scss");
 
 .displayNone {
   display: none !important;
 }
 
-html {
-  scroll-behavior: smooth;
-  overflow-x: hidden;
-
-  ::-webkit-scrollbar-track {
-    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3) !important;
-    background-color: #000000 !important;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px !important;
-    background-color: #000000 !important;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #d3d3d3c7 !important;
-    border: 2px solid #555555 !important;
-  }
-}
-
-body {
-  position: relative;
-  background-color: black;
-  color: white;
-
-  font-family: "Manrope", sans-serif;
-  font-optical-sizing: auto;
-  font-style: normal;
-  margin: 0;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-main {
-  display: flex;
-  justify-content: center;
-  .content {
-    max-width: 700px;
-    width: 80vw;
-  }
-}
-
-a {
-  color: lightslategray;
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  &:hover {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.43);
-    cursor: pointer;
-  }
-}
-
 .bottom-margin {
   margin-bottom: var(--bottom-spacing);
-}
-
-h2 {
-  font-size: 1rem;
 }
 
 .astro-route-announcer {
@@ -133,7 +69,7 @@ h2 {
 .moonFact {
   text-align: center;
   margin-top: 2rem;
-  font-family: sans-serif;
+  font-family: "Inter", sans-serif;
   font-style: italic;
   color: rgba(245, 245, 245, 0.68);
 

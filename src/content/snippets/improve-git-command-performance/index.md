@@ -1,7 +1,7 @@
 ---
 image:
   url: "./titleImage.webp"
-  alt: "sunfloweerr"
+  alt: "Clear git cache to improve performance"
 title: Improve git command performance.
 description: "Clear git cache to improve performance"
 tags: ["howTo", "git", "performance", "cache", "snippet"]

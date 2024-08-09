@@ -17,7 +17,7 @@ class TopTracksDom {
 
     artists.forEach((artist) => trackCard.addArtist(artist));
 
-    trackCard.updateCoverArt(images, preview_url);
+    trackCard.updateCoverArt(images, name, preview_url);
     trackCard.updateSongTitle(name, external_urls?.spotify);
     trackCard.apppendToDom(this.getWrapperEl());
   }
@@ -65,8 +65,9 @@ class TrackCard {
     }
   }
 
-  updateCoverArt(images = [], previewUrl) {
+  updateCoverArt(images = [], alt, previewUrl) {
     this.coverArtEl.src = images[1]?.url || images[0]?.url;
+    this.coverArtEl.alt = alt;
     this.updateCoverArtPreviewUrl(previewUrl);
   }
 
