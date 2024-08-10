@@ -15,20 +15,24 @@
 
 .blog-breadcrumbs {
   ol {
-    padding-inline-start: 0;
-    padding: 0 6px;
-    list-style: none;
     display: flex;
-    gap: 0;
+    flex-wrap: wrap;
+
+    padding-inline-start: 0;
+    padding: 0 2px;
+    list-style: none;
+    gap: 1px;
 
     li {
       &:last-child {
-        background-color: rgba(180, 180, 180, 0.476);
+        background-color: rgba(105, 105, 105, 0.876);
         a {
           color: white;
+          background: rgba(51, 51, 51, 0.628);
         }
       }
 
+      background: rgba(86, 86, 86, 0.792);
       margin: 0;
       clip-path: polygon(77% 0, 100% 50%, 75% 100%, 0% 100%, 11% 50%, 0% 0%);
       height: 95%;
@@ -39,17 +43,21 @@
     }
 
     a {
+      box-shadow: 0px 0px 4px 6px #000;
       text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.7);
-      padding: 5px 14px;
-      border-radius: 10px;
+      padding: 7px 10px;
+      padding-right: 13px;
+      text-align: center;
       color: rgba(241, 241, 241, 0.76);
-      background: rgba(86, 86, 86, 0.492);
       font-size: 0.56rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
       height: 90%;
-      width: 27px;
+      min-width: 3.5rem;
+      width: 10ch;
+      max-width: 15ch;
+      border: none;
 
       &:hover {
         color: white;
