@@ -5,6 +5,7 @@ export function mergeWithDefaultKeywords(keywords = []) {
 const DEFAULT_META_KEYWORDS = [
   "Sahil Rana",
   "React.js",
+  "Reactjs",
   "Node.js",
   "Software",
   "Engineer",
@@ -24,6 +25,9 @@ const DEFAULT_META_KEYWORDS = [
   "Panamax",
   "Mobifin",
   "Sahil Singh Rana",
+  "github",
+  "frontend",
+  "backend",
 ];
 
 export const homePageKeywords = [
