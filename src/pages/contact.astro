@@ -8,20 +8,13 @@ import { links } from "@utils/constants";
 import { Github, Instagram, Linkedin, Twitter } from "lucide-astro";
 
 import "@assets/styles/contact.scss";
+import { contactPageKeyWords } from "@utils/metaKeywords";
 ---
 
 <Layout
   title="Contact | Sahil Rana"
   description="Wanna talk? Let's connect. Reach out to me through this Contact page."
-  keywords={[
-    "Sahil Rana",
-    "Contact",
-    "Portfolio",
-    "Feedback",
-    "Inquiry",
-    "Collaboration",
-    "Opportunities",
-  ]}
+  keywords={contactPageKeyWords}
 >
   <SectionHeaderImage
     title="Contact"

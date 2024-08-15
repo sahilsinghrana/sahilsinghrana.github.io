@@ -17,23 +17,3 @@ export const API_URLS = {
   currentPlayerStatus:
     "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",
 };
-
-export const DEFAULT_META_KEYWORDS = [
-  "Sahil Rana",
-  "React.js",
-  "Node.js",
-  "Software",
-  "Engineer",
-  "Developer",
-  "Sahil",
-  "Singh",
-  "Rana",
-  "Programmer",
-  "Javascript",
-  "html",
-  "css",
-  "java",
-  "Sahil Rana",
-  "Sahil Singh Rana",
-  "SahilSingh",
-];

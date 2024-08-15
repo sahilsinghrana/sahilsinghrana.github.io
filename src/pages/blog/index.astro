@@ -8,6 +8,7 @@ import placeholderImage from "@images/placeholder.webp";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
+import { blogPageKeywords } from "@utils/metaKeywords";
 
 const blogEntries = await getCollection("blog");
 const snippetsEntries = await getCollection("snippets");
@@ -16,16 +17,7 @@ const snippetsEntries = await getCollection("snippets");
 <Layout
   title="Blog | Sahil Rana"
   description={"Welcome to my blog homepage. I write random stuff!"}
-  keywords={[
-    "Blog",
-    "Sahil Rana",
-    "Sahil",
-    "poems",
-    "story",
-    "poem",
-    "Technology",
-    "Javacript",
-  ]}
+  keywords={blogPageKeywords}
 >
   <SectionHeaderImage
     title="Blog"

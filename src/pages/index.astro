@@ -5,6 +5,7 @@ import About from "@components/About/index.astro";
 import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import Spotify from "@components/Spotify/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
+import { homePageKeywords } from "@utils/metaKeywords";
 ---
 
 <head>
@@ -29,41 +30,9 @@ import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 </head>
 
 <Layout
-  title="Sahil Singh Rana"
+  title="Sahil Singh Rana | Sahil Rana"
   description="Hey! Welcome to my portfolio, I am a software engineer currently exploring Web development using amazing technologies like React JS, Node js, Mongo DB"
-  keywords={[
-    "React.js",
-    "Node.js",
-    "Software",
-    "Engineer",
-    "Developer",
-    "Sahil",
-    "SahilSingh",
-    "SahilSingh Rana",
-    "Experience",
-    "Experience",
-    "Insights",
-    "Software developer",
-    "Singh",
-    "About",
-    "Rana",
-    "Programmer",
-    "Javascript",
-    "html",
-    "css",
-    "java",
-    "Sahil Rana",
-    "Sahil Singh Rana",
-    "Software",
-    "Engineer",
-    "Developer",
-    "Webmyne",
-    "Panamax",
-    "Mobifin",
-    "Football",
-    "Contact",
-    "Feedback",
-  ]}
+  keywords={homePageKeywords}
 >
   <About />
   <CurrentMoonInfo />

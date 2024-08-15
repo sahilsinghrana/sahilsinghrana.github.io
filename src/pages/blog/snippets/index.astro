@@ -7,6 +7,7 @@ import Layout from "@layouts/index.astro";
 import placeholderImage from "@images/snippetsPlaceholder.webp";
 
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
+import { snippetsPageKeywords } from "@utils/metaKeywords";
 
 const snippetsEntries = await getCollection("snippets");
 ---
@@ -14,18 +15,7 @@ const snippetsEntries = await getCollection("snippets");
 <Layout
   title="Code Snippets | Sahil Rana"
   description="I post code small code snippets here."
-  keywords={[
-    "Sahil Rana",
-    "Software developer",
-    "Code snippets",
-    "code",
-    "Snippets",
-    "Gists",
-    "List",
-    "Tech",
-    "Technology",
-    "Javascript",
-  ]}
+  keywords={snippetsPageKeywords}
 >
   <SectionHeaderImage
     title="Code Snippets"

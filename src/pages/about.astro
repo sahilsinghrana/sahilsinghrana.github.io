@@ -7,6 +7,7 @@ import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.ast
 import placeholderImage from "@images/placeholder4.webp";
 
 import "@components/About/index.scss";
+import { aboutPageKeywords } from "@utils/metaKeywords";
 ---
 
 <script type="application/ld+json">
@@ -40,30 +41,7 @@ import "@components/About/index.scss";
 <Layout
   title="About | Sahil Rana"
   description="Explore my journey of as a budding software developer, as i share some of my personal insights and aspirations in the world of coding on this About page."
-  keywords={[
-    "Sahil Rana",
-    "Software developer",
-    "Coding journey",
-    "Learning",
-    "Growth",
-    "Aspirations",
-    "Experience",
-    "Insights",
-    "Passion",
-    "Development career",
-    "About",
-    "About Sahil Rana",
-    "Sahil",
-    "Rana",
-    "Singh",
-    "Software",
-    "Engineer",
-    "Developer",
-    "Webmyne",
-    "Panamax",
-    "Mobifin",
-    "Football",
-  ]}
+  keywords={aboutPageKeywords}
 >
   <SectionHeaderImage
     title="About"

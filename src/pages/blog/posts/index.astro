@@ -7,6 +7,7 @@ import Layout from "@layouts/index.astro";
 import placeholderImage from "@images/blogPostsPlaceholder.webp";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
+import { postsPageKeywords } from "@utils/metaKeywords";
 
 const blogEntries = await getCollection("blog");
 ---
@@ -14,15 +15,7 @@ const blogEntries = await getCollection("blog");
 <Layout
   title="Blog Posts | Sahil Rana"
   description="Hey! here I am writing about random topics which i have learned along the way."
-  keywords={[
-    "Sahil Rana",
-    "Software developer",
-    "Blog posts",
-    "List",
-    "Technology",
-    "Technical",
-    "posts",
-  ]}
+  keywords={postsPageKeywords}
 >
   <SectionHeaderImage
     title="Blog Posts"
