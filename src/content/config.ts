@@ -47,8 +47,30 @@ const whyMoonCollection = defineCollection({
     }),
 });
 
+const projectsCollection = defineCollection({
+  type: "content",
+  schema: ({ image }) =>
+    z.object({
+      title: z.string(),
+      description: z.string(),
+      image: z.object({
+        url: image().or(z.string()),
+        alt: z.string(),
+      }),
+      links: z.array(
+        z
+          .object({
+            Icon: z.function(),
+            link: z.string(),
+          })
+          .optional(),
+      ),
+    }),
+});
+
 export const collections = {
   blog: blogCollection,
   snippets: snippetsCollection,
   whyMoon: whyMoonCollection,
+  projects: projectsCollection,
 };
