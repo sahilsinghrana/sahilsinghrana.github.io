@@ -1,0 +1,30 @@
+.resourcesMoonFactsWrapper {
+  h2 {
+    font-size: 1.2rem;
+  }
+  .list {
+    list-style: none;
+    padding-inline-start: 10px;
+    .factWrapper {
+      .factTitle {
+        span::before {
+          content: "🌚";
+          margin: 0;
+          opacity: 0.7;
+          margin-right: 0.5ch;
+        }
+        margin-left: 1ch;
+        font-size: 1rem;
+        font-weight: 800;
+        color: rgb(216, 216, 216);
+        margin-bottom: 0.7rem;
+      }
+      .factDescription {
+        font-size: 0.5rem;
+        color: rgb(222, 222, 222);
+        margin: 0;
+        margin-left: 2ch;
+      }
+    }
+  }
+}

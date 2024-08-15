@@ -1,0 +1,43 @@
+---
+import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
+import Layout from "@layouts/index.astro";
+
+import placeholderImage from "@images/resourcesPlaceholder.webp";
+
+import { resourcesPageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
+
+import "./index.scss";
+import RefLink from "@components/Links/RefLink.astro";
+---
+
+<Layout
+  title="Resources | Sahil Singh Rana | Software Developer | Sahil Rana"
+  description={"Moon Resources and amazing facts about the moon"}
+  keywords={resourcesPageKeywords}
+>
+  <SectionHeaderImage title="Resources" Image={placeholderImage} />
+  <div class="resourcesMoonFactsWrapper">
+    <h2>Amazing facts about the moon</h2>
+    <ul class="list">
+      {
+        Object.values(moonFacts).map((moonFact) => {
+          return (
+            <li class="factWrapper">
+              <p class="factTitle">
+                <span>{moonFact.fact}</span>
+                {moonFact.reference && <RefLink url={moonFact.reference} />}
+              </p>
+              <p class="factDescription">
+                {moonFact.description}
+                {moonFact.descriptionRef && (
+                  <RefLink url={moonFact.descriptionRef} />
+                )}
+              </p>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</Layout>

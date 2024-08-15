@@ -30,6 +30,14 @@ const DEFAULT_META_KEYWORDS = [
   "backend",
 ];
 
+export const resourcesPageKeywords = [
+  "Moon Resources",
+  "Amazing",
+  "Facts",
+  "moon",
+  "maria",
+];
+
 export const homePageKeywords = [
   "React.js",
   "Node.js",

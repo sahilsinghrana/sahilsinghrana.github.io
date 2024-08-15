@@ -1,0 +1,21 @@
+---
+const { url = "", text = "ref" } = Astro.props;
+---
+
+<style>
+  .reflink {
+    font-style: normal;
+    font-size: 0.6em;
+  }
+  .reflink a {
+    color: rgb(176, 176, 255);
+  }
+</style>
+
+<sup class="reflink">
+  [
+  <a target="_blank" href={url}>
+    {text}
+  </a>
+  ]
+</sup>
