@@ -8,6 +8,7 @@ import placeholderImage from "@images/snippetsPlaceholder.webp";
 
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 import { snippetsPageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 
 const snippetsEntries = await getCollection("snippets");
 ---
@@ -20,7 +21,7 @@ const snippetsEntries = await getCollection("snippets");
   <SectionHeaderImage
     title="Code Snippets"
     Image={placeholderImage}
-    quote="The Moon was made when a rock smashed into Earth"
+    quote={moonFacts.makingOfMoon.fact}
     showBreadcrumbs
   />
   <div style="margin-top:3em; min-height: 40vh;">
@@ -39,7 +40,6 @@ const snippetsEntries = await getCollection("snippets");
     }
   </div>
   <div class="moonFact">
-    Many living organisms, including humans, have biological rhythms influenced
-    by lunar cycles.
+    {moonFacts.lunarCycleInfluence.fact}
   </div>
 </Layout>

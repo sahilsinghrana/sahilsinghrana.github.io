@@ -8,6 +8,7 @@ import placeholderImage from "@images/placeholder3.webp";
 
 import "@assets/styles/projects.scss";
 import { projectsPageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 ---
 
 <Layout
@@ -18,7 +19,7 @@ import { projectsPageKeywords } from "@utils/metaKeywords";
   <SectionHeaderImage
     title="Projects"
     Image={placeholderImage}
-    quote="Earth's Moon has no moons of its own."
+    quote={moonFacts.noMoonsOfMoon.fact}
   />
 
   <div class="projectList">
@@ -34,6 +35,6 @@ import { projectsPageKeywords } from "@utils/metaKeywords";
     }
   </div>
   <div class="moonFact">
-    The Moon appears larger near the horizon, but this is an optical illusion.
+    {moonFacts.largerAtHorizon.fact}
   </div>
 </Layout>

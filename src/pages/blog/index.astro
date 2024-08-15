@@ -9,6 +9,7 @@ import placeholderImage from "@images/placeholder.webp";
 import PostCard from "@components/General/Blog/PostCard.astro";
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 import { blogPageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 
 const blogEntries = await getCollection("blog");
 const snippetsEntries = await getCollection("snippets");
@@ -22,7 +23,7 @@ const snippetsEntries = await getCollection("snippets");
   <SectionHeaderImage
     title="Blog"
     Image={placeholderImage}
-    quote="The Moon’s surface is actually dark"
+    quote={moonFacts.darkSurface.fact}
   />
   <p class="pageDesc">
     Welcome to the Blog! I write random stuff out here. Generally posts can be
@@ -77,7 +78,6 @@ const snippetsEntries = await getCollection("snippets");
   </div>
 
   <div class="moonFact">
-    The dark, smooth areas on the Moon are called maria, which are ancient lava
-    flows.
+    {moonFacts.maria.fact}
   </div>
 </Layout>

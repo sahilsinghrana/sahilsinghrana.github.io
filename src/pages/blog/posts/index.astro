@@ -8,6 +8,7 @@ import placeholderImage from "@images/blogPostsPlaceholder.webp";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
 import { postsPageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 
 const blogEntries = await getCollection("blog");
 ---
@@ -20,7 +21,7 @@ const blogEntries = await getCollection("blog");
   <SectionHeaderImage
     title="Blog Posts"
     Image={placeholderImage}
-    quote="The Moon has quakes too"
+    quote={moonFacts.moonQuakes.fact}
     showBreadcrumbs
   />
   <div
@@ -43,7 +44,6 @@ const blogEntries = await getCollection("blog");
     }
   </div>
   <div class="moonFact">
-    The Moon's surface is heavily cratered due to its lack of atmosphere to
-    protect it from impacts.
+    {moonFacts.heavilyCratered.fact}
   </div>
 </Layout>

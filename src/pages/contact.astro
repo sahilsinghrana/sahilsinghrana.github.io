@@ -9,6 +9,7 @@ import { Github, Instagram, Linkedin, Twitter } from "lucide-astro";
 
 import "@assets/styles/contact.scss";
 import { contactPageKeyWords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 ---
 
 <Layout
@@ -19,7 +20,7 @@ import { contactPageKeyWords } from "@utils/metaKeywords";
   <SectionHeaderImage
     title="Contact"
     Image={placeholderImage}
-    quote="The Moon is drifting away from the Earth"
+    quote={moonFacts.drifting.fact}
   />
 
   <div class="contactCardWrapper">
@@ -61,7 +62,6 @@ import { contactPageKeyWords } from "@utils/metaKeywords";
     </div>
   </div>
   <div class="moonFact">
-    The far side of the Moon has a vastly different terrain compared to the near
-    side, with a thicker crust and more craters.
+    {moonFacts.farSideTerrain.fact}
   </div>
 </Layout>

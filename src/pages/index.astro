@@ -6,6 +6,7 @@ import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import Spotify from "@components/Spotify/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 import { homePageKeywords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
 ---
 
 <head>
@@ -39,7 +40,6 @@ import { homePageKeywords } from "@utils/metaKeywords";
   <FeaturedBlogs />
   <Spotify />
   <div class="moonFact">
-    The "dark side" of the Moon receives sunlight, it's just the side we can't
-    see from Earth.
+    {moonFacts.darkSide.fact}
   </div>
 </Layout>
