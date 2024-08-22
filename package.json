@@ -1,5 +1,5 @@
 {
-  "name": "sahilsinghrana.github.io",
+  "name": "https://sahilrana.in",
   "version": "1.0.1",
   "private": false,
   "scripts": {
@@ -16,12 +16,12 @@
   "author": {
     "name": "Sahil Rana",
     "email": "ranasahil98@gmail.com",
-    "url": "https://sahilsinghrana.github.io"
+    "url": "https://sahilrana.in"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
-  "homepage": "https://sahilsinghrana.github.io",
+  "homepage": "https://sahilrana.in",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sahilsinghrana/sahilsinghrana.github.io"
