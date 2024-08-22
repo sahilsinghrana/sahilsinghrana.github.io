@@ -21,7 +21,7 @@
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
   },
-  "homepage": "https://sahilrana.in",
+  "homepage": "https://sahilsinghrana.github.io",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/sahilsinghrana/sahilsinghrana.github.io"
