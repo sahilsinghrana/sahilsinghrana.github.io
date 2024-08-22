@@ -1,0 +1,17 @@
+---
+import DiziPlayerPreview from "@assets/images/DiziPlayerPreview.jpg";
+import Image from "astro/components/Image.astro";
+
+import "./index.scss";
+---
+
+<div class="diziplayerPreviewWrapper">
+  <Image
+    src={DiziPlayerPreview}
+    alt={"dizi player preview"}
+    width={400}
+    height={400}
+    style="height:200px; width:200px;"
+  />
+  <div class="info"><h1>Checkout DIZI</h1></div>
+</div>
