@@ -40,7 +40,7 @@ const projects = [
       },
       {
         Icon: ExternalLink,
-        link: "https://sahilsinghrana.github.io/tictactoevanilla/",
+        link: "https://tictactoe.sahilrana.in",
       },
     ],
   },
@@ -71,7 +71,7 @@ const projects = [
       },
       {
         Icon: ExternalLink,
-        link: "https://sahilsinghrana.github.io/ranexPlayer/",
+        link: "https://diziplayer.sahilrana.in",
       },
     ],
   },
