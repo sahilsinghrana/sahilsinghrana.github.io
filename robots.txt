@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://sahilsinghrana.github.io/sitemap-index.xml
+Sitemap: https://sahilrana.in/sitemap-index.xml
