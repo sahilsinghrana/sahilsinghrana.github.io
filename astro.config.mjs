@@ -11,7 +11,7 @@ export default defineConfig({
   },
   compressHTML: true,
   trailingSlash: "ignore",
-  site: "https://sahilrana.in",
+  site: "https://sahilsinghrana.github.io",
   build: {
     format: "file",
   },
