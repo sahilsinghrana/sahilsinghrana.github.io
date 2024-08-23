@@ -7,6 +7,25 @@ import nextChat from "@images/projects/nextchat.webp";
 import diziPlayer from "@images/projects/diziPlayer.png";
 import iwl from "@images/projects/iwl.webp";
 
+export const diziPlayerMeta = {
+  title: "Dizi Player",
+  image: diziPlayer,
+  content:
+    "Building a Music Player using React as Frontend and Fastify as backend.",
+  links: [
+    {
+      Icon: Github,
+      link: "https://github.com/sahilsinghrana/ranexPlayer",
+      description: "Github",
+    },
+    {
+      Icon: ExternalLink,
+      link: "https://dizi.sahilrana.in",
+      description: "Preview",
+    },
+  ],
+};
+
 const projects = [
   {
     title: "Esp8266 Car",
@@ -59,22 +78,7 @@ const projects = [
       },
     ],
   },
-  {
-    title: "Dizi Player",
-    image: diziPlayer,
-    content:
-      "Building a Music Player using React as Frontend and Fastify as backend.",
-    links: [
-      {
-        Icon: Github,
-        link: "https://github.com/sahilsinghrana/ranexPlayer",
-      },
-      {
-        Icon: ExternalLink,
-        link: "https://dizi.sahilrana.in",
-      },
-    ],
-  },
+  diziPlayerMeta,
   {
     title: "Chat Application",
     image: nextChat,

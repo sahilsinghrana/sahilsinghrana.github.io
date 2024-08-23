@@ -4,6 +4,7 @@ import Layout from "@layouts/index.astro";
 import About from "@components/About/index.astro";
 import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import Spotify from "@components/Spotify/index.astro";
+import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 import { homePageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
@@ -39,6 +40,7 @@ import moonFacts from "@utils/moonFacts";
   <CurrentMoonInfo />
   <FeaturedBlogs />
   <Spotify />
+  <CurrentlyBuilding />
   <div class="moonFact">
     {moonFacts.darkSide.fact}
   </div>

@@ -1,0 +1,44 @@
+---
+import DiziPlayerPreview from "@assets/images/DiziPlayerPreview.jpg";
+import Image from "astro/components/Image.astro";
+
+import "./index.scss";
+import { diziPlayerMeta } from "@utils/projects";
+---
+
+<div class="diziplayerPreviewWrapper">
+  <div class="details">
+    <div class="info">
+      <h1>DiZi {"  "}<span>PLAYER</span></h1>
+      <p>
+        A music player that turns your cloud storage into a personal streaming
+        service. It organizes and manages your tunes, so you can enjoy your
+        music anytime, anywhere!
+      </p>
+    </div>
+    <Image
+      src={DiziPlayerPreview}
+      alt={"dizi player preview"}
+      class="previewImage"
+      width={300}
+      height={300}
+    />
+  </div>
+  <div class="footer">
+    <p class="status"><span>Under Development</span></p>
+    <ul class="links">
+      {
+        diziPlayerMeta.links.map((link) => {
+          const { Icon, link: url, description } = link;
+          return (
+            <li>
+              <a aria-label={description} href={url} target="_blank">
+                <Icon />
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</div>
