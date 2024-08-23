@@ -1,11 +1,21 @@
 ---
 import NavBar from "./NavBar.astro";
 import Title from "./Title.astro";
+import Image from "astro/components/Image.astro";
+
+import catonline from "./catonline.gif";
 
 import "./index.scss";
 ---
 
 <header>
   <Title />
+  <Image
+    src={catonline}
+    alt={"Cat"}
+    class="catImage"
+    width={120}
+    height={120}
+  />
   <NavBar />
 </header>

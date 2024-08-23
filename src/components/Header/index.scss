@@ -1,3 +1,5 @@
+$mobileBreakpoint: 486px;
+
 header {
   border-bottom: 1px solid white;
   padding: 0.8em 0.9em;
@@ -6,6 +8,30 @@ header {
   grid-template-columns: 1fr 2fr;
   align-items: center;
   justify-items: stretch;
+
+  position: relative;
+
+  .catImage {
+    mix-blend-mode: screen;
+    overflow: hidden;
+    bottom: -3.2rem;
+    left: 9rem;
+    height: 120px;
+    width: 120px;
+
+    transform: scaleX(-1);
+
+    position: absolute;
+
+    @media screen and (max-width: $mobileBreakpoint) {
+      position: absolute;
+      transform: scaleX(1);
+      bottom: -3.2rem;
+      left: -1rem;
+      height: 120px;
+      width: 120px;
+    }
+  }
 
   .title {
     display: flex;
