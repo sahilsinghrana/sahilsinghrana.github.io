@@ -5,8 +5,20 @@ class TopTracksDom {
     return document.getElementById("topTracksListContainer");
   }
 
+  static getContainerEl() {
+    return document.getElementById("topTracksContainer");
+  }
+
   static clear() {
     this.getWrapperEl().innerHTML = "";
+  }
+
+  static hide() {
+    this.getContainerEl().style = "display: none;";
+  }
+
+  static show() {
+    this.getContainerEl().style = "";
   }
 
   static addTrack(track = {}) {

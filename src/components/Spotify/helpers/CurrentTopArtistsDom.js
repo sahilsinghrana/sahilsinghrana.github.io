@@ -31,8 +31,22 @@ class CurrentTopArtistsDom {
     );
   }
 
+  static getContainerEl() {
+    return document.querySelector(
+      "body > main > div > div.spotifyData > div > div.topArtistsContainer",
+    );
+  }
+
   static clear() {
     this.getWrapperEl().innerHTML = "";
+  }
+
+  static hide() {
+    this.getContainerEl().style = "display: none;";
+  }
+
+  static show() {
+    this.getWrapperEl().style = "";
   }
 
   static addArtist(artist) {

@@ -29,12 +29,23 @@ export function populateNowPlaying(currentPlayerStatus = {}) {
 }
 
 export function populateTopArtists(topArtists = []) {
+  if (!topArtists.length) {
+    CurrentTopArtistsDom.hide();
+    return;
+  }
   CurrentTopArtistsDom.clear();
+  CurrentTopArtistsDom.show();
   topArtists.forEach((artist = {}) => CurrentTopArtistsDom.addArtist(artist));
 }
 
 export function populateTopTracks(topTracks = []) {
   TopTracksDom.clear();
+  if (!topTracks.length) {
+    TopTracksDom.hide();
+    return;
+  }
+  TopTracksDom.clear();
+  TopTracksDom.show();
   topTracks.forEach((track = {}) => TopTracksDom.addTrack(track));
 }
 
