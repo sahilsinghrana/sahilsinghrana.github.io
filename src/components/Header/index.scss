@@ -12,17 +12,17 @@ header {
   position: relative;
 
   .catImage {
-    mix-blend-mode: screen;
+    mix-blend-mode: lighten;
     overflow: hidden;
     bottom: -3.35rem;
-    left: 9rem;
+    left: 12rem;
     height: 120px;
     width: 120px;
 
     transform: scaleX(-1);
 
     position: absolute;
-
+    z-index: 2;
     @media screen and (max-width: $mobileBreakpoint) {
       position: absolute;
       transform: scaleX(1);
