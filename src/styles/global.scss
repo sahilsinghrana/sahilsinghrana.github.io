@@ -97,3 +97,18 @@
     font-weight: bold;
   }
 }
+
+.linkBtn {
+  transition: outline 100ms linear;
+  padding: 5px 7px;
+  font-size: 0.65rem;
+  background-color: rgba(86, 86, 86, 0.679);
+  color: whitesmoke;
+  border-radius: 18px;
+  outline: 2px solid rgba(255, 255, 255, 0.18);
+  border: 3px solid rgba(0, 0, 0, 0);
+
+  &:hover {
+    outline: 2px solid rgba(255, 255, 255, 0.9);
+  }
+}
