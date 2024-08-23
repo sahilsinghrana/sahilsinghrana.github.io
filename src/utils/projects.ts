@@ -71,7 +71,7 @@ const projects = [
       },
       {
         Icon: ExternalLink,
-        link: "https://diziplayer.sahilrana.in",
+        link: "https://dizi.sahilrana.in",
       },
     ],
   },
