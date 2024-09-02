@@ -9,38 +9,37 @@ import placeholderImage from "@images/placeholder4.webp";
 import "@components/About/index.scss";
 import { aboutPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { Schema } from "astro-seo-schema";
 ---
 
-<script type="application/ld+json">
-  {
-    "@context": "https://schema.org",
-    "@type": "ProfilePage",
-    "dateCreated": "2024-06-11T12:34:00-05:00",
-    "dateModified": "2024-06-11T14:53:00-05:00",
-    "mainEntity": {
-      "@type": "Person",
-      "name": "Sahil Rana",
-      "alternateName": "Sahil Singh Rana",
-      "identifier": "sahilsinghrana",
-      "agentInteractionStatistic": {
-        "@type": "InteractionCounter",
-        "interactionType": "https://schema.org/WriteAction",
-        "userInteractionCount": 5
+<head>
+  <Schema
+    item={{
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      dateCreated: "2024-06-11T12:34:00-05:00",
+      dateModified: "2024-06-11T14:53:00-05:00",
+      mainEntity: {
+        "@type": "Person",
+        name: "Sahil Rana",
+        alternateName: "Sahil Singh Rana",
+        identifier: "sahilsinghrana",
+        description: "Software Developer",
+        image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+        sameAs: [
+          "https://sahilsinghrana.github.io",
+          "https://sahilrana.in",
+          "https://www.linkedin.com/in/sahilsinghrana",
+          "https://x.com/sahilrana010",
+          "https://instagram.com/sahilrana0_0",
+          "https://github.com/sahilsinghrana",
+        ],
       },
-      "description": "Software Developer",
-      "image": "https://avatars.githubusercontent.com/u/48375250?v=4",
-      "sameAs": [
-        "https://sahilsinghrana.github.io",
-        "https://www.linkedin.com/in/sahilsinghrana",
-        "https://x.com/sahilrana010",
-        "https://instagram.com/sahilrana0_0",
-        "https://github.com/sahilsinghrana"
-      ]
-    }
-  }
-</script>
+    }}
+  />
+</head>
 <Layout
-  title="About | Sahil Singh Rana | Software Developer | Sahil Rana"
+  title="About | Sahil Singh Rana | Software Developer"
   description="Explore my journey of as a budding software developer, as i share some of my personal insights and aspirations in the world of coding on this About page."
   keywords={aboutPageKeywords}
 >

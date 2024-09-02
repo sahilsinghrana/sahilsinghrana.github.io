@@ -8,31 +8,31 @@ import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 import { homePageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { Schema } from "astro-seo-schema";
 ---
 
 <head>
-  <script is:inline type="application/ld+json">
-    {
+  <Schema
+    item={{
       "@context": "https://schema.org",
       "@type": "WebSite",
-      "name": "Sahil Rana",
-      "alternateName": [
+      name: "Sahil Rana",
+      alternateName: [
         "Sahil Portfolio",
         "Sahil Rana Portfolio",
         "SSR",
         "Sahil Singh Rana",
         "Sahil",
         "Rana",
-        "Sahil Rana"
       ],
-      "url": "https://sahilsinghrana.github.io",
-      "image": "https://avatars.githubusercontent.com/u/48375250?v=4"
-    }
-  </script>
+      url: "https://sahilrana.in",
+      image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+    }}
+  />
 </head>
 
 <Layout
-  title="Sahil Singh Rana | Software Developer | Sahil Rana"
+  title="Sahil Singh Rana | Software Developer"
   description="Hey! Welcome to my portfolio, I am a software engineer currently exploring Web development using amazing technologies like React JS, Node js, Mongo DB"
   keywords={homePageKeywords}
 >

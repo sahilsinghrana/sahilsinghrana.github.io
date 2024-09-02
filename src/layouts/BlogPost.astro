@@ -1,5 +1,6 @@
 ---
 import { Breadcrumbs } from "astro-breadcrumbs";
+import { Schema } from "astro-seo-schema";
 
 import Layout from "./index.astro";
 import "./blogPost.scss";
@@ -11,6 +12,32 @@ const { entry } = Astro.props;
 const { data } = entry;
 const { title, image, description, tags, pubDate } = data;
 ---
+
+<head>
+  <Schema
+    item={{
+      "@context": "https://schema.org",
+      "@type": "BlogPosting",
+      headline: title,
+      description: description,
+      image: image.url,
+      author: {
+        "@type": "Person",
+        name: "Sahil Rana",
+        url: "https://sahilrana.in",
+      },
+      publisher: {
+        "@type": "Person",
+        name: "Sahil Rana",
+        logo: {
+          "@type": "ImageObject",
+          url: "",
+        },
+      },
+      datePublished: pubDate,
+    }}
+  />
+</head>
 
 <Layout
   title={title + " | Sahil Rana"}

@@ -2,7 +2,7 @@
 
 Welcome to my portfolio site! 🌟
 
-[Deployment Link](https://sahilsinghrana.github.io)
+[Deployment Link](https://sahilrana.in)
 
 Hi, I'm Sahil Singh Rana. I'm a software developer who loves diving into experimental projects to learn and grow. I built this site using AstroJS.
 
