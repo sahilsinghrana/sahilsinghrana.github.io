@@ -39,7 +39,7 @@
   "dependencies": {
     "@astrojs/partytown": "^2.1.1",
     "@astrojs/sitemap": "^3.1.6",
-    "astro": "^4.13.1",
+    "astro": "^4.16.13",
     "astro-breadcrumbs": "^2.3.0",
     "astro-capo": "^0.0.1",
     "astro-purgecss": "^4.1.1",
