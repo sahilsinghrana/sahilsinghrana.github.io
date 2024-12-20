@@ -1,6 +1,5 @@
 ---
 import { Image } from "astro:assets";
-import { getCollection } from "astro:content";
 import { Breadcrumbs } from "astro-breadcrumbs";
 
 import Layout from "@layouts/index.astro";
@@ -10,19 +9,17 @@ import walkingTowardsMoon from "@images/walkingTowardsMoon.webp";
 
 import "@layouts/blogPost.scss";
 
-const listEntries = await getCollection("whyMoon");
 ---
 
 <Layout
-  title={"Why Moon?"}
-  description={"Why moon everywhere?"}
+  title={"Moon"}
   keywords={["Moon", "Why", "Why Moon", "Sahil", "Singh", "Rana"]}
 >
   <div class="blogPostHeading">
     <div class="bg">
       <Image src={chaseMoon} alt="my moon" />
       <div class="head">
-        <h2><em>{"Why Moon?"}</em></h2>
+        <h2><em>{"The Moon"}</em></h2>
         <Breadcrumbs
           linkTextFormat="capitalized"
           mainBemClass="blog-breadcrumbs"
@@ -42,12 +39,6 @@ const listEntries = await getCollection("whyMoon");
     class="blogContent"
     style="width: 100%; text-align: center; margin-top : 50px; margin-bottom : 50px;"
   >
-    <div style="margin-bottom: 30px; text-align:center;">
-      <p style="font-weight: 200; opacity : 0.7; font-size: 0.7rem;">
-        Let me chase the moon, maybe along the way I'll touch the sky!
-      </p>
-    </div>
-
     <q
       style="text-align: center; color : lightgray; font-weight: 600;font-style: italic; font-size: 0.9rem;"
     >
@@ -89,12 +80,9 @@ const listEntries = await getCollection("whyMoon");
       Beneath the moon's soft glow, I feel the weight,<br />
       Of my mistakes, I accept my fate.<br />
       I want to say sorry, but fear the reply,<br />
-      Yet under the moon, I still try.<br />
       <br />
       I know I messed up, I'm ready to learn,<br />
       But the thought of forgiveness, I yearn.<br />
-      Even though it feels like I've done too much wrong,<br />
-      Beneath the moon, I hope to belong.<br />
       <br />
       Though my capabilities may falter and sway,<br />
       I'll strive to improve, day by day.<br />
@@ -115,32 +103,6 @@ const listEntries = await getCollection("whyMoon");
         width={400}
         height={200}
       />
-      <div
-        style="font-size: 0.8rem; color : whitesmoke; opacity : 0.8; width:100%;"
-      >
-        <p style="margin:8px 0">
-          As soon as you experience magic, <br />
-          what you considered as facts turns into lies,<br />
-          what considered as lies turns into belief <br />
-        </p>
-      </div>
     </div>
   </article>
-
-  <nav>
-    <ul
-      style="font-size:0.2rem; display: flex; flex-wrap: wrap; gap : 20px; opacity: 0.2; font-weight: bolder;"
-    >
-      {
-        listEntries.map(async (post) => {
-          const { date } = post.data;
-          return (
-            <li>
-              <a href={`/blog/whyMoon/${date}`}>{date}</a>
-            </li>
-          );
-        })
-      }
-    </ul>
-  </nav>
 </Layout>
