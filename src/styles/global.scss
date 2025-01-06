@@ -112,3 +112,38 @@
     outline: 2px solid rgba(255, 255, 255, 0.9);
   }
 }
+
+.star {
+  position: fixed;
+  z-index: -3;
+  opacity: 0.9;
+  width: 3px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0);
+  border-radius: 5px;
+  animation-name: twinkleAnimation;
+  animation-duration: 200ms;
+  animation-iteration-count: infinite;
+  transition-timing-function: ease-in-out;
+}
+
+@keyframes twinkleAnimation {
+  0% {
+    transform: scale(1, 1);
+    background: rgba(255, 255, 255, 0);
+    animation-timing-function: ease-in;
+  }
+  60% {
+    transform: scale(0.7, 0.7);
+    background: rgba(255, 255, 255, 0.8);
+    animation-timing-function: ease-out;
+  }
+  80% {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1, 1);
+  }
+  100% {
+    background: rgba(255, 255, 255, 0);
+    transform: scale(1, 1);
+  }
+}

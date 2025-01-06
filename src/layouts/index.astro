@@ -18,6 +18,26 @@ const { title, description, keywords } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
+<script>
+  for (let i = 0; i < 12; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+
+    const animationDuration = Math.random() * 9 + 4;
+    const animationDelay = Math.random() * 10 + 6;
+    const windowHeight = window.innerWidth;
+    const windowWidth = window.innerWidth;
+
+    star.style.animationDuration = animationDuration.toString() + "s";
+    star.style.animationDirection = animationDelay.toString() + "s";
+
+    star.style.top = Math.random() * windowHeight + "px";
+    star.style.left = Math.random() * windowWidth + "px";
+
+    document.body.appendChild(star);
+  }
+</script>
+
 <html lang="en">
   <Head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
