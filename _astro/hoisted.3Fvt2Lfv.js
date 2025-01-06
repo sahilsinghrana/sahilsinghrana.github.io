@@ -1,0 +1,1 @@
+for(let n=0;n<12;n++){const t=document.createElement("div");t.className="star";const i=Math.random()*9+4,o=Math.random()*10+6,a=window.innerWidth,e=window.innerWidth;t.style.animationDuration=i.toString()+"s",t.style.animationDirection=o.toString()+"s",t.style.top=Math.random()*a+"px",t.style.left=Math.random()*e+"px",document.body.appendChild(t)}
