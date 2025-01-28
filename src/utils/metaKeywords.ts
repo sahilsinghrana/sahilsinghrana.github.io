@@ -39,6 +39,7 @@ export const resourcesPageKeywords = [
 ];
 
 export const homePageKeywords = [
+  "Sahil Rana",
   "React.js",
   "Node.js",
   "Software",
@@ -59,7 +60,6 @@ export const homePageKeywords = [
   "html",
   "css",
   "java",
-  "Sahil Rana",
   "Sahil Singh Rana",
   "Software",
   "Engineer",
