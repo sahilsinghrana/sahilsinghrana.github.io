@@ -1,3 +1,5 @@
+import { getSmallestImageFromSpotifyImagesArray } from "./utils";
+
 const previewAudioEl = new Audio();
 
 class TopTracksDom {
@@ -78,7 +80,7 @@ class TrackCard {
   }
 
   updateCoverArt(images = [], alt, previewUrl) {
-    this.coverArtEl.src = images[1]?.url || images[0]?.url;
+    this.coverArtEl.src = getSmallestImageFromSpotifyImagesArray(images)?.url;
     this.coverArtEl.alt = alt;
     this.updateCoverArtPreviewUrl(previewUrl);
   }

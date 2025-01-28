@@ -1,4 +1,5 @@
 import { hideElement, showElement } from "src/scripts/domHelpers";
+import { getSmallestImageFromSpotifyImagesArray } from "./utils";
 
 class NowPlayingVinyl {
   static getVinylEl() {
@@ -14,7 +15,8 @@ class NowPlayingVinyl {
   }
 
   static updateImage(images = [], alt) {
-    this.getVinylEl().style.backgroundImage = `url('${images[1]?.url || images[0]?.url}')`;
+    const smallestImage = getSmallestImageFromSpotifyImagesArray(images);
+    this.getVinylEl().style.backgroundImage = `url('${smallestImage?.url}')`;
     this.getVinylEl().alt = alt;
   }
 }

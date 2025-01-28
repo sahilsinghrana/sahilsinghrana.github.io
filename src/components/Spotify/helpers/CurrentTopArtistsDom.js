@@ -1,3 +1,5 @@
+import { getSmallestImageFromSpotifyImagesArray } from "./utils";
+
 class ArtistCard {
   static createArtistCard(artist = {}) {
     const { images, external_urls, name } = artist;
@@ -8,7 +10,7 @@ class ArtistCard {
     const a = document.createElement("a");
 
     li.className = "card artistCard";
-    img.src = images[1]?.url || images[0]?.url;
+    img.src = getSmallestImageFromSpotifyImagesArray(images)?.url;
     img.alt = name;
 
     a.href = external_urls?.spotify;
