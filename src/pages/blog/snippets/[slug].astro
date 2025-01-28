@@ -2,17 +2,18 @@
 import BlogPost from "@layouts/BlogPost.astro";
 import BlogPostContent from "@layouts/BlogPostContent.astro";
 import { getCollection } from "astro:content";
+import { render } from "astro:content";
 
 export async function getStaticPaths() {
   const snippetEntries = await getCollection("snippets");
   return snippetEntries.map((entry) => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 ---
 
 <BlogPost entry={entry}>

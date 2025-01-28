@@ -15,8 +15,11 @@
     }
   },
   "include": [
+    ".astro/types.d.ts",
+    "**/*",
     "src",
     "src/components/Spotify/nowPlaying.js",
     "src/components/Spotify/spotifyTracksAndArtistsfiller.js"
-  ]
+  ],
+  "exclude": ["dist"]
 }

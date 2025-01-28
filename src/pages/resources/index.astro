@@ -25,12 +25,18 @@ import RefLink from "@components/Links/RefLink.astro";
           return (
             <li class="factWrapper">
               <p class="factTitle">
-                <span>{moonFact.fact}</span>
-                {moonFact.reference && <RefLink url={moonFact.reference} />}
+                <span class="factWithIconBullet">
+                  <span>
+                    {moonFact.fact}
+                    {!!moonFact.reference && (
+                      <RefLink url={moonFact.reference} />
+                    )}
+                  </span>
+                </span>
               </p>
               <p class="factDescription">
                 {moonFact.description}
-                {moonFact.descriptionRef && (
+                {!!moonFact.descriptionRef && (
                   <RefLink url={moonFact.descriptionRef} />
                 )}
               </p>

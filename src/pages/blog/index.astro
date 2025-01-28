@@ -44,7 +44,7 @@ const snippetsEntries = await getCollection("snippets");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={"/blog/posts/" + post.slug}
+            slug={"/blog/posts/" + post.id}
           />
         );
       })
@@ -70,7 +70,7 @@ const snippetsEntries = await getCollection("snippets");
             title={title}
             description={description}
             image={image}
-            slug={post.slug}
+            slug={post.id}
           />
         );
       })

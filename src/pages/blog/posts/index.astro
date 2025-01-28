@@ -4,7 +4,7 @@ import { getCollection } from "astro:content";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "@layouts/index.astro";
 
-import placeholderImage from "@images/blogPostsPlaceholder.webp";
+import placeholderImage from "@images/blogPostsPlaceholdercomp.webp";
 
 import PostCard from "@components/General/Blog/PostCard.astro";
 import { postsPageKeywords } from "@utils/metaKeywords";
@@ -37,7 +37,7 @@ const blogEntries = await getCollection("blog");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={"/blog/posts/" + post.slug}
+            slug={"/blog/posts/" + post.id}
           />
         );
       })

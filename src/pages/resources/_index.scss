@@ -1,29 +1,43 @@
 .resourcesMoonFactsWrapper {
   h2 {
-    font-size: 1.2rem;
+    font-size: 1.8rem;
+    margin-bottom: 1.6rem;
+    margin-top: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: lighter;
   }
   .list {
     list-style: none;
     padding-inline-start: 10px;
     .factWrapper {
+      margin-bottom: 2.5rem;
       .factTitle {
-        span::before {
-          content: "🌚";
-          margin: 0;
-          opacity: 0.7;
-          margin-right: 0.5ch;
+        .factWithIconBullet {
+          display: flex;
+          &::before {
+            content: "🌚";
+            margin: 0;
+            opacity: 0.7;
+            margin-right: 0.3ch;
+          }
+          sup {
+            display: inline-block;
+          }
         }
-        margin-left: 1ch;
+        display: flex;
+        margin-left: 0.3ch;
         font-size: 1rem;
         font-weight: 800;
         color: rgb(216, 216, 216);
-        margin-bottom: 0.7rem;
+        margin-bottom: 0.6rem;
       }
       .factDescription {
         font-size: 0.8rem;
-        color: rgb(222, 222, 222);
+        color: rgba(222, 222, 222, 0.874);
         margin: 0;
-        margin-left: 2ch;
+        margin-left: 3ch;
+        text-align: justify;
       }
     }
   }
