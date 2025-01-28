@@ -1,0 +1,1 @@
+import{f as a,a as p,p as c,b as e}from"./handlers.BciWur5D.js";async function i(){try{const s=await a(),{myProfile:t,artists:o,tracks:r}=s;p(t?.external_urls?.spotify),c(o),e(r)}catch(s){console.error(s)}}i();
