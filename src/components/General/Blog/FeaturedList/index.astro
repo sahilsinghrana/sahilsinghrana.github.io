@@ -25,7 +25,7 @@ const snippetsEntries = await getCollection(
               title={title}
               description={description}
               image={image}
-              slug={"/blog/posts/" + post.slug}
+              slug={"/blog/posts/" + post.id}
             />
           </li>
         );
@@ -40,7 +40,7 @@ const snippetsEntries = await getCollection(
               title={title}
               description={description}
               image={image}
-              slug={"/blog/snippets/" + post.slug}
+              slug={"/blog/snippets/" + post.id}
             />
           </li>
         );
