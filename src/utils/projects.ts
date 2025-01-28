@@ -1,10 +1,10 @@
 import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
 
-import esp32Car from "@images/projects/esp8266car.jpg";
+import esp32Car from "@images/projects/esp8266car.webp";
 import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
 import nextChat from "@images/projects/nextchat.webp";
-import diziPlayer from "@images/projects/diziPlayer.png";
+import diziPlayer from "@images/projects/diziPlayer.webp";
 import iwl from "@images/projects/iwl.webp";
 
 export const diziPlayerMeta = {
