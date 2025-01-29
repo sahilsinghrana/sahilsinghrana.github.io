@@ -1,0 +1,18 @@
+---
+const { height, width, alt } = Astro.props;
+import Image from "astro/components/Image.astro";
+
+import { getCurrentMoonPhaseImage } from "@utils/moonPhaseIcon";
+
+const { image, currentPhase } = getCurrentMoonPhaseImage();
+
+import "./index.scss";
+---
+
+<Image
+  src={image}
+  alt={alt || "current moon phase"}
+  class={"moonIconImage " + currentPhase}
+  width={width || 15}
+  height={height || 15}
+/>

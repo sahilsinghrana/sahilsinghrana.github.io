@@ -1,5 +1,4 @@
 .currentMoonInfo {
-  font-family: monospace;
   outline: 1px solid rgba(255, 255, 255, 0.4);
   margin: 1.2rem 0;
   margin-bottom: 0;
@@ -7,6 +6,9 @@
   min-width: 300px;
   background: rgba(0, 0, 0, 0.6);
   overflow: hidden;
+  & > * {
+    font-family: monospace;
+  }
 
   summary {
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
@@ -28,17 +30,30 @@
 
     dd {
       margin-inline-start: 10px;
-      opacity: 0.9;
+      opacity: 0.95;
       color: rgba(0, 189, 0, 0.8);
+      display: flex;
+      align-items: center;
+      height: 18px;
+
       &::before {
         content: "> ";
         font-weight: bold;
+        margin-right: 5px;
+      }
+
+      .moonIconImage {
+        margin-left: 5px;
       }
 
       b {
         opacity: 0.95;
         font-weight: 800;
         color: rgba(0, 189, 0, 0.9);
+        margin-left: 5px;
+        .noMl {
+          margin-left: 0;
+        }
       }
     }
   }

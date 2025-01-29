@@ -1,15 +1,21 @@
 ---
 import "./currentMoonInfo.scss";
+
+import CurrentMoonPhaseIcon from "../General/CurrentMoonPhaseIcon/index.astro";
 ---
 
 <details open class="currentMoonInfo">
   <summary>Moonfull insights</summary>
   <dl class="moonInfo">
     <dd id="moonInfo_waxWane">Phase: <b></b></dd>
-    <dd id="moonInfo_phase">Current Phase: <b></b></dd>
+    <dd id="moonInfo_phase">
+      Current Phase: <CurrentMoonPhaseIcon height={15} width={15} /><b
+        class="noMl"
+      >
+      </b>
+    </dd>
     <dd id="moonInfo_age">Age: <b></b></dd>
     <dd id="moonInfo_agePercent">Age Percent: <b></b></dd>
-    <dd id="moonInfo_distance">Lunar Distance: <b></b></dd>
   </dl>
 </details>
 

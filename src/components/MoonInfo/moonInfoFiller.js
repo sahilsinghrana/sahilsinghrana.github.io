@@ -1,12 +1,7 @@
-import { Moon } from "lunarphase-js";
+import { getCurrentMoonData } from "@utils/moonData";
 
-const phase = Moon.lunarPhase();
-const isWaxing = Moon.isWaxing();
-const isWaning = Moon.isWaning();
-const lunarAge = Moon.lunarAge().toFixed(2).concat(" Days");
-const emojiForLunarPhase = Moon.emojiForLunarPhase(phase).concat(" ", phase);
-const lunarDistance = Moon.lunarDistance().toFixed(2);
-const lunarAgePercent = (Moon.lunarAgePercent() * 100).toFixed(2).concat("%");
+const { isWaxing, isWaning, lunarAge, lunarDistance, lunarAgePercent, phase } =
+  getCurrentMoonData();
 
 const waxWaneText = isWaxing ? "Waxing" : isWaning ? "Waning" : "";
 
@@ -20,4 +15,4 @@ if (waxWaneEl) waxWaneEl.innerHTML = waxWaneText;
 if (ageEl) ageEl.innerHTML = lunarAge;
 if (distanceEl) distanceEl.innerHTML = lunarDistance;
 if (agePercentEl) agePercentEl.innerHTML = lunarAgePercent;
-if (phaseEl) phaseEl.innerHTML = emojiForLunarPhase;
+if (phaseEl) phaseEl.innerHTML = phase;
