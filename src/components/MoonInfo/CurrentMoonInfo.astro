@@ -1,22 +1,19 @@
 ---
+import { getCurrentMoonData } from "@utils/currentMoonData";
+
 import "./currentMoonInfo.scss";
 
-import CurrentMoonPhaseIcon from "../General/CurrentMoonPhaseIcon/index.astro";
+const { phase, lunarAge, lunarAgePercent, waxWaneText } = getCurrentMoonData();
 ---
 
 <details open class="currentMoonInfo">
   <summary>Moonfull insights</summary>
   <dl class="moonInfo">
-    <dd id="moonInfo_waxWane">Phase: <b></b></dd>
+    <dd id="moonInfo_waxWane">Phase: <b>{waxWaneText}</b></dd>
     <dd id="moonInfo_phase">
-      Current Phase: <CurrentMoonPhaseIcon height={15} width={15} /><b
-        class="noMl"
-      >
-      </b>
+      Current Phase: <b>{phase}</b>
     </dd>
-    <dd id="moonInfo_age">Age: <b></b></dd>
-    <dd id="moonInfo_agePercent">Age Percent: <b></b></dd>
+    <dd id="moonInfo_age">Age: <b>{lunarAge}</b></dd>
+    <dd id="moonInfo_agePercent">Age Percent: <b>{lunarAgePercent}</b></dd>
   </dl>
 </details>
-
-<script src="./moonInfoFiller.js"></script>

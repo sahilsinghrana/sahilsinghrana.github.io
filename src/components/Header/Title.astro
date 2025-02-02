@@ -1,8 +1,9 @@
 ---
-import CurrentMoonPhaseIcon from "@components/General/CurrentMoonPhaseIcon/index.astro";
+import Logo from "@images/logo.webp";
+import { Image } from "astro:assets";
 ---
 
 <div class="title">
-  <CurrentMoonPhaseIcon height={20} width={20} alt="logo" />
+  <Image src={Logo} loading="eager" alt="logo" height="20" width="20" />
   <a href="/" class="homeTitle" rel="noreferrer"> Sahil Singh Rana </a>
 </div>

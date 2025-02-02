@@ -11,15 +11,19 @@ featured: true
 tags:
   [
     "howTo",
-    "javascript",
-    "strings",
-    "linked",
-    "list",
-    "generators",
-    "iterators",
     "js",
-    "Sahil",
-    "Rana",
+    "JavaScript",
+    "Linked List",
+    "Generators",
+    "Iterators",
+    "Data Structures",
+    "How to Use Generators",
+    "JavaScript Coding Tips",
+    "Sahil Rana",
+    "Programming Concepts",
+    "Web Development",
+    "JavaScript Tutorials",
+    "Learn JavaScript",
   ]
 ---
 
