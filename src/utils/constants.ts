@@ -1,4 +1,18 @@
-export const links = {
+interface Links {
+  home: string;
+  about: string;
+  contact: string;
+  projects: string;
+  blog: string;
+  resources: string;
+  github: string;
+  linkedin: string;
+  profilePic: string;
+  instagram: string;
+  twitter: string;
+  mail: string;
+}
+export const links: Links = {
   home: "/",
   about: "/about",
   contact: "/contact",
@@ -13,7 +27,11 @@ export const links = {
   mail: "mailto:ranasahil98@gmail.com",
 };
 
-export const API_URLS = {
+interface ApiUrls {
+  topSpotifySongsAndTracks: string;
+  currentPlayerStatus: string;
+}
+export const API_URLS: ApiUrls = {
   topSpotifySongsAndTracks: "https://mytopsongs.sahilsinghrana.workers.dev/",
   currentPlayerStatus:
     "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",

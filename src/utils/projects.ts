@@ -31,7 +31,7 @@ const projects = [
     title: "Esp8266 Car",
     image: esp32Car,
     content:
-      "Built and fixed my old RC car using Esp8266 and L239D Motor Driver. With a buzzer to play honk sounds and a web controller to control the car.",
+      "Restored my old RC car using an ESP8266 microcontroller and an L293D motor driver. The car is now controlled via a web interface and features a buzzer that plays honking sounds.",
     links: [
       {
         Icon: Github,
@@ -47,7 +47,7 @@ const projects = [
     title: "TicTacToe",
     image: TicTacToeVanilla,
     content:
-      "Built a Node.js Package to play TicTacToe with the CPU usin Min-Max algorithm.",
+      "Developed a Node.js package that enables users to play Tic Tac Toe against the CPU using the Min-Max algorithm.",
     links: [
       {
         Icon: Github,
@@ -66,7 +66,7 @@ const projects = [
   {
     title: "Namaste-sahil",
     image: npxNamasteSahil,
-    content: "Built a npx script to greet me.",
+    content: "Created an npx script that provides a personalized greeting.",
     links: [
       {
         Icon: Github,
@@ -83,7 +83,7 @@ const projects = [
     title: "Chat Application",
     image: nextChat,
     content:
-      "Built a chat application using Next.js as Frontend and Express.js.",
+      "Developed a chat application with Next.js for the frontend and Express.js for the backend.",
     links: [
       {
         Icon: ExternalLink,
@@ -95,7 +95,7 @@ const projects = [
     title: "IWL 2021 Sponsorship Brochure",
     image: iwl,
     content:
-      "Designed AIFF Indian Women's League 2021 Sponsorship Brochure for Baroda Football Academy using Adobe InDesign.",
+      "Created the sponsorship brochure for the AIFF Indian Women's League 2021, designed for Baroda Football Academy, using Adobe InDesign.",
     links: [
       {
         Icon: ExternalLink,
