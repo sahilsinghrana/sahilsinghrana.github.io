@@ -5,28 +5,27 @@ image:
   alt: "Method Chaining in Javascript"
 pubDate: 2024-06-28
 title: Method Chaining in Javascript
-description: "Chain Methods to add modularity"
+description: "Chain Methods to add modularity. Kind of builder pattern"
 slug: chain-javascript-methods
 featured: true
 tags:
-  [
-    "method",
-    "chaining",
-    "javascript",
-    "modules",
-    "oops",
-    "oopj",
-    "object",
-    "oriented",
-    "js",
-    "Sahil",
-    "Rana",
-  ]
+[
+    "JavaScript",
+    "Method Chaining",
+    "OOP",
+    "Object-Oriented Programming",
+    "Modular Code",
+    "Coding Best Practices",
+    "Sahil Rana",
+    "JS Techniques",
+    "Web Development",
+    "Programming Patterns"
+]
 ---
 
 # Method Chaining in Javascript
 
-Method chaining in JavaScript allows us to link multiple method calls together in a single statement, enhancing code readability and modularity. In this blog post, we'll delve into how method chaining works and why it's beneficial for building modular features.
+Method chaining in JavaScript lets us link multiple method calls together in a single statement, making our code more readable and modular. Think of it like the builder pattern—where you can stack up commands to create something awesome step by step! In this blog post, we'll dive into how method chaining works.
 
 ### Table of Contents
 

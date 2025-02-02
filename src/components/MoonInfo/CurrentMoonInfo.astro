@@ -3,7 +3,8 @@ import { getCurrentMoonData } from "@utils/currentMoonData";
 
 import "./currentMoonInfo.scss";
 
-const { phase, lunarAge, lunarAgePercent, waxWaneText } = getCurrentMoonData();
+const { phase, lunarAge, lunarAgePercent, waxWaneText, emojiForLunarPhase } =
+  getCurrentMoonData();
 ---
 
 <details open class="currentMoonInfo">
@@ -11,7 +12,7 @@ const { phase, lunarAge, lunarAgePercent, waxWaneText } = getCurrentMoonData();
   <dl class="moonInfo">
     <dd id="moonInfo_waxWane">Phase: <b>{waxWaneText}</b></dd>
     <dd id="moonInfo_phase">
-      Current Phase: <b>{phase}</b>
+      Current Phase: <b>{emojiForLunarPhase}{phase}</b>
     </dd>
     <dd id="moonInfo_age">Age: <b>{lunarAge}</b></dd>
     <dd id="moonInfo_agePercent">Age Percent: <b>{lunarAgePercent}</b></dd>
