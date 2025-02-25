@@ -1,11 +1,11 @@
 import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
 
-import esp32Car from "@images/projects/esp8266car.webp";
-import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
-import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
-import nextChat from "@images/projects/nextchat.webp";
-import diziPlayer from "@images/projects/diziPlayer.webp";
 import iwl from "@images/projects/iwl.webp";
+import nextChat from "@images/projects/nextchat.webp";
+import esp32Car from "@images/projects/esp8266car.webp";
+import diziPlayer from "@images/projects/diziPlayer.webp";
+import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
+import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
 
 export const diziPlayerMeta = {
   title: "Dizi Player",
@@ -26,7 +26,26 @@ export const diziPlayerMeta = {
   ],
 };
 
+export const jsonViewerMeta = {
+  title: "JSON Viewer and formatter",
+  image: "https://jsonviewer.sahilrana.in/jsonviewerscreenshot.png",
+  logo: "https://jsonviewer.sahilrana.in/og-image.webp",
+  content:
+    "Developed a JSON Viewer and formatter with dark mode using React.js.",
+  links: [
+    {
+      Icon: Github,
+      link: "https://github.com/sahilsinghrana/jsonviewer",
+    },
+    {
+      Icon: ExternalLink,
+      link: "https://jsonviewer.sahilrana.in",
+    },
+  ],
+};
+
 const projects = [
+  jsonViewerMeta,
   {
     title: "Esp8266 Car",
     image: esp32Car,
@@ -63,6 +82,7 @@ const projects = [
       },
     ],
   },
+  diziPlayerMeta,
   {
     title: "Namaste-sahil",
     image: npxNamasteSahil,
@@ -78,7 +98,6 @@ const projects = [
       },
     ],
   },
-  diziPlayerMeta,
   {
     title: "Chat Application",
     image: nextChat,

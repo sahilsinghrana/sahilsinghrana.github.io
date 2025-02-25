@@ -1,0 +1,52 @@
+---
+import Image from "astro/components/Image.astro";
+
+import { jsonViewerMeta } from "@utils/projects";
+
+import "./index.scss";
+---
+
+<div class="jsonViewerPreviewWrapper previewWrapper">
+  <div class="details">
+    <div class="info">
+      <h2 class="jsonViewerTitle">
+        <span><span class="glitch">JSON</span> Viewer</span>
+        <span><span class="glitch">JSON</span> Viewer</span>
+        <span><span class="glitch">JSON</span> Viewer</span>
+      </h2>
+      <p>
+        JSON viewer that works in dark and light mode.
+        <br />
+        Building this simplistic tool which gives freedom to format json with custom
+        spacing and a clean tree view.
+        <br />
+        In future, will be adding features like unstringify, an easy path selection,
+        export to file and more.
+      </p>
+    </div>
+    <Image
+      src={jsonViewerMeta.logo}
+      alt={"JSON Player preview"}
+      class="previewImage"
+      width={300}
+      height={300}
+    />
+  </div>
+  <div class="footer">
+    <p class="status"><span>Under Development</span></p>
+    <ul class="links">
+      {
+        jsonViewerMeta.links.map((link) => {
+          const { Icon, link: url, description } = link;
+          return (
+            <li>
+              <a aria-label={description} href={url} target="_blank">
+                <Icon />
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</div>

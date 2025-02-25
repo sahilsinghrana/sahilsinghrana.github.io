@@ -1,12 +1,13 @@
 ---
-import DiziPlayerPreview from "@assets/images/DiziPlayerPreview.webp";
 import Image from "astro/components/Image.astro";
+import DiziPlayerPreview from "@assets/images/DiziPlayerPreview.webp";
+
+import { diziPlayerMeta } from "@utils/projects";
 
 import "./index.scss";
-import { diziPlayerMeta } from "@utils/projects";
 ---
 
-<div class="diziplayerPreviewWrapper">
+<div class="diziplayerPreviewWrapper previewWrapper">
   <div class="details">
     <div class="info">
       <h2 class="diziTitle">DiZi {"  "}<span>PLAYER</span></h2>
