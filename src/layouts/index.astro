@@ -18,7 +18,7 @@ const { title, description, keywords } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 ---
 
-<script defer>
+<script>
   for (let i = 0; i < 7; i++) {
     const star = document.createElement("div");
     star.className = "star";
