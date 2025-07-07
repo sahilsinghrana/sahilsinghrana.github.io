@@ -1,1 +1,0 @@
-import{c as e,d as a}from"./handlers.BrGP_Afp.js";async function o(){clearTimeout(window.topSongsTimeout);try{e(await a())}catch(t){console.error(t)}finally{window.topSongsTimeout=setTimeout(o,6e4)}}o();
