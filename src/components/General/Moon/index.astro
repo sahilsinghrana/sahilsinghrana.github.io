@@ -5,4 +5,25 @@ import "./index.scss";
 import { Image } from "astro:assets";
 ---
 
+<script>
+  import { getRandom } from "@components/Spotify/helpers/utils";
+
+  const body = document.getElementsByTagName("body");
+  const meteorDiv = document.createElement("div");
+  meteorDiv.className = "meteor";
+  for (let i = 0; i <= 28; i++) {
+    const left = Math.floor(getRandom(-150, 150));
+    const delay = getRandom(0, 28).toFixed(2);
+    const width = getRandom(50, 350);
+    const height = getRandom(0.5, 3);
+
+    meteorDiv.style.setProperty("--width", `${width}px`);
+    meteorDiv.style.setProperty("--height", `${height}px`);
+    meteorDiv.style.setProperty("--left", `${left}%`);
+    meteorDiv.style.setProperty("--delay", `${delay}s`);
+
+    body.item(0)?.appendChild(meteorDiv.cloneNode(true));
+  }
+</script>
+
 <Image src={Moon} height={300} width={310} class="myMoon" alt="Sahil's Moon." />

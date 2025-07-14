@@ -24,3 +24,31 @@
     offset-distance: 100%;
   }
 }
+
+.meteor {
+  position: fixed;
+  top: -30px;
+  width: var(--width);
+  height: var(--height);
+  background: linear-gradient(90deg, transparent, rgba(184, 209, 216, 0.4));
+  opacity: 0;
+  transform: rotate(45deg);
+  animation: meteorFall 10s ease-in infinite;
+  left: var(--left, 50%);
+  animation-delay: var(--delay);
+  z-index: -50;
+}
+
+@keyframes meteorFall {
+  0% {
+    opacity: 0;
+    transform: translateX(0) translateY(0) rotate(45deg);
+  }
+  10% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateX(1200px) translateY(1200px) rotate(45deg);
+    opacity: 0;
+  }
+}

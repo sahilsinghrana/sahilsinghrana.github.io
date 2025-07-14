@@ -1,6 +1,5 @@
 ---
 import { Picture } from "astro:assets";
-
 const {
   className = "",
   src,
@@ -12,13 +11,26 @@ const {
 } = Astro.props;
 ---
 
-<Picture
-  formats={["avif", "webp"]}
-  widths={widths || [80, 450]}
-  class={className}
-  src={src}
-  alt={alt}
-  height={height}
-  width={width}
-  loading={loading}
-/>
+<div id="profilePicContainer" class="profilePicContainer">
+  <Picture
+    formats={["avif", "webp"]}
+    widths={widths || [80, 450]}
+    class={className}
+    src={src}
+    alt={alt}
+    height={height}
+    width={width}
+    loading={loading}
+  />
+</div>
+
+<script>
+  import { getCurrentMoonData } from "@utils/currentMoonData";
+
+  const profilePicContainer = document.getElementById("profilePicContainer");
+  const lunarAgePercent = Number(
+    getCurrentMoonData().lunarAgePercent.replace("%", "").trim(),
+  ).toFixed(2);
+  if (profilePicContainer)
+    profilePicContainer.style.setProperty("--percent", lunarAgePercent);
+</script>

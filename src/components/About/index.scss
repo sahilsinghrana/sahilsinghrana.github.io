@@ -37,16 +37,42 @@ section.heading {
   margin-bottom: 20px;
   display: grid;
   place-items: center;
-  img {
-    border-radius: 100%;
+
+  .profilePicContainer {
     height: 150px;
     width: 150px;
-    object-fit: cover;
+    position: relative;
+    border-radius: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: clip;
+    --percent: 100;
+    --glow-size: calc(var(--percent) * 0.9px);
+    --glow-opacity: calc(var(--percent) / 100);
 
-    &.Full {
-      box-shadow: 0px 0px 20px 14px #7171715e;
+    position: relative;
+    box-shadow:
+      0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
+      0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));
+    transition: box-shadow 2s ease;
+
+    .profileImage {
+      object-fit: cover;
+      position: absolute;
+      height: 100%;
+      width: 100%;
+      z-index: 9;
+      top: 0;
+      left: 0;
+      opacity: 1;
+
+      &.Full {
+        box-shadow: 0px 0px 20px 14px #7171715e;
+      }
     }
   }
+
   div {
     display: flex;
     justify-content: center;
