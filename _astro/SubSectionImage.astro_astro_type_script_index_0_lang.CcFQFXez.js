@@ -1,0 +1,1 @@
+import{g as t}from"./currentMoonData.DE33Rzal.js";const e=document.getElementById("profilePicContainer"),r=Number(t().lunarAgePercent.replace("%","").trim()).toFixed(2);e&&e.style.setProperty("--percent",r);
