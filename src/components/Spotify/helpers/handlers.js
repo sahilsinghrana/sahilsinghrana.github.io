@@ -44,7 +44,6 @@ export function populateTopTracks(topTracks = []) {
     TopTracksDom.hide();
     return;
   }
-  TopTracksDom.clear();
   TopTracksDom.show();
   topTracks.forEach((track = {}) => TopTracksDom.addTrack(track));
 }
