@@ -13,6 +13,8 @@ header {
 
   .catImage {
     mix-blend-mode: lighten;
+    filter: contrast(1.2);
+    opacity: 0.9;
     overflow: hidden;
     bottom: -3.35rem;
     left: 12rem;
