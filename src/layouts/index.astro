@@ -7,7 +7,6 @@ import Moon from "@components/General/Moon/index.astro";
 
 import OgMeta from "./Metas/OgMeta.astro";
 import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
-import GtagBodyScripts from "./Metas/GtagBodyScripts.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
 const { title, description, keywords } = Astro.props;
@@ -67,7 +66,6 @@ import "@styles/global.scss";
   </Head>
 
   <body>
-    <GtagBodyScripts />
     <Header />
     <Moon />
     <main>
