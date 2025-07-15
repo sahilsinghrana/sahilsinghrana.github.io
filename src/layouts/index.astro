@@ -13,6 +13,7 @@ const { title, description, keywords } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
 import "@styles/global.scss";
+import Sagittarius from "./Constellations/Sagittarius.astro";
 ---
 
 <script>
@@ -71,6 +72,7 @@ import "@styles/global.scss";
     <main>
       <div class="content">
         <slot />
+        <Sagittarius />
       </div>
     </main>
     <Footer />
