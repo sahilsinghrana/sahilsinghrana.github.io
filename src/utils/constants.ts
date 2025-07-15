@@ -36,3 +36,21 @@ export const API_URLS: ApiUrls = {
   currentPlayerStatus:
     "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",
 };
+
+export const SAGITTARIUS = {
+  stars: {
+    Ascella: "Ascella", //done
+    Alnasl: "Alnasl", //done
+    Albaldah: "Albaldah", // done
+    ArkabPrior: "Arkab Prior", //done
+    ArkabPosterior: "Arkab Posterior", // done
+    KausAustralis: "Kaus Australis", // done
+    KausMedia: "Kaus Media", // done
+    KausBorealis: "Kaus Borealis", // done
+    Nunki: "Nunki", // done
+    // Polis: "Polis",
+    // RhoSagittarii: "Rho Sagittarii",
+    // TauSagittarii: "Tau Sagittarii",
+    // Terebellum: "Terebellum",
+  },
+};
