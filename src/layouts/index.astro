@@ -3,36 +3,36 @@ import { Head } from "astro-capo";
 
 import Header from "@components/Header/index.astro";
 import Footer from "@components/Footer/index.astro";
-
-import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
-import GtagBodyScripts from "./Metas/GtagBodyScripts.astro";
-import OgMeta from "./Metas/OgMeta.astro";
-import DescriptionMeta from "./Metas/DescriptionMeta.astro";
-
 import Moon from "@components/General/Moon/index.astro";
 
-import "@styles/global.scss";
+import OgMeta from "./Metas/OgMeta.astro";
+import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
+import GtagBodyScripts from "./Metas/GtagBodyScripts.astro";
+import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
 const { title, description, keywords } = Astro.props;
-
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
+
+import "@styles/global.scss";
 ---
 
 <script>
+  import { getRandom } from "@components/Spotify/helpers/utils";
+
   for (let i = 0; i < 7; i++) {
     const star = document.createElement("div");
     star.className = "star";
 
-    const animationDuration = Math.random() * 9 + 4;
-    const animationDelay = Math.random() * 10 + 6;
+    const animationDuration = getRandom(4, 11, 0.5);
+    const animationDelay = getRandom(1, 14, 0.5);
     const windowHeight = window.innerWidth;
     const windowWidth = window.innerWidth;
 
     star.style.animationDuration = animationDuration.toString() + "s";
     star.style.animationDirection = animationDelay.toString() + "s";
 
-    star.style.top = Math.random() * windowHeight + "px";
-    star.style.left = Math.random() * windowWidth + "px";
+    star.style.top = getRandom(2, windowHeight) + "px";
+    star.style.left = getRandom(2, windowWidth) + "px";
 
     document.body.appendChild(star);
   }

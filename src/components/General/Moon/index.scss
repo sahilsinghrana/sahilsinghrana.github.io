@@ -45,10 +45,10 @@
     transform: translateX(0) translateY(0) rotate(45deg);
   }
   10% {
-    opacity: 0.3;
+    opacity: 0.4;
   }
   100% {
-    transform: translateX(1200px) translateY(1200px) rotate(45deg);
+    transform: translateX(1100px) translateY(1100px) rotate(45deg);
     opacity: 0;
   }
 }

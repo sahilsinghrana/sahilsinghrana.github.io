@@ -1,8 +1,9 @@
 ---
+import Image from "astro/components/Image.astro";
 import "./currentMoonInfo.scss";
+// import fullMoon from "./fullMoon.png";
+import moonGanymede from "./moonGanymede.jpg";
 ---
-
-<script src="./moonInfoFiller.js"></script>
 
 <details open class="currentMoonInfo">
   <summary>Moonfull insights</summary>
@@ -14,4 +15,17 @@ import "./currentMoonInfo.scss";
     <dd id="moonInfo_age">Age: <b>calculating...</b></dd>
     <dd id="moonInfo_agePercent">Age Percent: <b>calculating...</b></dd>
   </dl>
+  <div class="moonPhaseContainer">
+    <Image
+      id="moonPhaseImage"
+      width="50"
+      height="50"
+      src={moonGanymede}
+      alt="moonGanymede"
+    />
+    <canvas id="moonPhaseCanvas" width="50" height="50"></canvas>
+  </div>
 </details>
+
+<script src="./moonInfoFiller.js"></script>
+<script src="./moonPhaseFiller.js"></script>

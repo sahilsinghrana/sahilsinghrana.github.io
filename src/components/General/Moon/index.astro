@@ -1,8 +1,9 @@
 ---
+import { Image } from "astro:assets";
+
 import Moon from "./moon.webp";
 
 import "./index.scss";
-import { Image } from "astro:assets";
 ---
 
 <script>
@@ -11,11 +12,12 @@ import { Image } from "astro:assets";
   const body = document.getElementsByTagName("body");
   const meteorDiv = document.createElement("div");
   meteorDiv.className = "meteor";
+
   for (let i = 0; i <= 28; i++) {
-    const left = Math.floor(getRandom(-150, 150));
-    const delay = getRandom(0, 28).toFixed(2);
-    const width = getRandom(50, 350);
-    const height = getRandom(0.5, 3);
+    const left = Math.floor(getRandom(-120, 120));
+    const delay = i === 0 ? 1 : getRandom(0, 28).toFixed(2);
+    const width = getRandom(60, 360);
+    const height = getRandom(0.3, 3.8, 0.1);
 
     meteorDiv.style.setProperty("--width", `${width}px`);
     meteorDiv.style.setProperty("--height", `${height}px`);
