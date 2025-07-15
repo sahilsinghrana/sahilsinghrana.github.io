@@ -1,0 +1,1 @@
+function h(o=[]){return o.filter(t=>t.height>50).sort((t,a)=>t.height-a.height).at(0)}function g(o,t,a=1){const r=1/a,e=Math.floor((t-o)*r+1),n=Math.floor(Math.random()*e),s=o+n*a;return Math.round(s*r)/r}export{h as a,g};
