@@ -9,7 +9,7 @@ async function fetchAndFillNowPlaying() {
   } catch (err) {
     console.error(err);
   } finally {
-    window.topSongsTimeout = setTimeout(fetchAndFillNowPlaying, 60000);
+    window.topSongsTimeout = setTimeout(fetchAndFillNowPlaying, 30000);
   }
 }
 

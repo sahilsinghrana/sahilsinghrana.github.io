@@ -1,8 +1,11 @@
+$codeGreen: rgba(0, 189, 0, 0.8);
+$borderRadius: 10px;
 .currentMoonInfo {
+  position: relative;
   outline: 1px solid rgba(255, 255, 255, 0.4);
   margin: 1.2rem 0;
   margin-bottom: 0;
-  border-radius: 10px;
+  border-radius: $borderRadius;
   min-width: 300px;
   background: rgba(0, 0, 0, 0.6);
   overflow: hidden;
@@ -31,7 +34,7 @@
     dd {
       margin-inline-start: 10px;
       opacity: 0.95;
-      color: rgba(0, 189, 0, 0.8);
+      color: $codeGreen;
       display: flex;
       align-items: center;
       height: 18px;
@@ -56,5 +59,27 @@
         }
       }
     }
+  }
+}
+
+.moonPhaseContainer {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  z-index: 10;
+  border: 2px solid rgba(158, 158, 158, 0.562);
+  padding: 3px;
+  border-radius: $borderRadius;
+
+  opacity: 0.55;
+
+  #moonPhaseCanvas {
+    background: black;
+    display: block;
+    border-radius: 50%;
+  }
+
+  #moonPhaseImage {
+    display: none;
   }
 }
