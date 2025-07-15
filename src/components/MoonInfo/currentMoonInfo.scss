@@ -64,14 +64,14 @@ $borderRadius: 10px;
 
 .moonPhaseContainer {
   position: absolute;
-  bottom: 4px;
-  right: 4px;
+  bottom: 4.5px;
+  right: 4.5px;
   z-index: 10;
-  border: 2px solid rgba(158, 158, 158, 0.562);
-  padding: 3px;
+  border: 3px solid rgba(158, 158, 158, 0.3);
+  padding: 3.5px;
   border-radius: $borderRadius;
 
-  opacity: 0.55;
+  opacity: 0.5;
 
   #moonPhaseCanvas {
     background: black;

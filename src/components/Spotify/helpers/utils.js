@@ -9,6 +9,10 @@ export function minMax(value, min, max) {
   return Math.min(Math.max(value, min), max);
 }
 
-export function getRandom(min, max) {
-  return Math.floor(Math.random() * (max - min + 1) + min);
+export function getRandom(min, max, step = 1) {
+  const precision = 1 / step;
+  const steps = Math.floor((max - min) * precision + 1);
+  const randomStep = Math.floor(Math.random() * steps);
+  const value = min + randomStep * step;
+  return Math.round(value * precision) / precision;
 }
