@@ -64,11 +64,13 @@ $borderRadius: 10px;
 
 .moonPhaseContainer {
   position: absolute;
-  bottom: 4.5px;
-  right: 4.5px;
+  overflow: clip;
+
+  bottom: 4.2px;
+  right: 4.2px;
   z-index: 10;
-  border: 3px solid rgba(158, 158, 158, 0.3);
-  padding: 3.5px;
+  border: 2px solid rgba(158, 158, 158, 0.3);
+  padding: 3.3px;
   border-radius: $borderRadius;
 
   opacity: 0.5;
