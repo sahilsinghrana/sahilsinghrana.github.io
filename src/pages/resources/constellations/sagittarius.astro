@@ -4,6 +4,7 @@ import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.ast
 import SagittariusComp from "@components/Constellations/SagittariusComp.astro";
 import { resourcesPageKeywords } from "@utils/metaKeywords";
 import placeholderImage from "@images/resourcesPlaceholder.webp";
+import sagittariusFacts from "@utils/constellation/sagittariusFacts";
 
 import "./sagittarius.scss";
 ---
@@ -24,5 +25,17 @@ import "./sagittarius.scss";
     <div class="sagittarius-wrapper">
       <SagittariusComp />
     </div>
+
+    <ul>
+      {
+        Object.values(sagittariusFacts).map((fact) => {
+          return (
+            <li>
+              <strong>{fact.fact}:</strong> {fact.description}
+            </li>
+          );
+        })
+      }
+    </ul>
   </div>
 </Layout>
