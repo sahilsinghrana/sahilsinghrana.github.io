@@ -5,8 +5,8 @@ import { SAGITTARIUS } from "@utils/constants";
 import "./sagittarius.scss";
 ---
 
-<div class="sagittarius-container">
-  <div class="img-container">
+<div id="sagittarius-container" class="sagittarius-container">
+  <div id="sagImage" class="img-container">
     <Image
       src={saggitarius}
       alt="Sagittarius Constellation Background"
@@ -23,3 +23,13 @@ import "./sagittarius.scss";
     }
   </div>
 </div>
+
+<script>
+  const sagContainer = document.getElementById("sagImage");
+  console.log(sagContainer);
+  if (sagContainer) {
+    sagContainer.addEventListener("click", () => {
+      console.log("Sagittarius Clicked");
+    });
+  }
+</script>

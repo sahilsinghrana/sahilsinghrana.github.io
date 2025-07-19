@@ -1,4 +1,6 @@
 footer {
+  pointer-events: none;
+
   min-height: 150px;
   padding-top: 10px;
   font-size: 0.9rem;
@@ -32,6 +34,7 @@ footer {
 
       a {
         color: gray;
+        pointer-events: auto;
 
         &:hover {
           color: white;
@@ -50,6 +53,8 @@ footer {
       display: flex;
       gap: 15px;
       a {
+        pointer-events: auto;
+
         color: rgb(128, 128, 128);
         &:hover {
           color: white;
@@ -64,6 +69,8 @@ footer {
     width: 100%;
     place-items: center;
     margin-bottom: 20px;
+    pointer-events: none;
+
     .copyright {
       width: 100%;
       display: flex;
