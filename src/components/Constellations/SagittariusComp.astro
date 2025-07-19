@@ -1,0 +1,30 @@
+---
+import { Image } from "astro:assets";
+import saggitarius from "./sagittariusConstBG.jpg";
+import { SAGITTARIUS } from "@utils/constants";
+import "./SagittariusComp.scss";
+---
+
+<div id="sagImage" class="sagImage-container">
+  <Image
+    src={saggitarius}
+    alt="Sagittarius Constellation Background"
+    class="image"
+    loading="lazy"
+  />
+
+  {
+    Object.entries(SAGITTARIUS.stars).map(([starKey, starName]) => {
+      return <div data-name={starName} class="sagi-star" id={starKey} />;
+    })
+  }
+</div>
+
+<script>
+  const sagContainer = document.getElementById("sagImage");
+  if (sagContainer) {
+    sagContainer.addEventListener("click", () => {
+      console.log("Sagittarius Clicked");
+    });
+  }
+</script>
