@@ -10,7 +10,7 @@
   -moz-filter: brightness(0.2);
   -ms-filter: brightness(0.2);
 
-  z-index: -2;
+  z-index: -1;
   offset-path: ellipse(64vw 25vh at center);
   animation: spin 25s infinite linear;
   will-change: offset-distance;
