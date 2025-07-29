@@ -1,8 +1,13 @@
 import { getCurrentMoonData } from "@utils/currentMoonData";
 
+function invertPercentage(value) {
+  return (100 - value) % 101;
+}
 function fillMoonPhaseImage() {
-  const lunarAgePercent =
+  const lunarAgePercentOG =
     getCurrentMoonData().lunarAgePercent?.replace("%", "") || "0";
+
+  const lunarAgePercent = invertPercentage(lunarAgePercentOG);
   const canvas = document.getElementById("moonPhaseCanvas");
   const ctx = canvas.getContext("2d");
   const moonImg = document.getElementById("moonPhaseImage");
@@ -192,28 +197,43 @@ function fillMoonPhaseImage() {
     const isWaxing = phase < 50;
     const visibleFraction = isWaxing ? phase / 50 : (100 - phase) / 50;
 
-    const offset = radius * 2 * visibleFraction;
-    const maskX = centerX + (isWaxing ? offset : -offset);
-    const featherSize = 6;
-
-    const shadowCanvas = document.createElement("canvas");
-    shadowCanvas.width = canvas.width;
-    shadowCanvas.height = canvas.height;
-    const sctx = shadowCanvas.getContext("2d");
-
-    sctx.beginPath();
-    sctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
-    sctx.arc(maskX, centerY, radius, 0, Math.PI * 2, true);
-    sctx.closePath();
-
-    sctx.fillStyle = "black";
-    sctx.shadowColor = "black";
-    sctx.shadowBlur = featherSize;
-    sctx.fill();
-
     ctx.save();
     ctx.globalCompositeOperation = "destination-in";
-    ctx.drawImage(shadowCanvas, 0, 0);
+
+    if (phase === 25 || phase === 75) {
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+      ctx.clip();
+
+      ctx.fillStyle = "black";
+      if (phase === 25) {
+        ctx.fillRect(0, 0, radius, canvas.height);
+      } else {
+        ctx.fillRect(radius, 0, radius, canvas.height);
+      }
+    } else {
+      const offset = radius * 2 * visibleFraction;
+      const maskX = centerX + (isWaxing ? offset : -offset);
+      const featherSize = 6;
+
+      const shadowCanvas = document.createElement("canvas");
+      shadowCanvas.width = canvas.width;
+      shadowCanvas.height = canvas.height;
+      const sctx = shadowCanvas.getContext("2d");
+
+      sctx.beginPath();
+      sctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
+      sctx.arc(maskX, centerY, radius, 0, Math.PI * 2, true);
+      sctx.closePath();
+
+      sctx.fillStyle = "black";
+      sctx.shadowColor = "black";
+      sctx.shadowBlur = featherSize;
+      sctx.fill();
+
+      ctx.drawImage(shadowCanvas, 0, 0);
+    }
+
     ctx.restore();
 
     ctx.save();
