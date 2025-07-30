@@ -13,6 +13,18 @@ $borderRadius: 10px;
     font-family: monospace;
   }
 
+  #moonInfo_moonEvent {
+    border: 1px solid $codeGreen;
+    border-radius: 2px;
+    background: rgba(52, 68, 52, 0.5);
+    color: $codeGreen;
+    padding: 5px;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin: 5px;
+    font-size: 0.6rem;
+  }
+
   summary {
     border-bottom: 1px solid rgba(255, 255, 255, 0.25);
     padding: 6px;
