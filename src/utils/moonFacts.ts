@@ -67,6 +67,8 @@ const moonFacts = {
     "https://www.spacecentre.co.uk/news/space-now-blog/the-dark-side-of-the-moon/#:~:text=The%20%E2%80%98dark%20side%E2%80%99%20of%20the%20Moon%20refers%20to%20the%20hemisphere%20of%20the%20Moon%20that%20is%20facing%20away%20from%20the%20Earth.%20In%20reality%20it%20is%20no%20darker%20than%20any%20other%20part%20of%20the%20Moon%E2%80%99s%20surface%20as%20sunlight%20does%20in%20fact%20fall%20equally%20on%20all%20sides%20of%20the%20Moon.%20It%20is%20only%20%E2%80%98dark%E2%80%99%20to%20us%2C",
     "The ‘dark side’ of the Moon refers to the hemisphere of the Moon that is facing away from the Earth. In reality it is no darker than any other part of the Moon’s surface as sunlight does in fact fall equally on all sides of the Moon. It is only ‘dark’ to us, as that hemisphere can never be viewed from Earth due to a phenomenon known as ‘Tidal Locking’.",
   ),
+  lunarEclipse: new Fact("Lunar Eclipse Occurs only during a Full Moon"),
+  solarEclipse: new Fact("Solar Eclipse Occurs only during a New Moon"),
 };
 
 export default moonFacts;
