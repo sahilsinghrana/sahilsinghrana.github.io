@@ -1,1 +1,0 @@
-import{g as n}from"./utils.DAhcpqSN.js";for(let i=0;i<7;i++){const t=document.createElement("div");t.className="star";const o=n(4,11,.5),e=n(1,14,.5),a=window.innerWidth,s=window.innerWidth;t.style.animationDuration=o.toString()+"s",t.style.animationDirection=e.toString()+"s",t.style.top=n(2,a)+"px",t.style.left=n(2,s)+"px",document.body.appendChild(t)}

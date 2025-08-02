@@ -1,1 +1,0 @@
-import{c as e,d as i}from"./handlers.B-dnrlUr.js";import"./utils.DAhcpqSN.js";async function o(){clearTimeout(window.topSongsTimeout);try{e(await i())}catch(t){console.error(t)}finally{window.topSongsTimeout=setTimeout(o,3e4)}}o();
