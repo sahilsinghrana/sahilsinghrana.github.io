@@ -134,10 +134,10 @@
   }
   60% {
     transform: scale(0.7, 0.7);
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(255, 255, 255, var(--max-opacity, 0.8));
   }
   80% {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.1);
     transform: scale(1, 1);
   }
   100% {
