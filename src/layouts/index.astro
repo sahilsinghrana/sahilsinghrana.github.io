@@ -18,20 +18,21 @@ import "@styles/global.scss";
 <script>
   import { getRandom } from "@components/Spotify/helpers/utils";
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 11; i++) {
     const star = document.createElement("div");
     star.className = "star";
 
-    const animationDuration = getRandom(4, 11, 0.5);
-    const animationDelay = getRandom(1, 14, 0.5);
+    const animationDuration = getRandom(4, 10, 0.5);
+    const animationDelay = getRandom(1, 16, 1);
     const windowHeight = window.innerWidth;
     const windowWidth = window.innerWidth;
 
-    star.style.animationDuration = animationDuration.toString() + "s";
-    star.style.animationDirection = animationDelay.toString() + "s";
+    star.style.animationDuration = animationDuration + "s";
+    star.style.animationDirection = animationDelay + "s";
+    star.style.setProperty("--max-opacity", String(getRandom(0.2, 0.9, 0.1)));
 
-    star.style.top = getRandom(2, windowHeight) + "px";
-    star.style.left = getRandom(2, windowWidth) + "px";
+    star.style.top = getRandom(2, windowHeight + 150, 1) + "px";
+    star.style.left = getRandom(1, windowWidth, 1) + "px";
 
     document.body.appendChild(star);
   }
