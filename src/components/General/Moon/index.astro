@@ -15,17 +15,19 @@ import "./index.scss";
 
   for (let i = 0; i <= 28; i++) {
     const left = Math.floor(getRandom(-140, 150));
-    const delay = i === 0 ? 1 : getRandom(0, 50).toFixed(2);
-    const width = getRandom(40, 330);
-    const height = getRandom(0.2, 3.3, 0.1);
+    const delay = i === 0 ? 0.4 : getRandom(0, 50).toFixed(2);
+    const width = getRandom(45, 340);
+    const height = getRandom(0.18, 3.1, 0.1);
+    const duration = 20 - ((width - 45) / (340 - 45)) * (20 - 6);
 
+    meteorDiv.style.setProperty("--duration", `${duration.toFixed(0)}s`);
     meteorDiv.style.setProperty("--width", `${width}px`);
     meteorDiv.style.setProperty("--height", `${height}px`);
     meteorDiv.style.setProperty("--left", `${left}%`);
     meteorDiv.style.setProperty("--delay", `${delay}s`);
     meteorDiv.style.setProperty(
       "--max-opacity",
-      String(getRandom(0.27, 0.42, 0.05)),
+      String(getRandom(0.31, 0.47, 0.01)),
     );
 
     body.item(0)?.appendChild(meteorDiv.cloneNode(true));
