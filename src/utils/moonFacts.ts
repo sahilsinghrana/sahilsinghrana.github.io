@@ -67,8 +67,16 @@ const moonFacts = {
     "https://www.spacecentre.co.uk/news/space-now-blog/the-dark-side-of-the-moon/#:~:text=The%20%E2%80%98dark%20side%E2%80%99%20of%20the%20Moon%20refers%20to%20the%20hemisphere%20of%20the%20Moon%20that%20is%20facing%20away%20from%20the%20Earth.%20In%20reality%20it%20is%20no%20darker%20than%20any%20other%20part%20of%20the%20Moon%E2%80%99s%20surface%20as%20sunlight%20does%20in%20fact%20fall%20equally%20on%20all%20sides%20of%20the%20Moon.%20It%20is%20only%20%E2%80%98dark%E2%80%99%20to%20us%2C",
     "The ‘dark side’ of the Moon refers to the hemisphere of the Moon that is facing away from the Earth. In reality it is no darker than any other part of the Moon’s surface as sunlight does in fact fall equally on all sides of the Moon. It is only ‘dark’ to us, as that hemisphere can never be viewed from Earth due to a phenomenon known as ‘Tidal Locking’.",
   ),
-  lunarEclipse: new Fact("Lunar Eclipse Occurs only during a Full Moon"),
-  solarEclipse: new Fact("Solar Eclipse Occurs only during a New Moon"),
+  lunarEclipse: new Fact(
+    "Lunar Eclipse Occurs only during a Full Moon",
+    "https://space.rice.edu/eclipse/lunar_eclipse_faq.html#:~:text=Only%20during%20full,on%20the%20Earth%5D.",
+    "Only during full moon and new moon is the Moon in a line with the Earth and Sun. If the Earth is in the middle, the Moon is ʻfullʼ and fully lit by the sun. Only then, if the alignment is perfect, we get lunar eclipses [the Earth's shadow falling on the Moon]; if the Moon is in the middle, the Moon is ʻnewʼ (the side visible to us is dark)",
+  ),
+  solarEclipse: new Fact(
+    "Solar Eclipse Occurs only during a New Moon",
+    "https://en.wikipedia.org/wiki/Solar_eclipse#:~:text=The%20Moon%27s%20orbit%20around%20Earth%20is%20inclined,where%20the%20Moon%27s%20orbit%20crosses%20the%20ecliptic.",
+    "The Moon's orbit around Earth is inclined at an angle of just over 5 degrees to the plane of Earth's orbit around the Sun (the ecliptic). Because of this, at the time of a new moon, the Moon will usually pass to the north or south of the Sun. A solar eclipse can occur only when a new moon occurs close to one of the points (known as nodes) where the Moon's orbit crosses the ecliptic.",
+  ),
 };
 
 export default moonFacts;
