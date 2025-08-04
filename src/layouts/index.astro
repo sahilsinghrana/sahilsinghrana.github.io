@@ -22,17 +22,17 @@ import "@styles/global.scss";
     const star = document.createElement("div");
     star.className = "star";
 
-    const animationDuration = getRandom(4, 10, 0.5);
-    const animationDelay = getRandom(1, 16, 1);
+    const animationDuration = getRandom(4, 10, 0.1);
+    const animationDelay = getRandom(1, 14);
     const windowHeight = window.innerWidth;
     const windowWidth = window.innerWidth;
 
     star.style.animationDuration = animationDuration + "s";
     star.style.animationDirection = animationDelay + "s";
-    star.style.setProperty("--max-opacity", String(getRandom(0.2, 0.9, 0.1)));
+    star.style.setProperty("--max-opacity", String(getRandom(0.3, 1, 0.1)));
 
-    star.style.top = getRandom(2, windowHeight + 150, 1) + "px";
-    star.style.left = getRandom(1, windowWidth, 1) + "px";
+    star.style.top = getRandom(3, windowHeight + 140, 1) + "px";
+    star.style.left = getRandom(2, windowWidth + 5, 1) + "px";
 
     document.body.appendChild(star);
   }

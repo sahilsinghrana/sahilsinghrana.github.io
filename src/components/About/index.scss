@@ -48,14 +48,18 @@ section.heading {
     align-items: center;
     overflow: clip;
     --percent: 100;
-    --glow-size: calc(var(--percent) * 0.9px);
-    --glow-opacity: calc(var(--percent) / 100);
+    --glow-size: calc(var(--percent) * 0.55px);
+    --glow-opacity: calc(var(--percent) / 40);
 
     position: relative;
     box-shadow:
       0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
       0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));
     transition: box-shadow 2s ease;
+    box-shadow:
+      0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
+      0 0 calc(var(--glow-size) * 0.5) rgba(102, 102, 102, var(--glow-opacity)),
+      0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));
 
     .profileImage {
       object-fit: cover;

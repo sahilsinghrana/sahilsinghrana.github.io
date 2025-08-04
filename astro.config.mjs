@@ -1,8 +1,8 @@
-import { defineConfig } from "astro/config";
-import sitemap from "@astrojs/sitemap";
-import rehypeExternalLinks from "rehype-external-links";
-import partytown from "@astrojs/partytown";
 import purgecss from "astro-purgecss";
+import sitemap from "@astrojs/sitemap";
+import partytown from "@astrojs/partytown";
+import { defineConfig } from "astro/config";
+import rehypeExternalLinks from "rehype-external-links";
 
 // https://astro.build/config
 export default defineConfig({
@@ -12,22 +12,26 @@ export default defineConfig({
   build: {
     format: "file",
   },
+  contentCollectionCache: true,
+  prefetch: {
+    defaultStrategy: "viewport",
+    experimental: true,
+  },
+  assetCacheKey: true,
   integrations: [
-    sitemap(),
-    purgecss(),
     partytown({
       config: {
-        forward: ["dataLayer.push"],
+        forward: ["dataLayer.push", "gtag"],
         inline: true,
       },
     }),
+    purgecss(),
+    sitemap(),
   ],
-  prefetch: {
-    defaultStrategy: "viewport",
-  },
   markdown: {
     shikiConfig: {
       theme: "github-dark",
+      langs: ["js", "ts", "html", "css", "bash"],
     },
     rehypePlugins: [
       [

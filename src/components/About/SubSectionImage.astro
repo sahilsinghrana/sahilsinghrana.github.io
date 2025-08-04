@@ -28,9 +28,14 @@ const {
   import { getCurrentMoonData } from "@utils/currentMoonData";
 
   const profilePicContainer = document.getElementById("profilePicContainer");
-  const lunarAgePercent = Number(
+  const lunarAgePercent = parseInt(
     getCurrentMoonData().lunarAgePercent.replace("%", "").trim(),
-  ).toFixed(2);
+  );
+
+  const triangularWavePercent = 100 - Math.abs(2 * lunarAgePercent - 100);
   if (profilePicContainer)
-    profilePicContainer.style.setProperty("--percent", lunarAgePercent);
+    profilePicContainer.style.setProperty(
+      "--percent",
+      String(triangularWavePercent),
+    );
 </script>
