@@ -9,4 +9,4 @@ export default [
   ),
 ].sort((a, b) => {
   return a.date.getTime() - b.date.getTime();
-}) as MoonEvent[];
+});
