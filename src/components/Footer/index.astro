@@ -3,6 +3,8 @@ import Social from "./Social.astro";
 import Nav from "./Nav.astro";
 import Copyright from "./Copyright.astro";
 import "./index.scss";
+import fluteflower from "./fluteflower.png";
+import { Image } from "astro:assets";
 ---
 
 <footer>
@@ -11,4 +13,11 @@ import "./index.scss";
   <Nav />
   <Social />
   <Copyright />
+  <Image
+    src={fluteflower}
+    alt={"fluteflower"}
+    class="fluteImage"
+    width={250}
+    loading={"lazy"}
+  />
 </footer>
