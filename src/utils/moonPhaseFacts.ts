@@ -1,7 +1,7 @@
 const moonPhaseFacts = {
-  newMoon: "During new Moon; Moon is between Earth and Sun",
-  fullMoon: "During Full Moon; Earth is between Moon and Sun",
-  quarterPhase: "During a quarter Phase; Moon is 90° from Sun–Earth line",
+  newMoon: "During new Moon; Moon is between Earth and the Sun",
+  fullMoon: "During Full Moon; Earth is between Moon and the Sun",
+  quarterPhase: "During a quarter Phase; Moon is 90° from Sun-Earth line",
   waxingCrescent:
     "During Waxing Crescent; Moon is moving away from the Sun, less than half illuminated on the right side",
   waxingGibbous:
