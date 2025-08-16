@@ -3,7 +3,13 @@ import { getCollection } from "astro:content";
 
 import FeaturedCard from "./FeaturedCard.astro";
 
-const blogEntries = await getCollection("blog", ({ data }) => !!data.featured);
+const blogEntries = (
+  await getCollection("blog", ({ data }) => !!data.featured)
+).sort(
+  (a, b) =>
+    new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
+);
+
 const snippetsEntries = await getCollection(
   "snippets",
   ({ data }) => !!data.featured,
