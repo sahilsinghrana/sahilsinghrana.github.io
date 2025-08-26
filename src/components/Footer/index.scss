@@ -19,7 +19,7 @@ footer {
     position: absolute;
     right: 0;
     width: 200px;
-    z-index: -2;
+    z-index: -1;
     aspect-ratio: 16/9;
     height: auto;
     @media screen and (max-width: $mobileBreakpoint) {
@@ -30,11 +30,11 @@ footer {
       overflow: hidden;
       position: absolute;
       right: 0;
-      width: 130px;
+      width: 125px;
       height: auto;
 
       aspect-ratio: 16/9;
-      z-index: -2;
+      z-index: -1;
     }
   }
   ul {

@@ -14,7 +14,6 @@ tags:
     "download file using curl",
     "cli download",
   ]
-featured: true
 ---
 
 # Download File Using Curl Command

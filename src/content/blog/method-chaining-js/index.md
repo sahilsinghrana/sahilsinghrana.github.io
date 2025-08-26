@@ -5,7 +5,7 @@ image:
   alt: "Method Chaining in Javascript"
 pubDate: 2024-06-28
 title: Method Chaining in Javascript
-description: "Chain Methods to add modularity. Kind of builder pattern"
+description: "How to chain methods?"
 slug: chain-javascript-methods
 featured: true
 tags:
@@ -136,7 +136,6 @@ export default FormValidator;
 The FormValidator class is exported to provide form validation functionality.
 
 - Constructor:
-
   - Initializes instance variables such as errors and validationSchema.
   - Validates that the validations parameter is an object of FormValidationSchema.
 
@@ -239,7 +238,6 @@ export default FormValidationSchema;
 - The FormValidationSchema class is defined to manage validation rules for form fields.
 
 - Constructor:
-
   - Initializes the FormValidationSchema class with an empty validations array in the constructor.
 
 - Methods:
@@ -327,7 +325,6 @@ const loginValidationSchema = {
   - `.isRequired("Email is Required")`: Specifies that the email field must not be empty.
   - `.email("Please Enter Valid Email")`: Ensures the input conforms to a valid email format.
 - **password**: Configures validation rules for the password field using `FormValidationSchema`:
-
   - `.isRequired("Password is Required")`: Ensures the password field must not be empty.
   - `.min(6)`: Specifies a minimum length requirement of 6 characters for the password.
 

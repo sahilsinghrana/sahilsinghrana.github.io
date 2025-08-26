@@ -2,10 +2,10 @@
 author: "Sahil Rana"
 image:
   url: "./titleImage.webp"
-  alt: "Bitwise Operators: An Usecase (Bitmask)"
+  alt: "Bitwise Operators: With an usecase (Bitmasking)"
 pubDate: 2025-08-16
-title: "Bitwise Operators: An Usecase (Bitmask)"
-description: "Where the hell are bitwise operators used ??"
+title: "Bitwise Operators: With an usecase (Bitmasking)"
+description: "Where the hell are bitwise operators used?"
 slug: bitwise-operators-usecase
 featured: true
 tags:
