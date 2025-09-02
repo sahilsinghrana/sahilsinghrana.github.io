@@ -27,33 +27,57 @@ tags:
 
 # How to Convert Normal Strings to String Literals in JavaScript ?
 
-JavaScript strings are versatile, but wouldn't it be great if you could leverage the power of string literals for dynamic content interpolation? In this tutorial, we'll explore a simple method to achieve just that.
 
 ## The Problem
-
-Consider a scenario where you have a string template with placeholders, and you want to dynamically insert values into those placeholders.
+ 
+Let's say due to any reason you are going to store strings in a DB and during usage these strings needs to be filled with dynamic content.
+So, here we are going to convert those plain string to string literals.
 
 ```javascript
 const templateInNormalString = "Hello, ${name}! Today is ${day}.";
 ```
 
-## The Solution
+## One Solution
 
 We'll define a prototype method on the `String` object called `interpolate`, which will accept an object containing key-value pairs to replace placeholders with actual values.
 
 ```javascript
-// Define the interpolate method on the String prototype
 String.prototype.interpolate = function (params) {
-  // Extract keys and values from the params object
+  // `this` is the string the method is called on (the template string).
+  // Example: "Hello, ${name}" -> `this` === "Hello, ${name}"
+  //
+  // We accept an object `params` that maps placeholder names to values:
+  // { name: "Alice", day: "Monday" }
+  //
+  // NOTE: default to an empty object to avoid runtime errors when `params` is undefined.
+  params = params || {};
+
+  // Extract the property names from the params object.
+  // e.g. names = ["name", "day"]
   const names = Object.keys(params);
+
+  // Extract the corresponding values in the same order as keys.
+  // e.g. vals = ["Alice", "Monday"]
   const vals = Object.values(params);
 
-  // Dynamically create a function using new Function
+  // Create a new function dynamically where each key becomes an argument name,
+  // and the function body returns a template literal built from `this`.
+  // Example body: return `Hello, ${name}! Today is ${day}.`;
+  //
+  // The call to the returned function immediately supplies the values via (...vals).
+  // So effectively we do:
+  //   (new Function("name", "day", "return `Hello, ${name}! Today is ${day}.`;"))("Alice", "Monday")
+  //
+  // Why this works:
+  // - Template literals (backtick strings) evaluate embedded ${...} expressions in the function's scope.
+  // - By naming the function arguments after the keys, the expressions inside ${} can reference those argument names.
   return new Function(...names, `return \`${this}\`;`)(...vals);
 };
 ```
 
 This method dynamically creates a function using `new Function` and passes the provided parameters into the function. Inside the function, the template string is evaluated with the provided values.
+
+##### Note:- As this uses ```new Function```, which executes whatever’s inside the template, so if templates or values come from untrusted users someone could run arbitrary JS or sneak in HTML (hello, XSS).
 
 ## Usage
 
@@ -73,6 +97,6 @@ const result = templateInNormalString.interpolate({
 console.log(result); // Output: Hello, Alice! Today is Monday.
 ```
 
-## Conclusion
+## Disclaimer
 
-By adding a simple prototype method, we've empowered JavaScript strings to behave like string literals. This technique can be particularly useful in scenarios where string templating is required, such as generating dynamic HTML or constructing complex messages.
+Works great — but changing built-in prototypes has pros and cons. Use it cautiously. Use this in small apps or controlled codebases.
