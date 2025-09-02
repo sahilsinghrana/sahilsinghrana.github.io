@@ -13,30 +13,53 @@ import { Schema } from "astro-seo-schema";
 ---
 
 <head>
-  <Schema
-    item={{
-      "@context": "https://schema.org",
-      "@type": "ProfilePage",
-      dateCreated: "2024-06-11T12:34:00-05:00",
-      dateModified: "2024-06-11T14:53:00-05:00",
-      mainEntity: {
-        "@type": "Person",
-        name: "Sahil Rana",
-        alternateName: "Sahil Singh Rana",
-        identifier: "sahilsinghrana",
-        description: "Software Developer",
-        image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-        sameAs: [
-          "https://sahilsinghrana.github.io",
-          "https://sahilrana.in",
-          "https://www.linkedin.com/in/sahilsinghrana",
-          "https://x.com/sahilrana010",
-          "https://instagram.com/sahilrana0_0",
-          "https://github.com/sahilsinghrana",
-        ],
+ <Schema
+  item={{
+    "@context": "https://schema.org",
+    "@type": "ProfilePage",
+    dateCreated: "2024-06-11T12:34:00+05:30",
+    dateModified: "2025-09-02T12:00:00+05:30",
+    mainEntity: {
+      "@type": "Person",
+      name: "Sahil Rana",
+      alternateName: ["Sahil Singh Rana", "sahilsinghrana"],
+      identifier: "sahilsinghrana",
+      jobTitle: "Sr. Software Developer",
+      worksFor: {
+        "@type": "Organization",
+        name: "Webmyne Systems Pvt. Ltd.",
+        url: "https://www.webmyne.com",
       },
-    }}
-  />
+      description:
+        "Sahil Rana (also known as Sahil Singh Rana) is a software developer specializing in the MERN stack, JavaScript, and full-stack web development. He builds modern, scalable, and performance-driven applications.",
+      image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+      url: "https://sahilrana.in",
+      sameAs: [
+        "https://sahilsinghrana.github.io",
+        "https://www.sahilrana.in",
+        "https://www.linkedin.com/in/sahilsinghrana",
+        "https://x.com/sahilrana010",
+        "https://instagram.com/sahilrana0_0",
+        "https://github.com/sahilsinghrana",
+      ],
+      knowsAbout: [
+        "MERN Stack",
+        "JavaScript",
+        "Node.js",
+        "React.js",
+        "Express.js",
+        "MongoDB",
+        "Full-Stack Development",
+        "REST APIs",
+        "Web Applications",
+      ],
+      alumniOf: {
+        "@type": "CollegeOrUniversity",
+        name: "Gujarat Technological University",
+      },
+    },
+  }}
+/>
 </head>
 <Layout
   title="About | Sahil Singh Rana | Software Developer"
