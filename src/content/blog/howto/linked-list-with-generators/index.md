@@ -8,28 +8,27 @@ title: Linked List with Javascript Generators and Iterators
 description: "Linked list combined with Javascript Generators and Iterators"
 slug: linked-list-with-generators
 featured: true
-tags:
-  [
-    "howTo",
-    "js",
-    "JavaScript",
-    "Linked List",
-    "Generators",
-    "Iterators",
-    "Data Structures",
-    "How to Use Generators",
+tags: [
+    "JavaScript Linked List",
+    "Linked List in JavaScript",
+    "JavaScript Generators",
+    "JavaScript Iterators",
+    "Generators and Iterators Tutorial",
+    "Data Structures in JavaScript",
+    "Implement Linked List JavaScript",
+    "JavaScript Data Structures Tutorial",
     "JavaScript Coding Tips",
-    "Sahil Rana",
-    "Programming Concepts",
-    "Web Development",
-    "JavaScript Tutorials",
     "Learn JavaScript",
-  ]
+    "JavaScript Tutorials",
+    "Web Development",
+    "Programming Concepts",
+    "Sahil Singh Rana"
+]
 ---
 
 # Enhancing Linked Lists with JavaScript Generators
 
-In this post, we'll explore the integration of JavaScript generators with linked lists, enhancing their functionality and utility.
+I was curious that how it may look like if we combined the concepts of Linked list with Javascript's Generators and Iterators. So here we are.
 
 ## Understanding Linked Lists
 
