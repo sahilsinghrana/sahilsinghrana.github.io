@@ -99,4 +99,4 @@ console.log(result); // Output: Hello, Alice! Today is Monday.
 
 ## Disclaimer
 
-Works great — but changing built-in prototypes has pros and cons. Use it cautiously. Use this in small apps or controlled codebases.
+Works great, but changing built-in prototypes has pros and cons. Use it cautiously. Use this in small apps or controlled codebases.
