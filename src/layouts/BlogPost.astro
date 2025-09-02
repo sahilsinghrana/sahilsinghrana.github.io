@@ -20,21 +20,28 @@ const { title, image, description, tags, pubDate } = data;
       "@type": "BlogPosting",
       headline: title,
       description: description,
-      image: image.url,
+      image: [image.url],
+      mainEntityOfPage: {
+        "@type": "WebPage",
+      },
       author: {
         "@type": "Person",
         name: "Sahil Rana",
         url: "https://sahilrana.in",
       },
       publisher: {
-        "@type": "Person",
+        "@type": "Organization",
         name: "Sahil Rana",
         logo: {
           "@type": "ImageObject",
-          url: "",
+          url: "https://avatars.githubusercontent.com/u/48375250",
         },
       },
       datePublished: pubDate,
+      dateModified: pubDate,
+      keywords: tags.join(", "),
+      articleSection: "Technology",
+      inLanguage: "en-US",
     }}
   />
 </head>
