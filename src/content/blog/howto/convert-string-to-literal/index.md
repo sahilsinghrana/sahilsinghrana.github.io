@@ -10,18 +10,30 @@ slug: convert-string-to-literal
 featured: true
 tags:
   [
-    "how To",
-    "template",
     "JavaScript",
-    "Template Literals",
     "String Interpolation",
-    "Coding Tips",
-    "Web Development",
-    "Sahil Rana",
-    "Programming",
+    "Template Literals",
+    "JavaScript Templates",
     "Dynamic Content",
-    "Software Development",
+    "Web Development",
+    "Frontend Development",
+    "Coding Tips",
     "Learn JavaScript",
+    "JavaScript Tutorial",
+    "Templating Security XSS",
+    "Templating Best Practices",
+    "Programming",
+    "Software Development",
+    "Sahil Rana",
+    "web development tutorial",
+    "intro to web development",
+    "JavaScript tutorial",
+    "string interpolation in JavaScript",
+    "template literals tutorial",
+    "dynamic JavaScript content",
+    "learn JavaScript",
+    "coding tips JavaScript",
+    "web development tips",
   ]
 ---
 
