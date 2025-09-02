@@ -100,8 +100,18 @@ b ------> 0 1 1 0 1 0 0 1
 ~b -----> 1 0 0 1 0 1 1 0
 ```
 
-## Usecase
 
+##### Note :- I'll be using assignment shorthands along with the bitwise operators.
+```js
+let currentPermissions = 0b0100;
+const newPermission = 0b0001;
+
+currentPermissions |= newPermission
+// is Same as
+// currentPermissions = currentPermissions | newPermission
+```
+
+## Usecase
 Let's say you are building a user access control system. For this, you'll need to store permissions for each user (or user group).
 
 Suppose there are four types of permissions for a resource: Create, Read, Update, and Delete (CRUD).
@@ -159,6 +169,14 @@ const DELETE_PERMISSION = 0b1000;
 let userPermissions = 0b0000;
 
 userPermissions = userPermissions | DELETE_PERMISSION;
+
+// userPermissions  ------> 0 0 0 0
+// DELETE_PERMISSION -----> 1 0 0 0
+// ---------------------------------
+// userPms | DeletePms ---> 1 0 0 0
+
+// New Permissions if represented in binary is  1 0 0 0 => The value in decimal will be 8
+
 console.log(userPermissions); // 8
 console.log(userPermissions.toString(2)); // 1000
 
@@ -177,11 +195,47 @@ Operator.
 If the result is not zero, it means that permission exists.
 
 ```ts
-if (userPermissions & READ_PERMISSION) {
-  console.log("User has READ permission");
+// Now our user permissions are means it has 
+let userPermissions = 0b1010;
+const READ_PERMISSION = 0b0010;
+
+const hasReadPermission = userPermissions & READ_PERMISSION;
+
+
+// userPermissions  ------> 1 0 1 0
+// READ_PERMISSION  ------> 0 0 1 0
+// ---------------------------------
+// userPms & readPm ------> 0 0 1 0
+
+// The result if represented in binary is  0 0 1 0 => The value in decimal will be 2. 
+// As it returns the read permission. we will consider it as the user do have the rights to READ.
+
+console.log(hasReadPermission) // 2
+
+if (hasReadPermission) {
+  console.log("User has READ permission"); // This will get logged in the console
 } else {
   console.log("User does NOT have READ permission");
 }
+
+// Now Let's check for UPDATE Permission;
+const UPDATE_PERMISSION = 0b0100;
+
+const hasUpdatePermission = userPermissions & UPDATE_PERMISSION;
+// userPermissions  ------> 1 0 1 0
+// UPDATE_PERMISSION -----> 0 1 0 0
+// ---------------------------------
+// userPms & updatePm ----> 0 0 0 0
+
+// The result if represented in binary is  0 0 0 0 => The value in decimal will be 0. 
+// As it doesn't returns 0. we will consider it as the user do not have the rights to UPDATE.
+
+if (hasReadPermission) {
+  console.log("User has UPDATE permission"); 
+} else {
+  console.log("User does NOT have UPDATE permission"); // This will get logged in the console
+}
+
 ```
 
 ---
@@ -192,7 +246,26 @@ To remove a permission, we combine AND (`&`) with Bitwise NOT (`~`).
 This clears the specific bit, while keeping others unchanged.
 
 ```ts
-userPermissions &= ~READ_PERMISSION;
+// Initially, user has permissions as binary 1 0 1 0 (decimal 10)
+let userPermissions = 0b1010;
+
+const READ_PERMISSION = 0b0010;
+
+// Now we want to REMOVE the READ permission from userPermissions.
+// For this, we will use bitwise AND with the NEGATION of READ_PERMISSION.
+
+userPermissions &= ~READ_PERMISSION; 
+
+// userPermissions   ------> 1 0 1 0
+// READ_PERMISSION   ------> 0 0 1 0
+// ---------------------------------
+// ~READ_PERMISSION  ------> 1 1 0 1   (bitwise NOT flips every bit)
+// ---------------------------------
+// userPms & ~readPm  -----> 1 0 0 0
+
+// The result if represented in binary is 1 0 0 0 => The value in decimal will be 8. 
+// This means the READ permission is now REMOVED.
+
 console.log(userPermissions); // 8
 console.log(userPermissions.toString(2)); // 1000
 ```
@@ -205,11 +278,40 @@ The Bitwise XOR (`^`) Operator flips a bit: If the bit was set, it
 will be cleared. If the bit was clear, it will be set
 
 ```ts
-userPermissions ^= READ_PERMISSION;
-console.log(userPermissions.toString(2)); // 1010 (added READ)
+// user currently has permissions binary 1 0 0 0 (decimal 8)
+let userPermissions = 0b1000;
+const READ_PERMISSION = 0b0010;
 
+// Toggle READ permission using XOR (^).
+// XOR will flip the READ bit: if it was 0 -> becomes 1 (adds permission).
+// if it was 1 -> becomes 0 (removes permission).
+
+// 1st toggle -> should ADD READ (because READ bit is currently 0)
 userPermissions ^= READ_PERMISSION;
-console.log(userPermissions.toString(2)); // 1000 (removed READ again)
+
+// Explanation:
+// userPermissions   ------> 1 0 0 0
+// READ_PERMISSION   ------> 0 0 1 0
+// ---------------------------------
+// userPms ^ readPm  ------> 1 0 1 0
+
+// Result in binary: 1 0 1 0 => decimal 10 (READ added)
+console.log(userPermissions);           // 10
+console.log(userPermissions.toString(2)); // "1010"
+
+// 2nd toggle -> will REMOVE READ (flip it back)
+userPermissions ^= READ_PERMISSION;
+
+// Explanation:
+// userPermissions   ------> 1 0 1 0
+// READ_PERMISSION   ------> 0 0 1 0
+// ---------------------------------
+// userPms ^ readPm   ------> 1 0 0 0
+
+// Result in binary: 1 0 0 0 => decimal 8 (READ removed)
+console.log(userPermissions);           // 8
+console.log(userPermissions.toString(2)); // "1000"
+
 ```
 
 ---
@@ -220,8 +322,9 @@ You can decode which permissions are set by checking each flag:
 
 ```ts
 const PERMISSIONS = {
-  READ: 0b0010,
-  WRITE: 0b0100,
+  CREATE: 0b0001,
+  READ:   0b0100,
+  UPDATE: 0b0100,
   DELETE: 0b1000,
 };
 
