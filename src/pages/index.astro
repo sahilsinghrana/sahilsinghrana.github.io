@@ -12,23 +12,38 @@ import { Schema } from "astro-seo-schema";
 ---
 
 <head>
-  <Schema
-    item={{
-      "@context": "https://schema.org",
-      "@type": "WebSite",
+ <Schema
+  item={{
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Sahil Rana",
+    alternateName: [
+      "Sahil Portfolio",
+      "Sahil Rana Portfolio",
+      "SSR",
+      "Sahil Singh Rana",
+      "Sahil",
+      "Rana",
+    ],
+    url: "https://sahilrana.in",
+    image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+    description:
+      "Official website of Sahil Rana, a MERN stack and JavaScript developer specializing in modern, scalable, and performance-driven web applications.",
+    publisher: {
+      "@type": "Person",
       name: "Sahil Rana",
-      alternateName: [
-        "Sahil Portfolio",
-        "Sahil Rana Portfolio",
-        "SSR",
-        "Sahil Singh Rana",
-        "Sahil",
-        "Rana",
-      ],
       url: "https://sahilrana.in",
       image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-    }}
-  />
+      sameAs: [
+        "https://sahilsinghrana.github.io",
+        "https://www.linkedin.com/in/sahilsinghrana",
+        "https://x.com/sahilrana010",
+        "https://github.com/sahilsinghrana",
+        "https://instagram.com/sahilrana0_0",
+      ],
+    },
+  }}
+/>
 </head>
 
 <Layout
