@@ -1,49 +1,51 @@
 ---
+import { Schema } from "astro-seo-schema";
+
 import Layout from "@layouts/index.astro";
 
 import About from "@components/About/index.astro";
-import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import Spotify from "@components/Spotify/index.astro";
-import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
-import { homePageKeywords } from "@utils/metaKeywords";
+import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
+import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
+
 import moonFacts from "@utils/moonFacts";
-import { Schema } from "astro-seo-schema";
+import { homePageKeywords } from "@utils/metaKeywords";
 ---
 
 <head>
- <Schema
-  item={{
-    "@context": "https://schema.org",
-    "@type": "WebSite",
-    name: "Sahil Rana",
-    alternateName: [
-      "Sahil Portfolio",
-      "Sahil Rana Portfolio",
-      "SSR",
-      "Sahil Singh Rana",
-      "Sahil",
-      "Rana",
-    ],
-    url: "https://sahilrana.in",
-    image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-    description:
-      "Official website of Sahil Rana, a MERN stack and JavaScript developer specializing in modern, scalable, and performance-driven web applications.",
-    publisher: {
-      "@type": "Person",
+  <Schema
+    item={{
+      "@context": "https://schema.org",
+      "@type": "WebSite",
       name: "Sahil Rana",
+      alternateName: [
+        "Sahil Singh Rana",
+        "Sahil Portfolio",
+        "Sahil Rana Portfolio",
+        "SSR",
+        "Sahil",
+        "Rana",
+      ],
       url: "https://sahilrana.in",
       image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-      sameAs: [
-        "https://sahilsinghrana.github.io",
-        "https://www.linkedin.com/in/sahilsinghrana",
-        "https://x.com/sahilrana010",
-        "https://github.com/sahilsinghrana",
-        "https://instagram.com/sahilrana0_0",
-      ],
-    },
-  }}
-/>
+      description:
+        "Official website of Sahil Rana, a MERN stack and JavaScript developer specializing in modern, scalable, and performance-driven web applications.",
+      publisher: {
+        "@type": "Person",
+        name: "Sahil Rana",
+        url: "https://sahilrana.in",
+        image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+        sameAs: [
+          "https://sahilsinghrana.github.io",
+          "https://www.linkedin.com/in/sahilsinghrana",
+          "https://x.com/sahilrana010",
+          "https://github.com/sahilsinghrana",
+          "https://instagram.com/sahilrana0_0",
+        ],
+      },
+    }}
+  />
 </head>
 
 <Layout

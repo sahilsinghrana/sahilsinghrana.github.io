@@ -1,68 +1,71 @@
 ---
-import Layout from "../layouts/index.astro";
-import Experience from "@components/About/Experience.astro";
-import Education from "@components/About/Education.astro";
-import OtherActivities from "@components/About/OtherActivities.astro";
-import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
-import placeholderImage from "@images/placeholder4comp.webp";
+import { Schema } from "astro-seo-schema";
 
 import "@components/About/index.scss";
-import { aboutPageKeywords } from "@utils/metaKeywords";
+import Education from "@components/About/Education.astro";
+import Experience from "@components/About/Experience.astro";
+import OtherActivities from "@components/About/OtherActivities.astro";
+import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
+
+import placeholderImage from "@images/placeholder4comp.webp";
+
 import moonFacts from "@utils/moonFacts";
-import { Schema } from "astro-seo-schema";
+import { aboutPageKeywords } from "@utils/metaKeywords";
+
+import Layout from "../layouts/index.astro";
 ---
 
 <head>
- <Schema
-  item={{
-    "@context": "https://schema.org",
-    "@type": "ProfilePage",
-    dateCreated: "2024-06-11T12:34:00+05:30",
-    dateModified: "2025-09-02T12:00:00+05:30",
-    mainEntity: {
-      "@type": "Person",
-      name: "Sahil Rana",
-      alternateName: ["Sahil Singh Rana", "sahilsinghrana"],
-      identifier: "sahilsinghrana",
-      jobTitle: "Sr. Software Developer",
-      worksFor: {
-        "@type": "Organization",
-        name: "Webmyne Systems Pvt. Ltd.",
-        url: "https://www.webmyne.com",
+  <Schema
+    item={{
+      "@context": "https://schema.org",
+      "@type": "ProfilePage",
+      dateCreated: "2024-06-11T12:34:00+05:30",
+      dateModified: "2025-09-02T12:00:00+05:30",
+      mainEntity: {
+        "@type": "Person",
+        name: "Sahil Rana",
+        alternateName: ["Sahil Singh Rana", "sahilsinghrana"],
+        identifier: "sahilsinghrana",
+        jobTitle: "Sr. Software Developer",
+        worksFor: {
+          "@type": "Organization",
+          name: "Webmyne Systems Pvt. Ltd.",
+          url: "https://www.webmyne.com",
+        },
+        description:
+          "Sahil Rana (also known as Sahil Singh Rana) is a software developer specializing in the MERN stack, JavaScript, and full-stack web development. He builds modern, scalable, and performance-driven applications.",
+        image: "https://avatars.githubusercontent.com/u/48375250?v=4",
+        url: "https://sahilrana.in",
+        sameAs: [
+          "https://sahilsinghrana.github.io",
+          "https://www.sahilrana.in",
+          "https://www.linkedin.com/in/sahilsinghrana",
+          "https://x.com/sahilrana010",
+          "https://instagram.com/sahilrana0_0",
+          "https://github.com/sahilsinghrana",
+        ],
+        knowsAbout: [
+          "MERN Stack",
+          "JavaScript",
+          "Node.js",
+          "React.js",
+          "Express.js",
+          "MongoDB",
+          "Full-Stack Development",
+          "REST APIs",
+          "Web Applications",
+        ],
+        alumniOf: {
+          "@type": "CollegeOrUniversity",
+          name: "Gujarat Technological University",
+        },
       },
-      description:
-        "Sahil Rana (also known as Sahil Singh Rana) is a software developer specializing in the MERN stack, JavaScript, and full-stack web development. He builds modern, scalable, and performance-driven applications.",
-      image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-      url: "https://sahilrana.in",
-      sameAs: [
-        "https://sahilsinghrana.github.io",
-        "https://www.sahilrana.in",
-        "https://www.linkedin.com/in/sahilsinghrana",
-        "https://x.com/sahilrana010",
-        "https://instagram.com/sahilrana0_0",
-        "https://github.com/sahilsinghrana",
-      ],
-      knowsAbout: [
-        "MERN Stack",
-        "JavaScript",
-        "Node.js",
-        "React.js",
-        "Express.js",
-        "MongoDB",
-        "Full-Stack Development",
-        "REST APIs",
-        "Web Applications",
-      ],
-      alumniOf: {
-        "@type": "CollegeOrUniversity",
-        name: "Gujarat Technological University",
-      },
-    },
-  }}
-/>
+    }}
+  />
 </head>
 <Layout
-  title="About | Sahil Singh Rana | Software Developer"
+  title="About | Sahil Rana | Software Developer"
   description="Explore my journey of as a budding software developer, as i share some of my personal insights and aspirations in the world of coding on this About page."
   keywords={aboutPageKeywords}
 >
