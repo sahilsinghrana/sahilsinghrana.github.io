@@ -38,7 +38,7 @@
   ],
   "dependencies": {
     "@astrojs/partytown": "^2.1.4",
-    "@astrojs/sitemap": "^3.4.2",
+    "@astrojs/sitemap": "^3.5.1",
     "astro-breadcrumbs": "^3.3.1",
     "astro-capo": "^0.0.1",
     "astro-purgecss": "^5.1.0",
@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
-    "astro": "^5.13.2",
+    "astro": "^5.13.6",
     "astro-purgecss": "^5.1.0",
     "cssnano": "^7.0.6",
     "cssnano-preset-advanced": "^7.0.6",
