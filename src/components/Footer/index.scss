@@ -22,7 +22,7 @@ footer {
     z-index: -1;
     aspect-ratio: 16/9;
     height: auto;
-    animation: sailWaves 6s infinite ease-in-out; /* same duration as your wavesAnimation */
+    animation: sailWaves 12s infinite ease-in-out;
 
     @media screen and (max-width: $mobileBreakpoint) {
       bottom: 0.4rem;
@@ -327,23 +327,23 @@ footer {
 
 @keyframes sailWaves {
   0% {
-    transform: translateX(0) translateY(0);
+    transform: translateX(0) translateY(0) rotate(0);
     scale: 1;
   }
   25% {
-    transform: translateX(-5px) translateY(-5px);
+    transform: translateX(-5px) translateY(-5px) rotate(1.3deg);
     scale: 0.98;
   }
   50% {
-    transform: translateX(-12px) translateY(0);
-    scale: 1;
+    transform: translateX(-12px) translateY(2px) rotate(0deg);
+    scale: 0.99;
   }
   75% {
-    transform: translateX(-5px) translateY(5px);
+    transform: translateX(-5px) translateY(5px) rotate(-2.5deg);
     scale: 0.98;
   }
   100% {
-    transform: translateX(0) translateY(0);
+    transform: translateX(0) translateY(0) rotate(0);
     scale: 1;
   }
 }
