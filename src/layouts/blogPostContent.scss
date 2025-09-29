@@ -1,10 +1,25 @@
 article.blogContent {
+  h1 {
+    font-size: 1.2rem;
+  }
   h2 {
-    font-size: 1.1rem;
+    font-size: 1rem;
   }
 
   h3 {
-    font-size: 0.94rem;
+    font-size: 0.9rem;
+  }
+
+  h4 {
+    font-size: 0.8rem;
+  }
+
+  h5 {
+    font-size: 0.7rem;
+  }
+
+  h6 {
+    font-size: 0.6rem;
   }
 
   pre {
@@ -19,7 +34,7 @@ article.blogContent {
   }
 
   ol {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   a {
