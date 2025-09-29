@@ -1,0 +1,272 @@
+@use "./variables.scss" as *;
+
+.curlContainer {
+  .form-group {
+    margin-bottom: $spacing-4;
+  }
+
+  .form-row {
+    display: flex;
+    gap: $spacing-4;
+    align-items: end;
+
+    .form-group {
+      margin-bottom: 0;
+    }
+  }
+
+  label {
+    color: $gray-300;
+    display: block;
+    margin-bottom: $spacing-2;
+    font-weight: 400;
+    font-size: $font-size-xs;
+  }
+
+  %input-base {
+    background: $gray-300;
+    width: 100%;
+    padding: $spacing-2 $spacing-3;
+    border: 1px solid $gray-200;
+    border-radius: $radius-md;
+    font-size: $font-size-xs;
+    transition:
+      border-color $transition-fast,
+      box-shadow $transition-fast;
+
+    &:focus {
+      outline: none;
+      border-color: $primary-color;
+      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+    }
+  }
+
+  input[type="text"],
+  input[type="url"],
+  input[type="password"],
+  input[type="number"],
+  input[type="file"],
+  select {
+    @extend %input-base;
+  }
+
+  textarea {
+    @extend %input-base;
+    min-height: 80px;
+    resize: vertical;
+    font-family: $font-mono;
+  }
+
+  /* Buttons */
+  %button-base {
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all $transition-fast;
+  }
+
+  .generate-btn {
+    @extend %button-base;
+    background: $gray-900;
+    color: $gray-200;
+    padding: 10px;
+    width: 100%;
+    &:disabled {
+      background: $gray-300;
+      cursor: not-allowed;
+    }
+
+    &:hover:not(:disabled) {
+      background: $gray-600;
+      transform: translateY(-1px);
+      box-shadow: $shadow-md;
+    }
+  }
+
+  .reset-btn {
+    @extend %button-base;
+    background: $gray-500;
+    color: $gray-200;
+    font-size: 0.7rem;
+    &:hover:not(:disabled) {
+      background: $gray-600;
+    }
+  }
+
+  .add-btn {
+    @extend %button-base;
+    background: $gray-600;
+    color: $white;
+    padding: 5px 7px;
+    font-size: 0.65rem;
+    border: 1px solid $gray-200;
+    margin: 2px;
+    margin-left: 4px;
+    font-weight: 400;
+    &:hover:not(:disabled) {
+      background: $gray-900;
+    }
+  }
+
+  .copy-btn {
+    @extend %button-base;
+    background: $gray-200;
+    color: black;
+    padding: 5px 10px;
+    font-size: 0.7rem;
+    &:hover:not(:disabled) {
+      background: $gray-500;
+    }
+
+    &.copied {
+      background: $success-color;
+    }
+  }
+
+  .download-btn {
+    @extend %button-base;
+    background: $gray-600;
+    color: $white;
+    padding: $spacing-2 $spacing-4;
+
+    &:hover:not(:disabled) {
+      background: $gray-700;
+    }
+  }
+
+  .remove-header {
+    background: $gray-600;
+    color: $white;
+    border: none;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+    font-size: $font-size-lg;
+    display: flex;
+    outline: 1px solid $gray-200;
+    align-items: center;
+    justify-content: center;
+    transition: background-color $transition-fast;
+    flex-shrink: 0;
+
+    &:hover {
+      background: $gray-900;
+    }
+  }
+
+  /* Header rows */
+  .header-row {
+    display: flex;
+    gap: $spacing-3;
+    margin-bottom: $spacing-3;
+    align-items: center;
+  }
+
+  .header-key,
+  .header-value {
+    flex: 1;
+  }
+
+  /* Checkboxes */
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: $spacing-2;
+    margin-top: $spacing-2;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    font-weight: normal;
+    cursor: pointer;
+    margin-bottom: 0;
+  }
+
+  input[type="checkbox"] {
+    margin-right: $spacing-2;
+    transform: scale(1.1);
+    cursor: pointer;
+  }
+
+  /* File upload */
+  .file-upload {
+    margin-top: $spacing-4;
+  }
+
+  input[type="file"] {
+    padding: $spacing-2;
+    border: 2px dashed $gray-300;
+    background-color: $gray-50;
+
+    &:focus {
+      border-color: $primary-color;
+    }
+  }
+
+  /* Auth fields */
+  .auth-fields {
+    margin-top: $spacing-4;
+  }
+
+  /* Datalist styling */
+  datalist {
+    display: none;
+  }
+
+  input[list]::-webkit-calendar-picker-indicator {
+    display: none !important;
+  }
+
+  /* Enhanced header input styling */
+  .header-key {
+    position: relative;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23999' d='M6 0L8 4H4L6 0zM6 12L4 8H8L6 12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 12px;
+    padding-right: 28px;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233498db' d='M6 0L8 4H4L6 0zM6 12L4 8H8L6 12z'/%3E%3C/svg%3E");
+    }
+  }
+
+  /* Section headers */
+  .section-header {
+    color: white;
+    border-radius: $radius-md;
+    display: flex;
+    align-items: center;
+    padding: 4px;
+    padding-left: 0;
+
+    &.collapsible:hover {
+      cursor: pointer;
+    }
+
+    .toggle-icon {
+      margin-left: auto;
+      font-size: 0.75rem;
+      transition: transform $transition-fast;
+    }
+
+    h1,
+    h2 {
+      margin: 0;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+  }
+
+  .section-content {
+    padding-left: 2px;
+    &.collapsed {
+      display: none;
+    }
+  }
+}

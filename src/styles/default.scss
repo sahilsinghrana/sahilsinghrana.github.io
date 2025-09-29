@@ -6,6 +6,20 @@
 
   --bottom-spacing: 15px;
   --top-spacing: 15px;
+
+  --fs-base: 1rem; /* 16px */
+  --fs-h1: 2rem; /* 40px */
+  --fs-h2: 1.75rem; /* 32px */
+  --fs-h3: 1.5rem; /* 28px */
+  --fs-h4: 1.25rem; /* 24px */
+  --fs-h5: 1rem; /* 20px */
+  --fs-h6: 0.75rem; /* 16px (same as body) */
+  --fs-p: 0.75rem; /* 16px */
+  --line-height-heading: 1.15;
+  --line-height-body: 1.6;
+  --fw-heading-strong: 700;
+  --fw-heading-normal: 600;
+  --fw-body: 400;
 }
 
 * {
@@ -35,6 +49,7 @@ body {
   position: relative;
   margin: 0;
   padding: 0;
+  font-size: var(--fs-base);
 
   background-color: #000;
   color: rgba(245, 245, 245, 0.9);
@@ -69,14 +84,54 @@ a {
   }
 }
 
+h1 {
+  font-size: var(--fs-h1);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-strong);
+  margin: 0 0 0.5rem;
+}
 h2 {
-  font-size: 1rem;
+  font-size: var(--fs-h2);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-strong);
+  margin: 0 0 0.5rem;
+}
+h3 {
+  font-size: var(--fs-h3);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-normal);
+  margin: 0 0 0.5rem;
+}
+h4 {
+  font-size: var(--fs-h4);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-normal);
+  margin: 0 0 0.5rem;
+}
+h5 {
+  font-size: var(--fs-h5);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-normal);
+  margin: 0 0 0.5rem;
+}
+h6 {
+  font-size: var(--fs-h6);
+  line-height: var(--line-height-heading);
+  font-weight: var(--fw-heading-normal);
+  margin: 0 0 0.5rem;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5 {
-  color: rgba(245, 245, 245, 0.9);
+/* Paragraph */
+p {
+  font-size: var(--fs-p);
+  line-height: var(--line-height-body);
+  // margin: 0 0 1rem;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.flex-grow {
+  flex-grow: 1;
 }

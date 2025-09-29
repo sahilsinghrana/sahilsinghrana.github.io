@@ -1,0 +1,119 @@
+---
+import { Schema } from "astro-seo-schema";
+import ToolSectionHeaderImage from "@components/General/Image/ToolSectionHeaderImage.astro";
+import Layout from "@layouts/index.astro";
+import placeholderImage from "@images/tools/curlRequestGeneratorPlaceholder.webp";
+
+import { curlToolPageKeyWords } from "@utils/metaKeywords";
+import moonFacts from "@utils/moonFacts";
+
+import CurlRequestGenerator from "@components/Tools/CurlRequestGenerator/index.astro";
+---
+
+<head>
+  <Schema
+    item={{
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "cURL Command Generator",
+      url: "https://sahilrana.in/tools/curl-generator",
+      description:
+        "cURL generator — Build cURL commands for APIs: add headers, auth, JSON/file data, convert requests, copy  bash-ready snippets.",
+      dateCreated: "2024-06-11T12:34:00+05:30",
+      dateModified: "2025-09-29T12:00:00+05:30",
+      mainEntity: {
+        "@type": "SoftwareApplication",
+        name: "cURL Request Generator",
+        url: "https://sahilrana.in/tools/curl-generator",
+        description:
+          "Build ready-to-run cURL commands for APIs — supports headers, auth, JSON/file payloads, Postman/Fetch conversion, and copy snippets.",
+        applicationCategory: "DeveloperTool",
+        operatingSystem: "All",
+        softwareVersion: "1.2.0",
+        isAccessibleForFree: true,
+        featureList: [
+          "Generate cURL commands",
+          "Add headers and authentication",
+          "JSON & multipart file payloads",
+          "Convert Postman/Fetch to curl",
+          "Copy to clipboard and download snippets",
+          "Syntax highlighting for commands",
+        ],
+        offers: {
+          "@type": "Offer",
+          price: "0",
+          priceCurrency: "USD",
+          availability: "https://schema.org/InStock",
+        },
+        potentialAction: {
+          "@type": "CreateAction",
+          name: "Generate cURL command",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: "https://sahilrana.in/tools/curl-generator",
+            actionPlatform: [
+              "http://schema.org/DesktopWebPlatform",
+              "http://schema.org/AndroidPlatform",
+              "http://schema.org/IPhonePlatform",
+            ],
+          },
+        },
+        author: {
+          "@type": "Person",
+          name: "Sahil Rana",
+          alternateName: ["Sahil Singh Rana", "sahilsinghrana"],
+          identifier: "sahilsinghrana",
+          jobTitle: "Sr. Software Developer",
+          worksFor: {
+            "@type": "Organization",
+            name: "Webmyne Systems Pvt. Ltd.",
+            url: "https://www.webmyne.com",
+          },
+          description:
+            "Sahil Rana is a software developer specializing in MERN stack and full-stack web development. He builds developer tools and utilities.",
+          url: "https://sahilrana.in",
+          sameAs: [
+            "https://sahilsinghrana.github.io",
+            "https://www.sahilrana.in",
+            "https://www.linkedin.com/in/sahilsinghrana",
+            "https://x.com/sahilrana010",
+            "https://instagram.com/sahilrana0_0",
+            "https://github.com/sahilsinghrana",
+          ],
+        },
+      },
+      publisher: {
+        "@type": "Organization",
+        name: "Webmyne Systems Pvt. Ltd.",
+        url: "https://www.webmyne.com",
+      },
+      keywords: [
+        "curl command generator",
+        "generate curl command",
+        "curl builder",
+        "convert request to curl",
+        "curl headers generator",
+        "curl auth generator",
+        "curl tool online",
+      ],
+    }}
+  />
+</head>
+
+<Layout
+  title="cURL Request Generator"
+  description="cURL generator — Build cURL commands for APIs: add headers, auth, JSON/file data, convert requests, copy or download bash-ready snippets."
+  keywords={curlToolPageKeyWords}
+>
+  <ToolSectionHeaderImage
+    title="cURL Request Generator"
+    Image={placeholderImage}
+    quote={moonFacts.solarEclipse.fact}
+  />
+
+  <CurlRequestGenerator />
+
+  <div class="moonFact">
+    {moonFacts.lunarEclipse.fact}
+  </div>
+</Layout>

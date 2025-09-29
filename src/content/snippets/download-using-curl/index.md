@@ -20,7 +20,28 @@ tags:
 
 `curl` is a command-line tool used to transfer data from or to a server using various protocols such as HTTP, HTTPS, FTP, and more. Let's see how we can download file from remote server to our system using the tool.
 
-## What is curl?
+## Command
+
+To download a file using `curl`, you can use the following command:
+
+```bash
+curl -o ./outputDir/filename.ext url-to-resource
+```
+
+## [🔧Use the curL Request Generator Tool to generate command](https://sahilrana.in/tools/curlRequestGenerator)
+
+#### Understanding the command
+
+Let's break down the keywords of the command:
+
+- **_curl_**: Invokes the curl tool.
+- **_-o ./outputDir/filename.ext_**: The -o flag specifies the output file path and name of the file. Replace ./outputDir/filename.ext with the desired directory and filename where you want to save the downloaded file.
+
+- **_url-to-resource_**: URL of the file you want to download. Replace url-to-resource with the actual URL of the file.
+
+## Some Background
+
+### What is curl?
 
 > curl is used in command lines or scripts to transfer data. curl is also used in cars, television sets, routers, printers, audio equipment, mobile phones, tablets, medical devices, settop boxes, computer games, media players and is the Internet transfer engine for thousands of software applications in over twenty billion installations.
 
@@ -28,7 +49,7 @@ tags:
 >
 > -- [Taken from official website](https://curl.se/#:~:text=curl%20is%20used,on%20the%20globe.)
 
-## Prerequisites
+### Prerequisites
 
 Before using the `curl` command, ensure curL is installed in your system:
 
@@ -50,20 +71,3 @@ Before using the `curl` command, ensure curL is installed in your system:
      ```bash
      choco install curl
      ```
-
-## Command
-
-To download a file using `curl`, you can use the following command:
-
-```bash
-curl -o ./outputDir/filename.ext url-to-resource
-```
-
-#### Understanding commands
-
-Let's break down the keywords of the command:
-
-- **_curl_**: Invokes the curl tool.
-- **_-o ./outputDir/filename.ext_**: The -o flag specifies the output file path and name of the file. Replace ./outputDir/filename.ext with the desired directory and filename where you want to save the downloaded file.
-
-- **_url-to-resource_**: URL of the file you want to download. Replace url-to-resource with the actual URL of the file.

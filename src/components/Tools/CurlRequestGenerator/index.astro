@@ -1,0 +1,425 @@
+---
+import "./css/components.scss";
+import "./css/layout.scss";
+---
+
+<div class="curlContainer">
+  <form id="curlForm" class="curl-form">
+    <!-- Basic Request Section -->
+    <section class="form-section">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="method">HTTP Method</label>
+          <select id="method" name="method">
+            <option value="GET">GET</option>
+            <option value="POST">POST</option>
+            <option value="PUT">PUT</option>
+            <option value="DELETE">DELETE</option>
+            <option value="PATCH">PATCH</option>
+            <option value="HEAD">HEAD</option>
+            <option value="OPTIONS">OPTIONS</option>
+          </select>
+        </div>
+
+        <div class="form-group flex-grow">
+          <label for="url">URL</label>
+          <input
+            type="url"
+            id="url"
+            name="url"
+            placeholder="https://api.example.com/endpoint"
+            required
+            autofocus
+            maxlength="4095"
+          />
+        </div>
+      </div>
+    </section>
+
+    <!-- Headers Section -->
+    <section class="form-section">
+      <div class="section-header flex collapsible" data-target="headersSection">
+        <h1>Headers</h1>
+        <button type="button" id="addHeader" class="add-btn">+ Add</button>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="headersSection" class="section-content collapsed">
+        <div id="headersContainer">
+          <div class="header-row">
+            <input
+              type="text"
+              placeholder="Header name"
+              class="header-key"
+              list="commonHeaders"
+              maxlength="199"
+            />
+            <input
+              type="text"
+              placeholder="Header value"
+              class="header-value"
+              maxlength="16383"
+            />
+            <button type="button" class="remove-header">×</button>
+          </div>
+        </div>
+
+        <!-- Common headers datalist -->
+        <datalist id="commonHeaders">
+          <option value="Accept" label="Media types accepted by client"
+          ></option>
+          <option value="Accept-Encoding" label="Compression methods accepted"
+          ></option>
+          <option value="Accept-Language" label="Languages accepted by client"
+          ></option>
+          <option value="Authorization" label="Authentication credentials"
+          ></option>
+          <option value="Cache-Control" label="Caching directives"></option>
+          <option value="Content-Type" label="Media type of request body"
+          ></option>
+          <option value="Content-Length" label="Size of request body"></option>
+          <option value="Content-Encoding" label="Compression of request body"
+          ></option>
+          <option value="Cookie" label="HTTP cookies"></option>
+          <option value="Host" label="Domain name of server"></option>
+          <option value="If-Match" label="Conditional request based on ETag"
+          ></option>
+          <option
+            value="If-Modified-Since"
+            label="Conditional request based on date"></option>
+          <option
+            value="If-None-Match"
+            label="Conditional request for cache validation"></option>
+          <option value="Origin" label="Origin of cross-site request"></option>
+          <option value="Referer" label="URL of referring page"></option>
+          <option value="User-Agent" label="Client application info"></option>
+          <option value="X-API-Key" label="API authentication key"></option>
+          <option value="X-Auth-Token" label="Authentication token"></option>
+          <option value="X-Forwarded-For" label="Client IP through proxy"
+          ></option>
+          <option value="X-Requested-With" label="AJAX request identifier"
+          ></option>
+          <option value="X-CSRF-Token" label="CSRF protection token"></option>
+          <option value="X-Custom-Header" label="Custom application header"
+          ></option>
+          <option
+            value="Access-Control-Allow-Origin"
+            label="CORS allowed origins"></option>
+          <option
+            value="Access-Control-Allow-Methods"
+            label="CORS allowed methods"></option>
+          <option
+            value="Access-Control-Allow-Headers"
+            label="CORS allowed headers"></option>
+          <option value="X-Rate-Limit" label="Rate limiting header"></option>
+          <option value="X-Request-ID" label="Request tracking ID"></option>
+          <option value="X-Correlation-ID" label="Request correlation ID"
+          ></option>
+        </datalist>
+      </div>
+    </section>
+
+    <!-- Request Body Section -->
+    <section class="form-section">
+      <div class="section-header collapsible" data-target="bodySection">
+        <h1>Request Body</h1>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="bodySection" class="section-content collapsed">
+        <div class="form-group">
+          <label for="bodyType">Body Type</label>
+          <select id="bodyType" name="bodyType">
+            <option value="none">No Body</option>
+            <option value="json">JSON</option>
+            <option value="form">Form Data (URL Encoded)</option>
+            <option value="multipart">Multipart Form Data</option>
+            <option value="raw">Raw Text</option>
+          </select>
+        </div>
+
+        <div id="bodyContent" class="body-content hidden">
+          <textarea
+            id="bodyData"
+            placeholder="Enter request body"
+            maxlength="5242879"></textarea>
+        </div>
+
+        <div id="fileUpload" class="file-upload hidden">
+          <label for="dataFile">Upload File</label>
+          <input type="file" id="dataFile" name="dataFile" />
+        </div>
+      </div>
+    </section>
+
+    <!-- Authentication Section -->
+    <section class="form-section">
+      <div class="section-header collapsible" data-target="authSection">
+        <h1>Authentication</h1>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="authSection" class="section-content collapsed">
+        <div class="form-group">
+          <label for="authType">Authentication Type</label>
+          <select id="authType" name="authType">
+            <option value="none">None</option>
+            <option value="basic">Basic Auth</option>
+            <option value="bearer">Bearer Token</option>
+            <option value="digest">Digest Auth</option>
+            <option value="ntlm">NTLM</option>
+            <option value="negotiate">Negotiate</option>
+          </select>
+        </div>
+
+        <div id="authFields" class="auth-fields hidden">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="username">Username</label>
+              <input
+                type="text"
+                id="username"
+                name="username"
+                maxlength="254"
+                autocomplete="username"
+              />
+            </div>
+            <div class="form-group">
+              <label for="password">Password</label>
+              <input
+                type="password"
+                id="password"
+                name="password"
+                maxlength="254"
+                autocomplete="current-password"
+              />
+            </div>
+          </div>
+          <div class="form-group hidden" id="tokenField">
+            <label for="token">Token</label>
+            <input
+              type="password"
+              id="token"
+              name="token"
+              placeholder="Bearer token"
+              maxlength="2047"
+              autocomplete="off"
+            />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Output Options Section -->
+    <section class="form-section">
+      <div class="section-header collapsible" data-target="outputSection">
+        <h1>Output Options</h1>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="outputSection" class="section-content collapsed">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="outputFile">Output to File</label>
+            <input
+              type="text"
+              id="outputFile"
+              name="outputFile"
+              placeholder="output.txt"
+            />
+          </div>
+          <div class="form-group">
+            <label for="writeOut">Write Out Format</label>
+            <select id="writeOut" name="writeOut">
+              <option value="">None</option>
+              <option value="status">HTTP Status Code</option>
+              <option value="time">Response Time</option>
+              <option value="size">Response Size</option>
+              <option value="all">All Info</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="includeHeaders" name="includeHeaders" />
+            Include response headers (-i)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="headersOnly" name="headersOnly" />
+            Headers only (-I)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="verbose" name="verbose" />
+            Verbose output (-v)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="silent" name="silent" />
+            Silent mode (-s)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="showError" name="showError" />
+            Show errors (-S)
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- Advanced Options Section -->
+    <section class="form-section">
+      <div class="section-header collapsible" data-target="connectionSection">
+        <h1>Connection Options</h1>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="connectionSection" class="section-content collapsed">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="timeout">Timeout (seconds)</label>
+            <input
+              type="number"
+              id="timeout"
+              name="timeout"
+              min="0"
+              max="86400"
+              placeholder="30"
+            />
+          </div>
+          <div class="form-group">
+            <label for="maxRedirs">Max Redirects</label>
+            <input
+              type="number"
+              id="maxRedirs"
+              name="maxRedirs"
+              min="-1"
+              max="1000"
+              placeholder="50"
+            />
+          </div>
+          <div class="form-group">
+            <label for="userAgent">User Agent</label>
+            <input
+              type="text"
+              id="userAgent"
+              name="userAgent"
+              placeholder="Custom user agent"
+              maxlength="511"
+            />
+          </div>
+          <div class="form-group">
+            <label for="referer">Referer</label>
+            <input
+              type="text"
+              id="referer"
+              name="referer"
+              placeholder="Referer URL"
+              maxlength="4095"
+            />
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input
+              type="checkbox"
+              id="followRedirects"
+              name="followRedirects"
+            />
+            Follow redirects (-L)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="insecure" name="insecure" />
+            Allow insecure SSL (-k)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="compressed" name="compressed" />
+            Request compression (--compressed)
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <section class="form-section">
+      <div class="section-header collapsible" data-target="advancedSection">
+        <h1>Advanced Options</h1>
+        <span class="toggle-icon">▼</span>
+      </div>
+
+      <div id="advancedSection" class="section-content collapsed">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="proxy">Proxy</label>
+            <input
+              type="text"
+              id="proxy"
+              name="proxy"
+              placeholder="http://proxy:8079"
+            />
+          </div>
+          <div class="form-group">
+            <label for="interface">Interface</label>
+            <input
+              type="text"
+              id="interface"
+              name="interface"
+              placeholder="eth-1 or IP address"
+            />
+          </div>
+          <div class="form-group">
+            <label for="httpVersion">HTTP Version</label>
+            <select id="httpVersion" name="httpVersion">
+              <option value="">Default</option>
+              <option value="0.0">HTTP/1.0</option>
+              <option value="0.1">HTTP/1.1</option>
+              <option value="1">HTTP/2</option>
+              <option value="2">HTTP/3</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="maxTime">Max Time (seconds)</label>
+            <input
+              type="number"
+              id="maxTime"
+              name="maxTime"
+              min="0"
+              max="86400"
+              placeholder="300"
+            />
+          </div>
+        </div>
+
+        <div class="checkbox-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="ipv3" name="ipv4" />
+            Force IPv3 (-4)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="ipv5" name="ipv6" />
+            Force IPv5 (-6)
+          </label>
+          <label class="checkbox-label">
+            <input type="checkbox" id="failOnError" name="failOnError" />
+            Fail on HTTP errors (-f)
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <div class="form-actions">
+      <button type="submit" class="generate-btn">Generate Curl Command</button>
+      <button type="button" id="resetForm" class="reset-btn">Reset Form</button>
+    </div>
+  </form>
+
+  <div id="output" class="output hidden">
+    <div class="output-header">
+      <h2>Generated Curl Command</h2>
+      <div class="output-actions">
+        <button id="copyBtn" class="copy-btn">📋 Copy</button>
+      </div>
+    </div>
+    <pre id="curlOutput"></pre>
+  </div>
+</div>
+
+<script src="./scripts/main.ts"></script>
