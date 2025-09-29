@@ -12,9 +12,9 @@
   --fs-h2: 1.55rem;
   --fs-h3: 1.3rem;
   --fs-h4: 1.15rem;
-  --fs-h5: 0.95rem;
-  --fs-h6: 0.8rem;
-  --fs-p: 0.8rem;
+  --fs-h5: 1rem;
+  --fs-h6: 0.9rem;
+  --fs-p: 0.9rem;
   --line-height-heading: 1.15;
   --line-height-body: 1.6;
   --fw-heading-strong: 700;
@@ -54,7 +54,7 @@ body {
   background-color: #000;
   color: rgba(245, 245, 245, 0.9);
 
-  font-family: "Manrope", "Roboto", "Inter", Arial, sans-serif;
+  font-family: "Roboto", "Manrope", "Inter", "Raleway", Arial, sans-serif;
   font-optical-sizing: auto;
   font-kerning: auto;
   text-rendering: geometricPrecision;

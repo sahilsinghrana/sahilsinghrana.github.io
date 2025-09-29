@@ -1,10 +1,14 @@
+/* =====================
+   Manrope
+   ===================== */
 @font-face {
-  font-family: "Manrope ExtraLight";
+  font-family: "Manrope";
   src:
-    local("Manrope ExtraLight ExtraLight"),
-    local("ManropeExtraLight-ExtraLight"),
-    url("/fonts/ManropeExtraLight-ExtraLight.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-ExtraLight.woff") format("woff");
+    local("Manrope ExtraLight Regular"),
+    local("ManropeExtraLight-Regular"),
+    url("/fonts/ManropeExtraLight-Regular.woff2") format("woff2"),
+    url("/fonts/ManropeExtraLight-Regular.woff") format("woff"),
+    url("/fonts/Manrope-Regular.ttf") format("truetype");
   font-weight: 200;
   font-style: normal;
   font-display: swap;
@@ -12,136 +16,61 @@
 
 @font-face {
   font-family: "Manrope";
-  src:
-    local("Manrope ExtraLight Regular"),
-    local("ManropeExtraLight-Regular"),
-    url("/fonts/ManropeExtraLight-Regular.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-Regular.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Manrope ExtraLight";
   src:
     local("Manrope ExtraLight SemiBold"),
     local("ManropeExtraLight-SemiBold"),
     url("/fonts/ManropeExtraLight-SemiBold.woff2") format("woff2"),
     url("/fonts/ManropeExtraLight-SemiBold.woff") format("woff");
-  font-weight: 200;
+  font-weight: 600;
   font-style: normal;
   font-display: swap;
 }
 
 @font-face {
-  font-family: "Manrope ExtraLight";
-  src:
-    local("Manrope ExtraLight SemiBold"),
-    local("ManropeExtraLight-SemiBold"),
-    url("/fonts/ManropeExtraLight-SemiBold.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-SemiBold.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Manrope ExtraLight";
+  font-family: "Manrope";
   src:
     local("Manrope ExtraLight ExtraBold"),
     local("ManropeExtraLight-ExtraBold"),
     url("/fonts/ManropeExtraLight-ExtraBold.woff2") format("woff2"),
     url("/fonts/ManropeExtraLight-ExtraBold.woff") format("woff");
-  font-weight: 200;
+  font-weight: 800;
   font-style: normal;
   font-display: swap;
 }
 
+/* =====================
+   Raleway
+   ===================== */
 @font-face {
-  font-family: "Manrope ExtraLight";
+  font-family: "Raleway";
   src:
-    local("Manrope ExtraLight ExtraLight"),
-    local("ManropeExtraLight-ExtraLight"),
-    url("/fonts/ManropeExtraLight-ExtraLight.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-ExtraLight.woff") format("woff");
-  font-weight: 200;
+    local("Raleway Regular"),
+    local("Raleway-Regular"),
+    url("/fonts/Raleway-Regular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
-@font-face {
-  font-family: "Manrope ExtraLight";
-  src:
-    local("Manrope ExtraLight ExtraBold"),
-    local("ManropeExtraLight-ExtraBold"),
-    url("/fonts/ManropeExtraLight-ExtraBold.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-ExtraBold.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Manrope";
-  src:
-    local("Manrope ExtraLight Regular"),
-    local("ManropeExtraLight-Regular"),
-    url("/fonts/ManropeExtraLight-Regular.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-Regular.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Manrope";
-  src:
-    local("Manrope ExtraLight Regular"),
-    local("ManropeExtraLight-Regular"),
-    url("/fonts/ManropeExtraLight-Regular.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-Regular.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Manrope";
-  src:
-    local("Manrope ExtraLight Regular"),
-    local("ManropeExtraLight-Regular"),
-    url("/fonts/ManropeExtraLight-Regular.woff2") format("woff2"),
-    url("/fonts/ManropeExtraLight-Regular.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: swap;
-}
-
+/* =====================
+   Roboto
+   ===================== */
 @font-face {
   font-family: "Roboto";
   src:
     local("Roboto"),
     local("Roboto-Regular"),
     url("/fonts/Roboto-Regular.woff2") format("woff2"),
-    url("/fonts/Roboto-Regular.woff") format("woff");
-  font-weight: normal;
+    url("/fonts/Roboto-Regular.woff") format("woff"),
+    url("/fonts/Roboto-Regular.ttf") format("truetype");
+  font-weight: 400;
   font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }
 
-@font-face {
-  font-family: "Roboto";
-  src:
-    local("Roboto"),
-    local("Roboto-Regular"),
-    url("/fonts/Roboto-Regular.woff2") format("woff2"),
-    url("/fonts/Roboto-Regular.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: fallback;
-}
-
+/* =====================
+   Inter
+   ===================== */
 @font-face {
   font-family: "Inter";
   src:
@@ -151,19 +80,7 @@
     url("/fonts/Inter-ExtraLight.woff") format("woff");
   font-weight: 200;
   font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Inter";
-  src:
-    local("Inter ExtraLight"),
-    local("Inter-ExtraLight"),
-    url("/fonts/Inter-ExtraLight.woff2") format("woff2"),
-    url("/fonts/Inter-ExtraLight.woff") format("woff");
-  font-weight: 200;
-  font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }
 
 @font-face {
@@ -173,9 +90,9 @@
     local("Inter-Regular"),
     url("/fonts/Inter-Regular.woff2") format("woff2"),
     url("/fonts/Inter-Regular.woff") format("woff");
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }
 
 @font-face {
@@ -187,31 +104,7 @@
     url("/fonts/Inter-SemiBold.woff") format("woff");
   font-weight: 600;
   font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Inter";
-  src:
-    local("Inter SemiBold"),
-    local("Inter-SemiBold"),
-    url("/fonts/Inter-SemiBold.woff2") format("woff2"),
-    url("/fonts/Inter-SemiBold.woff") format("woff");
-  font-weight: 600;
-  font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Inter";
-  src:
-    local("Inter Regular"),
-    local("Inter-Regular"),
-    url("/fonts/Inter-Regular.woff2") format("woff2"),
-    url("/fonts/Inter-Regular.woff") format("woff");
-  font-weight: normal;
-  font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }
 
 @font-face {
@@ -221,19 +114,7 @@
     local("Inter-ExtraBold"),
     url("/fonts/Inter-ExtraBold.woff2") format("woff2"),
     url("/fonts/Inter-ExtraBold.woff") format("woff");
-  font-weight: bold;
+  font-weight: 800;
   font-style: normal;
-  font-display: fallback;
-}
-
-@font-face {
-  font-family: "Inter";
-  src:
-    local("Inter ExtraBold"),
-    local("Inter-ExtraBold"),
-    url("/fonts/Inter-ExtraBold.woff2") format("woff2"),
-    url("/fonts/Inter-ExtraBold.woff") format("woff");
-  font-weight: bold;
-  font-style: normal;
-  font-display: fallback;
+  font-display: swap;
 }

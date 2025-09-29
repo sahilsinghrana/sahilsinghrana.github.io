@@ -14,7 +14,7 @@ export default defineConfig({
   },
   contentCollectionCache: true,
   prefetch: {
-    defaultStrategy: "viewport",
+    defaultStrategy: "hover",
     experimental: true,
   },
   assetCacheKey: true,

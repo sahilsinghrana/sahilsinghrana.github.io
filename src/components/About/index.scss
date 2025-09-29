@@ -12,10 +12,12 @@ $mobileBreakpoint: 486px;
   align-items: start;
   margin-bottom: 2em;
 
+  font-family: "Manrope", "Raleway", "Inter", "Roboto", Arial, sans-serif;
+
   a::after {
     content: " 🔗";
-    font-size: 0.6rem;
-    opacity: 0.6;
+    font-size: 0.5rem;
+    opacity: 0.75;
     &:hover {
       opacity: 1;
     }
@@ -166,13 +168,13 @@ section.experience {
           }
         }
         span {
-          font-size: 0.7rem;
+          font-size: 0.75rem;
           color: lightgray;
         }
       }
       .companyDescription {
         font-weight: lighter;
-        font-size: 0.7rem;
+        font-size: 0.85rem;
         margin: 2px 0;
         text-align: justify;
       }
@@ -184,7 +186,7 @@ section.experience {
         }
         p {
           margin: 0;
-          font-size: 0.7rem;
+          font-size: 0.8rem;
           color: lightgray;
           text-align: justify;
         }
@@ -195,7 +197,7 @@ section.experience {
           text-align: left;
           h3 {
             text-align: left;
-            font-size: 0.92rem;
+            font-size: 0.95rem;
             margin: 2px 0;
             margin-top: 6px;
           }
@@ -203,7 +205,7 @@ section.experience {
         .projectInfo {
           padding-left: 10px;
           h4 {
-            font-size: 0.75rem;
+            font-size: 0.8rem;
             margin: 3px 0;
           }
         }
@@ -240,7 +242,7 @@ section.otherActivities {
           margin: 0;
           margin-top: 2px;
           padding-left: 2px;
-          font-size: 0.7rem;
+          font-size: 0.8rem;
           color: lightgray;
           text-align: justify;
 

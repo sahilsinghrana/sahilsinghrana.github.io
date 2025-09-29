@@ -8,6 +8,8 @@
   overflow: hidden;
   box-shadow: 0px 6px 6px 4px #91919121;
   border: 1px solid rgba(194, 194, 194, 0.22);
+
+  // font-family: "Raleway", "Roboto", "Manrope", "Inter", Arial, sans-serif;
 }
 
 .sectionHeaderImage {
@@ -36,10 +38,11 @@
   q {
     margin-top: 7px;
     padding: 0;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     font-style: italic;
-    color: rgba(206, 206, 206, 0.78);
+    color: rgba(228, 228, 228, 0.85);
     font-weight: 400;
+    background-color: rgba(0, 0, 0, 0.27);
   }
   .headerImageTitle {
     margin: 0;

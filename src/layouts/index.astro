@@ -38,7 +38,7 @@ import "@styles/global.scss";
   }
 </script>
 
-<html lang="en">
+<html lang="en" transition:animate="slide">
   <Head>
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
     <meta charset="utf-8" />
@@ -70,7 +70,7 @@ import "@styles/global.scss";
     <Header />
     <Moon />
     <main>
-      <div class="content">
+      <div class="content" transition:animate="slide">
         <slot />
       </div>
     </main>
