@@ -1,0 +1,15 @@
+.tool {
+  &.sectionHeaderImageWrapper {
+    width: 100%;
+    height: 12vw;
+    max-height: 110px;
+    min-height: 80px;
+
+    margin-bottom: 20px;
+  }
+
+  .headerImageTitle {
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+  }
+}

@@ -1,0 +1,61 @@
+$accent-color: #f39c12;
+$accent-dark: #e67e22;
+$success-color: #27ae60;
+$success-dark: #229954;
+$danger-color: #e74c3c;
+$danger-dark: #c0392b;
+$primary-color: #3498db;
+$primary-dark: #2980b9;
+$white: #ffffff;
+$secondary-color: #2c3e50;
+
+$gray-50: #f8f9fa;
+$gray-100: #f5f7fa;
+$gray-200: #e1e8ed;
+$gray-300: #cbd5e0;
+$gray-500: #718096;
+$gray-600: #4a5568;
+$gray-700: #2d3748;
+$gray-800: #1a202c;
+
+// Typography used only in components
+$font-mono: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", monospace;
+$font-size-xs: 0.6875rem;
+$font-size-sm: 0.75rem;
+$font-size-lg: 0.9375rem;
+
+// Spacing used only in components
+$spacing-2: 0.375rem;
+$spacing-4: 0.75rem;
+$spacing-3: 0.5rem;
+$spacing-5: 1rem;
+$spacing-6: 1.25rem;
+$spacing-8: 1.5rem;
+// Border radius used only in components
+$radius-md: 0.375rem;
+
+// Shadows used only in components
+$shadow-md:
+  0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+$transition-fast: 150ms ease-in-out;
+
+$gray-900: #171923;
+
+// Typography used only in layout
+$font-size-lg: 0.9375rem;
+$font-mono: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", monospace;
+$font-size-sm: 0.75rem;
+
+// Spacing used only in layout
+$spacing-5: 1rem;
+
+// Border radius used only in layout
+$radius-sm: 0.25rem;
+$radius-xl: 0.75rem;
+
+// Shadows used only in layout
+$shadow-md:
+  0 4px 6px -1px rgba(0, 0, 0, 0.1),
+  0 2px 4px -1px rgba(0, 0, 0, 0.06);

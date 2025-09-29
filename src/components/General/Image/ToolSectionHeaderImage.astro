@@ -1,0 +1,32 @@
+---
+const { Image: propImage, title, quote } = Astro.props;
+
+const placeHolderImagee = propImage;
+
+// import { Breadcrumbs } from "astro-breadcrumbs";
+import "./index.scss";
+import "./Tool.scss";
+import { Image } from "astro:assets";
+---
+
+<div class="tool sectionHeaderImageWrapper">
+  <Image
+    src={placeHolderImagee}
+    class="sectionHeaderImage"
+    alt="section header hero "
+    loading="eager"
+  />
+
+  <div class="titleWrapper">
+    <h1 class="headerImageTitle">{title}</h1>
+    <q>{quote}</q>
+    <!-- {
+      showBreadcrumbs && (
+        <Breadcrumbs
+          linkTextFormat="capitalized"
+          mainBemClass="blog-breadcrumbs"
+        />
+      )
+    } -->
+  </div>
+</div>

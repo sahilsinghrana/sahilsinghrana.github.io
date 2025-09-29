@@ -10,26 +10,33 @@ article.blogContent {
   pre {
     padding: 20px;
     border-radius: 10px;
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 
   p {
-    font-size: 0.89rem;
+    font-size: 0.75rem;
     text-align: justify;
   }
 
   ol {
-    font-size: 0.88rem;
+    font-size: 0.8rem;
   }
 
   a {
-    font-size: 0.83rem;
+    // font-size: 0.83rem;
     color: lightgray;
     font-style: italic;
     word-break: break-all;
 
     &:hover {
       color: white;
+    }
+  }
+
+  blockquote {
+    margin-inline-start: 10px;
+    & > * {
+      font-size: 0.7rem;
     }
   }
 }

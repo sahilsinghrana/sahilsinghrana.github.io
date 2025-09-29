@@ -7,7 +7,12 @@ const { title, description, image, slug } = Astro.props;
 ---
 
 <a href={slug} class="featuredPostCard">
-  <Image src={image.url} alt={image?.alt || title} width={80} height={80} />
+  <Image
+    src={image?.src ? image : image?.url}
+    alt={image?.alt || title}
+    width={80}
+    height={80}
+  />
   <div class="content">
     <h3 class="title" id={slug}>{title}</h3>
     <p class="description">{description}</p>

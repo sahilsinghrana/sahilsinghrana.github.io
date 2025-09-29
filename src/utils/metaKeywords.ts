@@ -18,7 +18,6 @@ export function mergeWithDefaultKeywords(keywords = []) {
   return unique.join(",");
 }
 
-
 const DEFAULT_META_KEYWORDS = [
   "Sahil Rana",
   "Sahil Singh Rana",
@@ -39,9 +38,8 @@ const DEFAULT_META_KEYWORDS = [
   "Mobifin Applications",
   "GitHub Projects",
   "Innovative Software Development",
-  "Modern Web Applications"
+  "Modern Web Applications",
 ];
-
 
 export const resourcesPageKeywords = [
   "Moon Facts for Kids",
@@ -60,9 +58,8 @@ export const resourcesPageKeywords = [
   "Astronomy Moon Resources",
   "Moon Exploration Facts",
   "Lunar Research Articles",
-  "Moon Facts With Sources"
+  "Moon Facts With Sources",
 ];
-
 
 export const homePageKeywords = [
   "Sahil Rana",
@@ -91,7 +88,7 @@ export const homePageKeywords = [
   "Tech Insights and Tutorials",
   "Hire Full Stack Developer",
   "Modern Web Applications",
-  "Innovative Software Development"
+  "Innovative Software Development",
 ];
 
 export const contactPageKeyWords = [
@@ -109,7 +106,7 @@ export const contactPageKeyWords = [
   "Reach Sahil Rana for Projects",
   "Web Development Collaboration",
   "Software Development Consultation",
-  "Full Stack Developer Portfolio Contact"
+  "Full Stack Developer Portfolio Contact",
 ];
 
 export const projectsPageKeywords = [
@@ -131,7 +128,7 @@ export const projectsPageKeywords = [
   "Innovative Software Solutions Portfolio",
   "Personal Coding Projects by Sahil Rana",
   "Open Source Projects Sahil Rana",
-  "Programming Portfolio Showcase"
+  "Programming Portfolio Showcase",
 ];
 
 export const aboutPageKeywords = [
@@ -153,7 +150,7 @@ export const aboutPageKeywords = [
   "Collaboration with Sahil Rana",
   "Innovative Software Solutions Career",
   "Sahil Rana Professional Experience",
-  "Meet Sahil Singh Rana"
+  "Meet Sahil Singh Rana",
 ];
 
 export const blogPageKeywords = [
@@ -174,7 +171,7 @@ export const blogPageKeywords = [
   "Learn to Code with Sahil Rana",
   "Personal Growth in Tech Industry",
   "Developer Tips and Tech Snippets",
-  "Sahil Rana Programming Blog"
+  "Sahil Rana Programming Blog",
 ];
 
 export const snippetsPageKeywords = [
@@ -192,9 +189,8 @@ export const snippetsPageKeywords = [
   "JavaScript Tips and Tricks",
   "Learn JavaScript Snippets",
   "Developer Snippets Library",
-  "Sahil Rana Programming Snippets"
+  "Sahil Rana Programming Snippets",
 ];
-
 
 export const postsPageKeywords = [
   "Sahil Rana Blog Posts",
@@ -211,5 +207,47 @@ export const postsPageKeywords = [
   "Software Engineering Insights",
   "Innovative Coding Solutions",
   "Developer Learning Resources",
-  "Sahil Rana Tech Portfolio Blog"
+  "Sahil Rana Tech Portfolio Blog",
+];
+
+export const curlToolPageKeyWords = [
+  "curl command generator",
+  "online curl generator",
+  "generate curl command",
+  "curl command builder",
+  "curl builder online",
+  "create curl from request",
+  "curl request generator",
+  "curl command from http request",
+  "bash curl generator",
+  "curl command maker",
+  "curl flags generator",
+  "curl headers generator",
+  "generate curl with headers",
+  "convert request to curl",
+  "postman to curl generator",
+  "http request to curl",
+  "api testing curl generator",
+  "curl command for api",
+  "curl examples generator",
+  "curl with bearer token",
+  "curl basic auth generator",
+  "curl multipart form generator",
+  "curl json payload generator",
+  "curl file upload generator",
+  "download curl command",
+  "shareable curl command",
+  "curl command formatter",
+  "curl command syntax highlighter",
+  "curl command with cookies",
+  "curl command for developers",
+  "curl CLI generator",
+  "developer tool curl generator",
+  "online http client curl",
+  "curl command from fetch",
+  "curl snippets generator",
+  "curl automation tool",
+  "generate curl for webhook",
+  "curl command playground",
+  "curl playground online",
 ];

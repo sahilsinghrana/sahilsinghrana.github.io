@@ -1,0 +1,113 @@
+@use "./variables.scss" as *;
+
+.curl-form {
+  background: $gray-700;
+  padding: $spacing-5;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-md;
+}
+
+.form-section {
+  margin-bottom: 5px;
+  background-color: $gray-600;
+  padding: 6px;
+  border-radius: 12px;
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: $spacing-4;
+  margin-top: $spacing-8;
+  padding-top: $spacing-8;
+  border-top: 1px solid $gray-200;
+}
+
+.output {
+  background: $gray-800;
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: $shadow-md;
+  animation: slideIn 0.3s ease-out;
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 5px;
+
+    h3 {
+      margin: 0;
+      color: $secondary-color;
+    }
+  }
+
+  &-actions {
+    display: flex;
+    gap: $spacing-3;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#curlOutput {
+  background: $gray-900;
+  color: $gray-100;
+  padding: 10px;
+  border-radius: $radius-xl;
+  overflow-x: auto;
+  font-family: $font-mono;
+  font-size: $font-size-sm;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-all;
+  border: 1px solid $gray-700;
+  position: relative;
+
+  &::before {
+    content: "$ ";
+    color: #27ae60; // success-color
+    font-weight: bold;
+  }
+
+  /* Scrollbar styling */
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $gray-800;
+    border-radius: $radius-sm;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $gray-600;
+    border-radius: $radius-sm;
+
+    &:hover {
+      background: #718096; // gray-500
+    }
+  }
+}
+
+/* Special layouts */
+.body-content {
+  margin-top: $spacing-4;
+}
+
+#headersContainer {
+  margin-bottom: $spacing-4;
+}

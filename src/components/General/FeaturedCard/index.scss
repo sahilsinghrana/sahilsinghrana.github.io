@@ -82,3 +82,11 @@
     flex-wrap: wrap;
   }
 }
+
+.tools {
+  &.featuredList {
+    .featuredPostCard .content h3 {
+      font-size: 0.85rem;
+    }
+  }
+}
