@@ -18,8 +18,8 @@ header .headerContainer {
 
   .catImage {
     mix-blend-mode: lighten;
-    filter: contrast(1.2);
-    opacity: 0.9;
+    filter: contrast(1.2) brightness(1.5) blur(0.2px) sepia(0.4);
+    opacity: 0.8;
     overflow: hidden;
     bottom: -3.35rem;
     left: 12rem;
