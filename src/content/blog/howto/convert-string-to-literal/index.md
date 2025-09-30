@@ -10,13 +10,24 @@ slug: convert-string-to-literal
 featured: true
 tags:
   [
+    "javascript string interpolation",
+    "string interpolation in javascript",
+    "es6 string interpolation",
+    "javascript template literals",
+    "javascript template strings",
+    "string formatting javascript",
+    "javascript variable in string",
+    "js template literals example",
+    "javascript dynamic strings",
+    "string concatenation vs interpolation",
+    "multiline string javascript",
+    "interpolation javascript tutorial",
+    "javascript insert variable into string",
+    "javascript string replace variables",
+    "javascript template string example",
     "JavaScript",
     "String Interpolation",
     "Template Literals",
-    "JavaScript Templates",
-    "Dynamic Content",
-    "Web Development",
-    "Frontend Development",
     "Coding Tips",
     "Learn JavaScript",
     "JavaScript Tutorial",
@@ -28,8 +39,6 @@ tags:
     "web development tutorial",
     "intro to web development",
     "JavaScript tutorial",
-    "string interpolation in JavaScript",
-    "template literals tutorial",
     "dynamic JavaScript content",
     "learn JavaScript",
     "coding tips JavaScript",
@@ -39,30 +48,25 @@ tags:
 
 # How to Convert Normal Strings to String Literals in JavaScript ?
 
-
 ## The Problem
- 
-Let's say due to any reason you are going to store strings in a DB and during usage these strings needs to be filled with dynamic content.
+
+Let's assume due to some reason you are going to store strings in a DB and during usage these strings needs to be filled with dynamic content.
 So, here we are going to convert those plain string to string literals.
 
 ```javascript
 const templateInNormalString = "Hello, ${name}! Today is ${day}.";
 ```
 
-## One Solution
+### Disclaimer:
 
-We'll define a prototype method on the `String` object called `interpolate`, which will accept an object containing key-value pairs to replace placeholders with actual values.
+We are going to use `new Function()` for the solution which executes whatever’s inside the template, so if templates or values come from untrusted users someone could run arbitrary JS or sneak in HTML. Be Careful!
+
+## Solution
 
 ```javascript
-String.prototype.interpolate = function (params) {
-  // `this` is the string the method is called on (the template string).
-  // Example: "Hello, ${name}" -> `this` === "Hello, ${name}"
-  //
+function interpolate(template, params = {}) {
   // We accept an object `params` that maps placeholder names to values:
   // { name: "Alice", day: "Monday" }
-  //
-  // NOTE: default to an empty object to avoid runtime errors when `params` is undefined.
-  params = params || {};
 
   // Extract the property names from the params object.
   // e.g. names = ["name", "day"]
@@ -73,7 +77,7 @@ String.prototype.interpolate = function (params) {
   const vals = Object.values(params);
 
   // Create a new function dynamically where each key becomes an argument name,
-  // and the function body returns a template literal built from `this`.
+  // and the function body returns a template literal built from `template` string.
   // Example body: return `Hello, ${name}! Today is ${day}.`;
   //
   // The call to the returned function immediately supplies the values via (...vals).
@@ -83,15 +87,76 @@ String.prototype.interpolate = function (params) {
   // Why this works:
   // - Template literals (backtick strings) evaluate embedded ${...} expressions in the function's scope.
   // - By naming the function arguments after the keys, the expressions inside ${} can reference those argument names.
-  return new Function(...names, `return \`${this}\`;`)(...vals);
-};
+  return new Function(...names, `return \`${template}\`;`)(...vals);
+}
+```
+
+### Usage
+
+Let's see how we can use our `interpolate` method to convert our template string into a string literal:
+
+```javascript
+// Usage example
+const templateInNormalString = "Hello, ${name}! Today is ${day}.";
+
+const result = interpolate(templateInNormalString, {
+  name: "Alice",
+  day: "Monday",
+});
+
+// Output the result
+console.log(result); // Output: Hello, Alice! Today is Monday.
 ```
 
 This method dynamically creates a function using `new Function` and passes the provided parameters into the function. Inside the function, the template string is evaluated with the provided values.
 
-##### Note:- As this uses ```new Function```, which executes whatever’s inside the template, so if templates or values come from untrusted users someone could run arbitrary JS or sneak in HTML (hello, XSS).
+## How new Function() constructor works for this
 
-## Usage
+#### Basic Syntax
+
+```javascript
+new Function([arg1[, arg2[, ...argN]],] functionBody)
+```
+
+#### Visualization
+
+```javascript
+const greet = new Function(
+  "first",
+  "last",
+  "return `Hi ${first} ${last}, welcome!`;",
+);
+```
+
+Is equivalent to defining.
+
+```javascript
+function greet(first, last) {
+  return `Hi ${first} ${last}, welcome!`;
+}
+```
+
+## Solution with prototype method
+
+We'll define a prototype method on the `String` object called `interpolate`, which will accept an object containing key-value pairs to replace placeholders with actual values.
+
+```javascript
+String.prototype.interpolate = function (params) {
+  // NOTE: default to an empty object to avoid runtime errors when `params` is undefined.
+  params = params || {};
+
+  const names = Object.keys(params);
+
+  const vals = Object.values(params);
+
+  // `this` is the string the method is called on (the template string).
+  // Example: "Hello, ${name}" -> `this` === "Hello, ${name}"
+
+  return new Function(...names, `return \`${this}\`;`)(...vals);
+};
+```
+
+### Usage
 
 Let's see how we can use our `interpolate` method to convert our template string into a string literal:
 
@@ -109,6 +174,4 @@ const result = templateInNormalString.interpolate({
 console.log(result); // Output: Hello, Alice! Today is Monday.
 ```
 
-## Disclaimer
-
-Works great, but changing built-in prototypes has pros and cons. Use it cautiously. Use this in small apps or controlled codebases.
+#### Note : Works great, but changing built-in prototypes has pros and cons. Use it cautiously. Use this in small apps or controlled codebases.
