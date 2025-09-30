@@ -9,34 +9,11 @@ import OgMeta from "./Metas/OgMeta.astro";
 import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
-const { title, description, keywords } = Astro.props;
+const { title, description, keywords, className } = Astro.props;
 const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
 import "@styles/global.scss";
 ---
-
-<script>
-  import { getRandom } from "@components/Spotify/helpers/utils";
-
-  for (let i = 0; i < 11; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-
-    const animationDuration = getRandom(4, 10, 0.1);
-    const animationDelay = getRandom(1, 14);
-    const windowHeight = window.innerWidth;
-    const windowWidth = window.innerWidth;
-
-    star.style.animationDuration = animationDuration + "s";
-    star.style.animationDirection = animationDelay + "s";
-    star.style.setProperty("--max-opacity", String(getRandom(0.3, 1, 0.1)));
-
-    star.style.top = getRandom(3, windowHeight + 140, 1) + "px";
-    star.style.left = getRandom(2, windowWidth + 5, 1) + "px";
-
-    document.body.appendChild(star);
-  }
-</script>
 
 <html lang="en" transition:animate="slide">
   <Head>
@@ -61,8 +38,7 @@ import "@styles/global.scss";
       description={description}
       keywords={keywords}
     />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
     <title>{title}</title>
   </Head>
 
@@ -70,10 +46,33 @@ import "@styles/global.scss";
     <Header />
     <Moon />
     <main>
-      <div class="content" transition:animate="slide">
+      <div class={"content " + className} transition:animate="slide">
         <slot />
       </div>
     </main>
     <Footer />
   </body>
 </html>
+
+<script>
+  import { getRandom } from "@components/Spotify/helpers/utils";
+
+  for (let i = 0; i < 11; i++) {
+    const star = document.createElement("div");
+    star.className = "star";
+
+    const animationDuration = getRandom(4, 10, 0.1);
+    const animationDelay = getRandom(1, 14);
+    const windowHeight = window.innerWidth;
+    const windowWidth = window.innerWidth;
+
+    star.style.animationDuration = animationDuration + "s";
+    star.style.animationDirection = animationDelay + "s";
+    star.style.setProperty("--max-opacity", String(getRandom(0.3, 1, 0.1)));
+
+    star.style.top = getRandom(3, windowHeight + 140, 1) + "px";
+    star.style.left = getRandom(2, windowWidth + 5, 1) + "px";
+
+    document.body.appendChild(star);
+  }
+</script>

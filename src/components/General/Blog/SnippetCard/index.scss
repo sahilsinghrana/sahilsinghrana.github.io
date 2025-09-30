@@ -1,7 +1,7 @@
 .snippetCard {
   display: flex;
   margin: 0;
-  padding: 8px;
+  padding: 8px 4px;
   margin-bottom: 10px;
   font-size: 0.9rem;
   align-items: center;
@@ -36,7 +36,8 @@
 
     p {
       margin: 0;
-      font-size: 0.67rem;
+      margin-top: 2px;
+      font-size: 0.7rem;
       color: rgb(144, 153, 156);
       font-style: italic;
     }

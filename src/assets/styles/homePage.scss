@@ -1,0 +1,11 @@
+.content.homePage {
+  section:not(:first-child) {
+    margin-top: 1em;
+  }
+
+  section {
+    h2 {
+      font-size: 0.9rem;
+    }
+  }
+}

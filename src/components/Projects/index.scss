@@ -11,7 +11,8 @@
   flex-direction: column;
 
   min-height: 210px;
-  height: 230px;
+  // height: 230px;
+  max-height: 245px;
   width: 310px;
   outline: 1px solid rgba(128, 128, 128, 0.553);
   border-radius: 15px;
@@ -44,7 +45,7 @@
   }
 
   p {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     opacity: 0.67;
     font-style: italic;
     text-align: justify;

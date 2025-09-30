@@ -1,8 +1,7 @@
 $mobileBreakpoint: 486px;
 
 .about {
-  margin-top: 3em;
-  margin-bottom: 1em;
+  margin-top: 3.2em;
 }
 
 .aboutPage {
@@ -91,7 +90,7 @@ section.heading {
 
     h1 {
       margin: 0;
-      margin-top: 15px;
+      margin-top: 18px;
       margin-bottom: 3px;
       font-size: 1.5rem;
     }
@@ -111,7 +110,7 @@ section.heading {
       font-size: 0.8rem;
       border-radius: 12px;
       cursor: pointer;
-      font-weight: 600;
+      font-weight: bold;
       margin-top: var(--top-spacing);
     }
   }

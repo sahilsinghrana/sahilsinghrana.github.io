@@ -12,6 +12,8 @@ import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
 import FeaturedTools from "@components/Tools/FeaturedTools.astro";
+
+import "@assets/styles/homePage.scss";
 ---
 
 <head>
@@ -53,6 +55,7 @@ import FeaturedTools from "@components/Tools/FeaturedTools.astro";
   title="Sahil Rana | Software Developer"
   description="Welcome to my portfolio! I am a software engineer specializing in web development, with expertise in cutting-edge technologies like React.js, Node.js, and MongoDB. Explore my projects and skills to see how I can help bring your ideas to life!"
   keywords={homePageKeywords}
+  className="homePage"
 >
   <About />
   <CurrentMoonInfo />

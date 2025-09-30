@@ -11,16 +11,16 @@
 
   .content {
     color: lightgray;
-    margin-left: 10px;
+    margin-left: 8px;
     h3 {
-      font-size: 0.76rem;
+      font-size: 0.8rem;
       margin: 0;
       opacity: 0.95;
-      margin-bottom: 0.1em;
+      margin-bottom: 2px;
     }
 
     p {
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       opacity: 0.9;
       margin: 0;
     }
@@ -33,7 +33,7 @@
 }
 
 .featuredList {
-  gap: 2rem;
+  gap: 2.2rem;
 
   ul {
     list-style: none;

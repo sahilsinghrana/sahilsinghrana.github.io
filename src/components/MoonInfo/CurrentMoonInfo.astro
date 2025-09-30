@@ -4,35 +4,37 @@ import moonGanymede from "./moonGanymede.jpg";
 import "./currentMoonInfo.scss";
 ---
 
-<details open class="currentMoonInfo">
-  <summary>Moonfull insights</summary>
+<section>
+  <details open class="currentMoonInfo">
+    <summary>Moonfull insights</summary>
 
-  <p id="moonInfo_moonEvent">
-    <b id="moonEventPrefix"></b>
-    <b id="moonEventDate">...</b>
-    <span id="moonEventEvent">A total eclipse is a cosmic test.</span>
-  </p>
+    <p id="moonInfo_moonEvent">
+      <b id="moonEventPrefix"></b>
+      <b id="moonEventDate">...</b>
+      <span id="moonEventEvent">A total eclipse is a cosmic test.</span>
+    </p>
 
-  <dl class="moonInfo">
-    <dd id="moonInfo_waxWane">Phase: <b>calculating...</b></dd>
-    <dd id="moonInfo_phase">
-      Current Phase: <b>calculating...</b>
-    </dd>
-    <dd id="moonInfo_age">Age: <b>calculating...</b></dd>
-    <dd id="moonInfo_agePercent">Age Percent: <b>calculating...</b></dd>
-  </dl>
+    <dl class="moonInfo">
+      <dd id="moonInfo_waxWane">Phase: <b>calculating...</b></dd>
+      <dd id="moonInfo_phase">
+        Current Phase: <b>calculating...</b>
+      </dd>
+      <dd id="moonInfo_age">Age: <b>calculating...</b></dd>
+      <dd id="moonInfo_agePercent">Age Percent: <b>calculating...</b></dd>
+    </dl>
 
-  <div class="moonPhaseContainer">
-    <img
-      id="moonPhaseImage"
-      width="32"
-      height="32"
-      src={moonGanymede.src}
-      alt="moonGanymede"
-    />
-    <canvas id="moonPhaseCanvas" width="32" height="32"></canvas>
-  </div>
-</details>
+    <div class="moonPhaseContainer">
+      <img
+        id="moonPhaseImage"
+        width="32"
+        height="32"
+        src={moonGanymede.src}
+        alt="moonGanymede"
+      />
+      <canvas id="moonPhaseCanvas" width="32" height="32"></canvas>
+    </div>
+  </details>
+</section>
 
 <script src="./moonPhaseFiller.js"></script>
 <script src="./moonInfoFiller.js"></script>

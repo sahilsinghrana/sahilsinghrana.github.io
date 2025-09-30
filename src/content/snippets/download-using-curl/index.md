@@ -6,13 +6,13 @@ title: Download file using curL
 description: "Command to download file using curl."
 tags:
   [
-    "howTo",
     "download",
     "file",
     "curl",
     "bash",
     "download file using curl",
     "cli download",
+    "How to download with curl",
   ]
 ---
 
@@ -41,15 +41,15 @@ Let's break down the keywords of the command:
 
 ## Some Background
 
-### What is curl?
+### What is cURL?
 
-> curl is used in command lines or scripts to transfer data. curl is also used in cars, television sets, routers, printers, audio equipment, mobile phones, tablets, medical devices, settop boxes, computer games, media players and is the Internet transfer engine for thousands of software applications in over twenty billion installations.
+> cURL is used in command lines or scripts to transfer data. cURL is also used in cars, television sets, routers, printers, audio equipment, mobile phones, tablets, medical devices, settop boxes, computer games, media players and is the Internet transfer engine for thousands of software applications in over twenty billion installations.
 
-> curl is used daily by virtually every Internet-using human on the globe.
+> cURL is used daily by virtually every Internet-using human on the globe.
 >
 > -- [Taken from official website](https://curl.se/#:~:text=curl%20is%20used,on%20the%20globe.)
 
-### Prerequisites
+### Install cURL
 
 Before using the `curl` command, ensure curL is installed in your system:
 
