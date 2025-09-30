@@ -29,13 +29,13 @@ class ArtistCard {
 class CurrentTopArtistsDom {
   static getWrapperEl() {
     return document.querySelector(
-      "body > main > div > div.spotifyData > div > div.topArtistsContainer > ul",
+      ".spotifyData > div > div.topArtistsContainer > ul",
     );
   }
 
   static getContainerEl() {
     return document.querySelector(
-      "body > main > div > div.spotifyData > div > div.topArtistsContainer",
+      ".spotifyData > div > div.topArtistsContainer",
     );
   }
 

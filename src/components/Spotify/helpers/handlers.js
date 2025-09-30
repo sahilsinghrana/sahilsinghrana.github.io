@@ -50,7 +50,7 @@ export function populateTopTracks(topTracks = []) {
 
 export function addProfileLinkToSpotifyLogo(url) {
   const spotifyLogoAnchorEl = document.querySelector(
-    "body > main > div > div.spotifyData > div > a.spotifyLogoContainer",
+    ".spotifyData > div > a.spotifyLogoContainer",
   );
 
   spotifyLogoAnchorEl.href = url;
