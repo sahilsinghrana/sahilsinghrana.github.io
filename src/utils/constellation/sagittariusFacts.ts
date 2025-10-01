@@ -17,7 +17,7 @@ const sagittariusFacts = {
     "Asterism shape that aligns with the galaxy’s brightest band",
   ),
   galacticCenter: new Fact(
-    "'Sgr A* — the Milky Way's supermassive heart sits in Sagittarius'",
+    "'Sgr A* : the Milky Way's supermassive heart sits in Sagittarius'",
     "https://www.britannica.com/place/Sagittarius-constellation",
     "The dense central bulge of the Milky Way lies in Sagittarius; stellar orbits and radio/X-ray data establish a compact supermassive object, Sgr A*.",
     "https://www.mpe.mpg.de/7968905/news20231025",
@@ -28,9 +28,9 @@ const sagittariusFacts = {
     "Symbolic and literal aim toward the galactic core",
   ),
   messierHotspot: new Fact(
-    "'Sagittarius is a Messier hotspot — a dense treasure of nebulae, clusters and star clouds'",
+    "'Sagittarius is a Messier hotspot; a dense treasure of nebulae, clusters and star clouds'",
     "https://www.messier.seds.org/map/Sgr.html",
-    "Sagittarius is exceptionally rich in Messier objects (nebulae, clusters, star clouds) because that line-of-sight looks directly into the Milky Way's bulge — a deep-sky goldmine.",
+    "Sagittarius is exceptionally rich in Messier objects (nebulae, clusters, star clouds) because that line-of-sight looks directly into the Milky Way's bulge; a deep-sky goldmine.",
     "https://www.messier.seds.org/map/Sgr.html",
   ),
 };

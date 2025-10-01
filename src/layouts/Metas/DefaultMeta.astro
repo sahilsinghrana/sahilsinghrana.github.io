@@ -1,0 +1,17 @@
+---
+const currentUrl = new URL(Astro.url.pathname, Astro.site);
+---
+
+<meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="canonical" href={currentUrl} />
+
+<link rel="sitemap" href="/sitemap-index.xml" />
+<meta
+  name="google-site-verification"
+  content="w4Q8_lhxctc5EB94weOcv_HFvNR7h_gyjZPRJcRuWqQ"
+/>
+
+<meta name="robots" content="index, follow" />

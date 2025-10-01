@@ -47,8 +47,8 @@ footer {
   }
 
   nav {
-    max-width: var(--content-max-width);
-    width: var(--content-width);
+    max-width: var(--content-max-width, 90%);
+    width: var(--content-width, 100%);
 
     display: flex;
     flex-direction: column;

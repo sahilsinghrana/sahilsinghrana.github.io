@@ -1,41 +1,490 @@
 ---
-import Layout from "@layouts/index.astro";
-import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
-import SagittariusComp from "@components/Constellations/SagittariusComp.astro";
-import { resourcesPageKeywords } from "@utils/metaKeywords";
-import placeholderImage from "@images/resourcesPlaceholder.webp";
-import sagittariusFacts from "@utils/constellation/sagittariusFacts";
-
-import "./_sagittarius.scss";
+import ConstellationLayout from "@layouts/Constellation/ConstellationLayout.astro";
+import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astro";
 ---
 
-<Layout
-  title="Sagittarius"
-  description={"Amazing facts about the Sagittarius"}
-  keywords={resourcesPageKeywords}
+<ConstellationLayout
+  title="Sagittarius - The Archer"
+  description="Explore the Sagittarius constellation, its brightest stars, and the rich mythology behind it. Learn about its location in the night sky and fascinating facts."
+  keywords={[
+    "Sagittarius constellation",
+    "Sagittarius stars",
+    "Sagittarius mythology",
+    "Sagittarius facts",
+    "Sagittarius location",
+    "Sagittarius deep sky objects",
+    "Sagittarius nebulae",
+    "Sagittarius galactic center",
+    "Sagittarius star map",
+    "Sagittarius astronomy",
+    "Sagittarius zodiac",
+    "Sagittarius archer",
+    "Sagittarius celestial navigation",
+    "Sagittarius star chart",
+    "Sagittarius constellation guide",
+  ]}
 >
-  <SectionHeaderImage
-    title="Sagittarius"
-    Image={placeholderImage}
-    quote={"Sagittarius A: The Heartbeat of the Galaxy."}
-  />
+  <div class="constellation-starfield"></div>
 
-  <div>
-    <h2 style="text-align: center;">Sagittarius Constellation</h2>
-    <div class="sagittarius-wrapper">
-      <SagittariusComp />
+  <ConstellationHeader class="constellation-hero">
+    <div class="constellation-container">
+      <svg class="constellation-svg" viewBox="0 0 500 500">
+        <!-- Sagittarius constellation stars -->
+        <circle
+          class="constellation-star"
+          cx="150"
+          cy="200"
+          r="4"
+          data-name="Kaus Australis"></circle>
+        <circle
+          class="constellation-star"
+          cx="200"
+          cy="180"
+          r="3"
+          data-name="Kaus Media"></circle>
+        <circle
+          class="constellation-star"
+          cx="250"
+          cy="160"
+          r="3"
+          data-name="Kaus Borealis"></circle>
+        <circle
+          class="constellation-star"
+          cx="300"
+          cy="220"
+          r="3"
+          data-name="Nunki"></circle>
+        <circle
+          class="constellation-star"
+          cx="350"
+          cy="240"
+          r="3"
+          data-name="Ascella"></circle>
+        <circle
+          class="constellation-star"
+          cx="400"
+          cy="200"
+          r="3"
+          data-name="Shaula"></circle>
+        <circle
+          class="constellation-star"
+          cx="180"
+          cy="280"
+          r="3"
+          data-name="Nash"></circle>
+        <circle
+          class="constellation-star"
+          cx="320"
+          cy="300"
+          r="3"
+          data-name="Albaldah"></circle>
+
+        <!-- Constellation lines -->
+        <g class="constellation-lines">
+          <line x1="150" y1="200" x2="200" y2="180"></line>
+          <line x1="200" y1="180" x2="250" y2="160"></line>
+          <line x1="200" y1="180" x2="300" y2="220"></line>
+          <line x1="300" y1="220" x2="350" y2="240"></line>
+          <line x1="350" y1="240" x2="400" y2="200"></line>
+          <line x1="150" y1="200" x2="180" y2="280"></line>
+          <line x1="300" y1="220" x2="320" y2="300"></line>
+        </g>
+      </svg>
     </div>
 
-    <ul>
+    <div class="constellation-hero-content">
+      <h1 class="constellation-title">SAGITTARIUS</h1>
+      <p class="constellation-subtitle">The Archer • ♐</p>
+      <div class="constellation-coordinates">
+        <span>RA: 19h 00m</span>
+        <span>Dec: -25°</span>
+      </div>
+      <div class="constellation-interaction-hint">
+        <p>✨ Click the stars above to explore ✨</p>
+      </div>
+    </div>
+  </ConstellationHeader>
+
+  <main class="constellation-content">
+    <section class="constellation-fact-card">
+      <h2>The Galactic Center</h2>
+      <p>
+        Sagittarius contains the center of our Milky Way galaxy, hidden behind
+        dense clouds of cosmic dust. This supermassive black hole, Sagittarius
+        A*, has a mass 4 million times that of our Sun.
+      </p>
+      <div class="constellation-stat">
+        <span class="number">26,000</span>
+        <span class="unit">light-years away</span>
+      </div>
+    </section>
+
+    <section class="constellation-fact-card">
+      <h2>Brightest Star</h2>
+      <p>
+        Kaus Australis (ε Sagittarii) shines as the constellation's brightest
+        star, a blue giant 145 light-years away with a surface temperature of
+        22,000K.
+      </p>
+      <div class="constellation-stat">
+        <span class="number">1.85</span>
+        <span class="unit">magnitude</span>
+      </div>
+    </section>
+
+    <section class="constellation-fact-card">
+      <h2>Deep Sky Objects</h2>
+      <p>
+        Home to stunning nebulae including the Lagoon, Trifid, and Eagle
+        nebulae. Contains more Messier objects than any other constellation.
+      </p>
+      <div class="constellation-stat">
+        <span class="number">15</span>
+        <span class="unit">Messier objects</span>
+      </div>
+    </section>
+
+    <section class="constellation-mythology">
+      <h2>The Centaur Archer</h2>
+      <p>
+        In Greek mythology, Sagittarius represents Chiron, the wise centaur who
+        taught heroes like Achilles and Jason. Unlike other centaurs, Chiron was
+        noble and learned, skilled in medicine, music, and archery. When
+        accidentally wounded by Heracles' poisoned arrow, the immortal Chiron
+        chose to give up his immortality to end his suffering, and Zeus placed
+        him among the stars.
+      </p>
+    </section>
+
+    <section class="constellation-nebula-showcase">
+      <h2>Famous Nebulae</h2>
+      <div class="constellation-nebula-grid">
+        <div class="constellation-nebula-item">
+          <h3>Lagoon Nebula (M8)</h3>
+          <p>
+            A giant interstellar cloud 4,100 light-years away, visible to the
+            naked eye as a pink cloud-like patch.
+          </p>
+          <span class="nebula-type">Emission Nebula</span>
+        </div>
+        <div class="constellation-nebula-item">
+          <h3>Trifid Nebula (M20)</h3>
+          <p>
+            Named for its three dark lanes, this nebula combines emission,
+            reflection, and dark nebula in one spectacular object.
+          </p>
+          <span class="nebula-type">Combination Nebula</span>
+        </div>
+        <div class="constellation-nebula-item">
+          <h3>Eagle Nebula (M16)</h3>
+          <p>
+            Famous for the "Pillars of Creation" - towering columns of gas and
+            dust where new stars are born.
+          </p>
+          <span class="nebula-type">Star-forming Region</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="constellation-astronomical-facts">
+      <h2>Astronomical Facts & Scientific Evidence</h2>
+      <div class="constellation-facts-grid">
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>🌌 Galactic Center Location</h3>
+            <p>
+              Sagittarius A* (Sgr A*) is a supermassive black hole at the center
+              of our galaxy, with a mass of 4.154 million solar masses.
+            </p>
+            <a
+              href="https://www.nasa.gov/mission_pages/chandra/news/astronomers-reveal-first-image-of-the-black-hole-at-the-heart-of-our-galaxy.html"
+              target="_blank"
+              class="scientific-reference">NASA - Sagittarius A* Discovery</a
+            >
+          </div>
+        </div>
+
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>⭐ Star Formation Region</h3>
+            <p>
+              The constellation contains the most active star-forming regions in
+              our galaxy, with over 100 known star-forming complexes.
+            </p>
+            <a
+              href="https://science.nasa.gov/astrophysics/focus-areas/how-do-stars-form-and-evolve"
+              target="_blank"
+              class="scientific-reference">NASA - Star Formation Science</a
+            >
+          </div>
+        </div>
+
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>🌟 Messier Catalog Record</h3>
+            <p>
+              Sagittarius holds the record for most Messier objects (15),
+              including famous nebulae like M8 (Lagoon) and M20 (Trifid).
+            </p>
+            <a
+              href="https://www.messier.seds.org/more/mw_sag.html"
+              target="_blank"
+              class="scientific-reference"
+              >SEDS - Messier Objects in Sagittarius</a
+            >
+          </div>
+        </div>
+
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>🔭 Radio Astronomy Breakthrough</h3>
+            <p>
+              The first radio waves from space were detected from Sagittarius in
+              1931 by Karl Jansky, founding radio astronomy.
+            </p>
+            <a
+              href="https://www.nrao.edu/whatisra/hist_jansky.shtml"
+              target="_blank"
+              class="scientific-reference">NRAO - Karl Jansky Discovery</a
+            >
+          </div>
+        </div>
+
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>🌠 Stellar Density</h3>
+            <p>
+              The galactic center region has a stellar density 25 million times
+              higher than in our solar neighborhood.
+            </p>
+            <a
+              href="https://www.eso.org/public/news/eso1835/"
+              target="_blank"
+              class="scientific-reference">ESO - Galactic Center Studies</a
+            >
+          </div>
+        </div>
+
+        <div class="constellation-fact-item">
+          <div class="fact-content">
+            <h3>🌌 Dark Matter Evidence</h3>
+            <p>
+              Observations of stars orbiting Sgr A* provided crucial evidence
+              for dark matter and general relativity predictions.
+            </p>
+            <a
+              href="https://www.nobelprize.org/prizes/physics/2020/summary/"
+              target="_blank"
+              class="scientific-reference">Nobel Prize - Black Hole Research</a
+            >
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="constellation-culture-section">
+      <h2>Vedic Astrology & Hindu Tradition</h2>
+      <div class="constellation-culture-grid">
+        <div class="constellation-culture-item">
+          <h3>Dhanus Rashi (धनुष राशि)</h3>
+          <p>
+            In Vedic astrology, Sagittarius is known as "Dhanus" meaning bow. It
+            represents the archer's weapon and symbolizes aim, direction, and
+            spiritual quest for higher knowledge.
+          </p>
+        </div>
+        <div class="constellation-culture-item">
+          <h3>Ruling Planet: Jupiter (Guru)</h3>
+          <p>
+            Jupiter, known as "Brihaspati" or "Guru" in Sanskrit, governs
+            Sagittarius. It represents wisdom, spirituality, teaching, and
+            expansion of consciousness.
+          </p>
+        </div>
+        <div class="constellation-culture-item">
+          <h3>Nakshatra Association</h3>
+          <p>
+            Contains parts of Mula, Purva Ashadha, and Uttara Ashadha
+            nakshatras. Each nakshatra brings unique qualities of
+            transformation, victory, and leadership.
+          </p>
+        </div>
+        <div class="constellation-culture-item">
+          <h3>Element: Fire (Agni)</h3>
+          <p>
+            Sagittarius belongs to the fire element, representing passion,
+            energy, and the burning desire for truth and spiritual
+            enlightenment.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="constellation-facts-section">
+      <h2>Vedic Astronomical Significance</h2>
+      <div class="constellation-facts-list">
+        <div class="constellation-fact-item">
+          <span class="fact-icon">🏹</span>
+          <div>
+            <h3>Ishvara (Divine Archer)</h3>
+            <p>
+              Represents the cosmic archer who shoots arrows of divine knowledge
+              to dispel ignorance and guide souls toward moksha (liberation).
+            </p>
+          </div>
+        </div>
+        <div class="constellation-fact-item">
+          <span class="fact-icon">🕉️</span>
+          <div>
+            <h3>Spiritual Direction</h3>
+            <p>
+              The bow points toward the galactic center, symbolizing the soul's
+              journey toward the cosmic source and ultimate truth.
+            </p>
+          </div>
+        </div>
+        <div class="constellation-fact-item">
+          <span class="fact-icon">📿</span>
+          <div>
+            <h3>Guru's Blessing</h3>
+            <p>
+              Jupiter's influence brings wisdom, righteousness (dharma), and the
+              ability to guide others on their spiritual path.
+            </p>
+          </div>
+        </div>
+        <div class="constellation-fact-item">
+          <span class="fact-icon">🌟</span>
+          <div>
+            <h3>Moksha Karaka</h3>
+            <p>
+              In Jyotish, Sagittarius is associated with the 9th house of higher
+              learning, philosophy, and spiritual liberation.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="constellation-section-full"
+      style="background: linear-gradient(135deg, rgba(255, 165, 0, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(255, 165, 0, 0.2);"
+    >
+      <h2>Vedic Characteristics & Qualities</h2>
+      <div
+        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;"
+      >
+        <div>
+          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
+            Positive Traits (Sattvic)
+          </h3>
+          <ul
+            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
+          >
+            <li>• Dharmic (righteous) nature</li>
+            <li>• Spiritual wisdom and intuition</li>
+            <li>• Natural teaching abilities</li>
+            <li>• Philosophical mindset</li>
+            <li>• Optimistic and adventurous</li>
+            <li>• Strong moral compass</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
+            Challenges (Rajasic/Tamasic)
+          </h3>
+          <ul
+            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
+          >
+            <li>• Tendency toward dogmatism</li>
+            <li>• Impatience with slower learners</li>
+            <li>• Restlessness and wanderlust</li>
+            <li>• Overconfidence in beliefs</li>
+            <li>• Difficulty with routine tasks</li>
+            <li>• Can be preachy or judgmental</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
+            Spiritual Significance
+          </h3>
+          <ul
+            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
+          >
+            <li>• Represents the seeker of truth</li>
+            <li>• Connection to higher realms</li>
+            <li>• Guardian of sacred knowledge</li>
+            <li>• Bridge between human and divine</li>
+            <li>• Symbol of spiritual evolution</li>
+            <li>• Protector of dharmic principles</li>
+          </ul>
+        </div>
+      </div>
+
+      <div
+        style="margin-top: 3rem; padding: 2rem; background: rgba(255, 165, 0, 0.03); border-radius: 8px; border: 1px solid rgba(255, 165, 0, 0.1);"
+      >
+        <h3
+          style="color: #ffa500; margin-bottom: 1rem; text-align: center; font-size: 1.4rem;"
+        >
+          Mantra & Sacred Connection
+        </h3>
+        <p
+          style="text-align: center; font-size: 1.1rem; color: #e0e0e0; margin-bottom: 1rem; font-style: italic;"
+        >
+          "ॐ गुरवे नमः" (Om Gurave Namah)
+        </p>
+        <p style="text-align: center; color: #999999; line-height: 1.7;">
+          This mantra honors Jupiter (Guru), the ruling planet of Sagittarius,
+          invoking wisdom, guidance, and spiritual enlightenment. Chanting this
+          mantra while observing Sagittarius is believed to enhance one's
+          connection to higher knowledge and dharmic path.
+        </p>
+      </div>
+    </section>
+  </main>
+</ConstellationLayout>
+
+<script>
+  import ConstellationFramework from "@layouts/Constellation/js/ConstellationFramework";
+
+  try {
+    // Initialize Sagittarius constellation with enhanced configuration
+    const sagittariusConfig = ConstellationFramework.createConstellationConfig(
+      "Sagittarius",
       {
-        Object.values(sagittariusFacts).map((fact) => {
-          return (
-            <li>
-              <strong>{fact.fact}:</strong> {fact.description}
-            </li>
-          );
-        })
-      }
-    </ul>
-  </div>
-</Layout>
+        ra: "RA: 19h 00m",
+        dec: "Dec: -25°",
+        raDescription:
+          "Right Ascension coordinates for Sagittarius constellation center",
+        decDescription:
+          "Declination coordinates for Sagittarius constellation center",
+        starData: {
+          "Kaus Australis":
+            "The brightest star in Sagittarius, a blue giant star 145 light-years away.",
+          "Kaus Media":
+            'An orange giant star, part of the "bow" of the archer.',
+          "Kaus Borealis": "An orange supergiant, completing the archer's bow.",
+          Nunki:
+            "The second brightest star, a hot blue star 228 light-years away.",
+          Ascella: "A close binary star system in the archer's arm.",
+          Shaula:
+            "A blue supergiant, one of the hottest stars visible to the naked eye.",
+          Nash: "A red giant star in the archer's body.",
+          Albaldah: "An orange giant star marking the archer's knee.",
+        },
+        enableTypingEffect: true,
+        enableMouseTrail: true,
+        enableParallax: true,
+      },
+    );
+
+    new ConstellationFramework(sagittariusConfig);
+
+    ConstellationFramework.addNebulaTooltips(
+      "A nebula is a giant cloud of dust and gas in space where stars are born, live, and die. Sagittarius contains some of the most spectacular nebulae visible from Earth.",
+    );
+  } catch (err) {
+    console.error("Error initializing Sagittarius constellation:", err);
+  }
+</script>

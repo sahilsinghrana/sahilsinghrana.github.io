@@ -1,0 +1,79 @@
+@use "./_variables.scss" as *;
+
+.constellation-content {
+  max-width: $constellation-content-max-width;
+  margin: 0 auto;
+  padding: 4rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.constellation-fact-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: $constellation-border-radius;
+  padding: 2rem;
+  transition: all $constellation-transition-normal;
+  cursor: pointer;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(74, 158, 255, 0.3);
+    transform: translateY(-5px);
+  }
+
+  h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: $constellation-star-white;
+    font-weight: 400;
+  }
+
+  p {
+    color: $constellation-text-dim;
+    margin-bottom: 1.5rem;
+    line-height: 1.7;
+  }
+}
+
+.constellation-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+
+  .number {
+    font-size: 2.5rem;
+    font-weight: 300;
+    color: $constellation-accent-blue;
+    font-family: monospace;
+  }
+
+  .unit {
+    color: $constellation-text-dim;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+}
+
+// Full-width sections
+.constellation-section-full {
+  @include constellation-section-full;
+}
+
+.constellation-mythology {
+  @include constellation-section-full;
+  background: linear-gradient(
+    135deg,
+    rgba(74, 158, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(74, 158, 255, 0.2);
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.8;
+    color: $constellation-text-gray;
+  }
+}

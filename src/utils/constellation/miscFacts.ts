@@ -32,7 +32,7 @@ const miscFacts: Fact[] = [
   new Fact(
     "When two planets appear close together from Earth it's a planetary conjunction (apparent alignment).",
     "https://science.nasa.gov/solar-system/skywatching/planetary-alignments-and-planet-parades/",
-    "A conjunction is an observational, line-of-sight phenomenon — the bodies remain widely separated in space despite appearing near each other in the sky.",
+    "A conjunction is an observational, line-of-sight phenomenon. The bodies remain widely separated in space despite appearing near each other in the sky.",
     "https://en.wikipedia.org/wiki/Conjunction_(astronomy)",
   ),
 
@@ -95,7 +95,7 @@ const miscFacts: Fact[] = [
   new Fact(
     "Pluto was reclassified as a 'dwarf planet' by the IAU in 2006.",
     "https://science.nasa.gov/dwarf-planets/pluto/facts/",
-    "The IAU's 2006 definition requires orbiting the Sun, sufficient mass for a nearly round shape, and 'clearing the neighborhood' — Pluto fails the last criterion.",
+    "The IAU's 2006 definition requires orbiting the Sun, sufficient mass for a nearly round shape, and 'clearing the neighborhood'. Pluto fails the last criterion.",
     "https://www.britannica.com/story/why-is-pluto-no-longer-a-planet",
   ),
 
@@ -113,9 +113,9 @@ const miscFacts: Fact[] = [
     "https://www.jpl.nasa.gov/images/pia26076-cylindrical-orientation-of-jupiters-east-west-jet-streams/",
   ),
   new Fact(
-    "The Panchang (Hindu almanac) is built on astronomical measures (tithi, nakshatra, yoga, karana, vara) — all derived from Sun/Moon/planet positions computed astronomically.",
+    "The Panchang (Hindu almanac) is built on astronomical measures (tithi, nakshatra, yoga, karana, vara). all derived from Sun/Moon/planet positions computed astronomically.",
     "https://www.britannica.com/topic/Hindu-calendar",
-    "Panchang components are calculable from ephemerides: lunar day (tithi), lunar mansion (nakshatra), yoga (Sun+Moon angle), karana (half-tithi), and weekday (vara) — they are astronomical constructs used in traditional timing.",
+    "Panchang components are calculable from ephemerides: lunar day (tithi), lunar mansion (nakshatra), yoga (Sun+Moon angle), karana (half-tithi), and weekday (vara). they are astronomical constructs used in traditional timing.",
     "https://en.wikipedia.org/wiki/Hindu_calendar",
   ),
 ];

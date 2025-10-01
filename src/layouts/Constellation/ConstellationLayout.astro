@@ -1,0 +1,43 @@
+---
+import { Head } from "astro-capo";
+
+import OgMeta from "../Metas/OgMeta.astro";
+import GtagHeadScripts from "../Metas/GtagHeadScripts.astro";
+import DefaultMeta from "../Metas/DefaultMeta.astro";
+import DescriptionMeta from "../Metas/DescriptionMeta.astro";
+import Footer from "@components/Footer/index.astro";
+
+const { title, description, keywords } = Astro.props;
+
+// import "@styles/global.scss";
+
+// import "./scss/constellation-framework.scss";
+
+import "./scss/_components.scss";
+import "./scss/_animations.scss";
+import "./scss/_base.scss";
+import "./scss/_hero.scss";
+import "./scss/_constellation.scss";
+import "./scss/_content.scss";
+import "./scss/_responsive.scss";
+---
+
+<html lang="en" transition:animate="slide">
+  <Head>
+    <DefaultMeta />
+    <GtagHeadScripts />
+    <OgMeta title={title} description={description} />
+    <DescriptionMeta
+      title={title}
+      description={description}
+      keywords={keywords}
+    />
+
+    <title>{title}</title>
+  </Head>
+  <body class="constellation-page">
+    <slot />
+
+    <Footer />
+  </body>
+</html>
