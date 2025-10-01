@@ -7,30 +7,17 @@ import Moon from "@components/General/Moon/index.astro";
 
 import OgMeta from "./Metas/OgMeta.astro";
 import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
+import DefaultMeta from "./Metas/DefaultMeta.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
 const { title, description, keywords, className } = Astro.props;
-const currentUrl = new URL(Astro.url.pathname, Astro.site);
 
 import "@styles/global.scss";
 ---
 
 <html lang="en" transition:animate="slide">
   <Head>
-    <meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-    <link rel="canonical" href={currentUrl} />
-
-    <link rel="sitemap" href="/sitemap-index.xml" />
-    <meta
-      name="google-site-verification"
-      content="w4Q8_lhxctc5EB94weOcv_HFvNR7h_gyjZPRJcRuWqQ"
-    />
-
-    <meta name="robots" content="index, follow" />
-
+    <DefaultMeta />
     <GtagHeadScripts />
     <OgMeta title={title} description={description} />
     <DescriptionMeta

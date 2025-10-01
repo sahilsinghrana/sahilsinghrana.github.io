@@ -59,6 +59,11 @@ import "@assets/styles/homePage.scss";
 >
   <About />
   <CurrentMoonInfo />
+  <div class="saggittariusLink">
+    <p>Interested in Sagittarius ?</p>
+    <a href="/resources/constellations/sagittarius">Click Me!!</a>
+  </div>
+
   <CurrentlyBuilding />
   <FeaturedTools />
   <FeaturedBlogs />
@@ -67,3 +72,47 @@ import "@assets/styles/homePage.scss";
     {moonFacts.darkSide.fact}
   </div>
 </Layout>
+
+<style>
+  .saggittariusLink {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    font-family: "Raleway", sans-serif;
+
+    border: 2px solid rgba(1, 84, 125, 0.4);
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0.7;
+
+    border-radius: 10px;
+  }
+
+  .saggittariusLink:hover {
+    opacity: 1;
+    border: 2px solid rgba(1, 84, 125, 0.8);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .saggittariusLink a {
+    border-radius: 10px;
+    text-decoration: none;
+    color: rgba(88, 164, 202, 0.9);
+    font-weight: bolder;
+    padding: 7px;
+    border: 1px solid rgba(1, 84, 125, 0.6);
+    margin-top: 5px;
+    font-size: 0.75rem;
+  }
+
+  .saggittariusLink p {
+    margin: 0;
+    font-weight: bold;
+    color: whitesmoke;
+  }
+</style>

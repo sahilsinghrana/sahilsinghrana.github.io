@@ -1,0 +1,80 @@
+@use "./_variables.scss" as *;
+
+.constellation-hero {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  padding: $constellation-hero-padding;
+  overflow: hidden;
+  .title {
+    position: absolute;
+    z-index: 99;
+    top: 10px;
+    left: 0;
+    padding: 10px;
+    opacity: 0.75;
+    a {
+      color: whitesmoke;
+      text-decoration: none;
+      font-size: 1.2rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.constellation-hero-content {
+  text-align: center;
+  z-index: 4;
+  position: relative;
+}
+
+.constellation-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  color: $constellation-star-white;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  animation: constellation-fadeInUp 1s ease-out;
+}
+
+.constellation-subtitle {
+  font-size: 1.5rem;
+  color: $constellation-text-dim;
+  margin-bottom: 2rem;
+  animation: constellation-fadeInUp 1s ease-out 0.3s both;
+}
+
+.constellation-coordinates {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: $constellation-accent-blue;
+  animation: constellation-fadeInUp 1s ease-out 0.6s both;
+
+  span {
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(74, 158, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(74, 158, 255, 0.05);
+  }
+}
+
+.constellation-interaction-hint {
+  margin-top: 2rem;
+  animation: constellation-fadeInUp 1s ease-out 0.9s both;
+
+  p {
+    color: $constellation-accent-blue;
+    font-size: 0.9rem;
+    opacity: 0.8;
+    animation: constellation-pulse 2s infinite ease-in-out;
+  }
+}

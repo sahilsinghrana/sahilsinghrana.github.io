@@ -1,0 +1,56 @@
+// Responsive design for constellation pages
+@media (max-width: 768px) {
+  .constellation-container {
+    position: absolute;
+    // top: 5rem;
+    left: 0;
+    transform: translate(0%, -50%);
+    display: flex;
+    justify-content: center;
+  }
+
+  .constellation-svg {
+    width: min(650px, 100vw);
+    height: 490px;
+  }
+
+  .constellation-coordinates {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .constellation-content {
+    grid-template-columns: 1fr;
+    padding: 2rem 1rem;
+  }
+
+  .constellation-hero {
+    padding: 1rem;
+  }
+
+  .constellation-title {
+    font-size: clamp(2.3rem, 8vw, 4rem);
+  }
+
+  // Astronomical facts responsive styles
+  .constellation-astronomical-facts {
+    padding: 3rem 1rem;
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+    }
+  }
+
+  .constellation-facts-grid {
+    gap: 1.5rem;
+  }
+
+  .constellation-fact-item {
+    padding: 1.5rem;
+  }
+
+  .fact-content h3 {
+    font-size: 1.1rem;
+  }
+}

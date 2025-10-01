@@ -1,0 +1,35 @@
+// Constellation Framework Variables
+// These are scoped to constellation components only
+
+$constellation-bg-black: #0a0a0a;
+$constellation-star-white: #ffffff;
+$constellation-star-dim: #cccccc;
+$constellation-accent-blue: #4a9eff;
+$constellation-text-gray: #e0e0e0;
+$constellation-text-dim: #999999;
+
+// Animation Variables
+$constellation-transition-fast: 0.2s ease;
+$constellation-transition-normal: 0.3s ease;
+$constellation-transition-slow: 0.8s ease;
+
+// Layout Variables
+$constellation-hero-padding: 2rem;
+$constellation-content-max-width: 1200px;
+$constellation-border-radius: 8px;
+$constellation-border-radius-large: 12px;
+
+@mixin constellation-section-full {
+  grid-column: 1 / -1;
+  border-radius: $constellation-border-radius-large;
+  padding: 3rem;
+  margin-top: 2rem;
+
+  h2 {
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    color: $constellation-star-white;
+    font-weight: 300;
+    text-align: center;
+  }
+}

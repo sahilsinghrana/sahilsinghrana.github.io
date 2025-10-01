@@ -1,0 +1,14 @@
+@use "./_variables.scss" as *;
+@import url("../../../styles/opt.scss");
+
+.constellation-page {
+  background: $constellation-bg-black;
+  color: $constellation-text-gray;
+  line-height: 1.6;
+  min-height: 100vh;
+  font-family: "Raleway", "Manrope", "Roboto", "Inter";
+}
+
+footer {
+  font-size: 1.1rem;
+}
