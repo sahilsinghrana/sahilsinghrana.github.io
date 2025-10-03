@@ -21,8 +21,7 @@ export default defineConfig({
   integrations: [
     partytown({
       config: {
-        forward: ["dataLayer.push", "gtag"],
-        inline: true,
+        forward: ["dataLayer.push"],
       },
     }),
     purgecss(),
