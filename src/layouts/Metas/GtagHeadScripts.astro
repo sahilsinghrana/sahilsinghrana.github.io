@@ -1,15 +1,9 @@
-<script>
-  window.partytown = window.partytown || {};
-  window.partytown.forward = window.partytown.forward || [];
-  window.partytown.forward.push("dataLayer.push");
-</script>
-
 <script
   is:inline
-  type="text/partytown"
+  async
   src="https://www.googletagmanager.com/gtag/js?id=G-V3FFEDCSDS"></script>
 
-<script is:inline type="text/partytown">
+<script is:inline async>
   window.dataLayer = window.dataLayer || [];
   function gtag() {
     window.dataLayer.push(arguments);
@@ -22,5 +16,5 @@
     ad_personalization: "denied",
   });
 
-  gtag("config", "G-V3FFEDCSDS", { send_page_view: false });
+  gtag("config", "G-V3FFEDCSDS", { debug_mode: true });
 </script>

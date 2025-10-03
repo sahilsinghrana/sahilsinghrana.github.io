@@ -1,6 +1,5 @@
 import purgecss from "astro-purgecss";
 import sitemap from "@astrojs/sitemap";
-import partytown from "@astrojs/partytown";
 import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
 
@@ -18,15 +17,7 @@ export default defineConfig({
     experimental: true,
   },
   assetCacheKey: true,
-  integrations: [
-    partytown({
-      config: {
-        forward: ["dataLayer.push"],
-      },
-    }),
-    purgecss(),
-    sitemap(),
-  ],
+  integrations: [purgecss(), sitemap()],
   markdown: {
     shikiConfig: {
       theme: "github-dark",

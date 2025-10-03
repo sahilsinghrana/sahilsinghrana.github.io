@@ -22,7 +22,7 @@ import "./scss/_content.scss";
 import "./scss/_responsive.scss";
 ---
 
-<html lang="en" transition:animate="slide">
+<html lang="en">
   <Head>
     <DefaultMeta />
     <GtagHeadScripts />
@@ -32,11 +32,10 @@ import "./scss/_responsive.scss";
       description={description}
       keywords={keywords}
     />
-    <script src="../Metas/sendPageView.js"></script>
 
     <title>{title}</title>
   </Head>
-  <body class="constellation-page">
+  <body class="constellation-page" transition:animate="fade">
     <slot />
 
     <Footer />

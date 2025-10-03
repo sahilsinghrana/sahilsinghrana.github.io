@@ -15,7 +15,7 @@ const { title, description, keywords, className } = Astro.props;
 import "@styles/global.scss";
 ---
 
-<html lang="en" transition:animate="slide">
+<html lang="en">
   <Head>
     <DefaultMeta />
     <GtagHeadScripts />
@@ -25,7 +25,6 @@ import "@styles/global.scss";
       description={description}
       keywords={keywords}
     />
-    <script src="./Metas/sendPageView.js"></script>
 
     <title>{title}</title>
   </Head>
@@ -34,7 +33,7 @@ import "@styles/global.scss";
     <Header />
     <Moon />
     <main>
-      <div class={"content " + className} transition:animate="slide">
+      <div class={"content " + className} transition:animate="fade">
         <slot />
       </div>
     </main>

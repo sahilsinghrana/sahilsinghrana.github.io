@@ -37,7 +37,6 @@
     "Contact"
   ],
   "dependencies": {
-    "@astrojs/partytown": "^2.1.4",
     "@astrojs/sitemap": "^3.5.1",
     "astro-breadcrumbs": "^3.3.1",
     "astro-capo": "^0.0.1",
