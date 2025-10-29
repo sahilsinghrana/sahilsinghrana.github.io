@@ -78,7 +78,7 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
   new Shloka(
     3.5,
     "न हि कश्चित् क्षणमपि जातु तिष्ठत्यकर्मकृत् ।\nकार्यते ह्यवशः कर्म सर्वः प्रकृतिजैर्गुणैः ॥",
-    "All men are forced to act helplessly according to the impulses of nature's modes; therefore, no one can remain absolutely inactive even for a moment.",
+    "No one can ever remain without performing action even for a moment; for everyone is helplessly driven to action by the qualities born of nature..",
   ),
   new Shloka(
     3.21,
@@ -88,7 +88,7 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
   new Shloka(
     2.16,
     "नासतो विद्यते भावो नाभावो विद्यते सतः ।\nउभयोरपि दृष्टोऽन्तस्त्वनयोस्तत्त्वदर्शिभिः ॥",
-    "Of the transient (non-existent) there is no endurance, and of the eternal (existent) there is no cessation. The distinction between these two has been perceived by the seers of truth.",
+    "The unreal never comes into existence, and the Real never ceases to be. The ultimate truth about both these has been perceived by the seers of the Truth.",
   ),
   new Shloka(
     2.63,
@@ -98,17 +98,56 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
   new Shloka(
     6.5,
     "उद्धरेदात्मनात्मानं नात्मानमवसादयेत् ।\nआत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः ॥",
-    "One must elevate himself by his own mind, and not degrade himself. The mind is the friend of the conditioned soul, and his enemy as well.",
+    "One must uplift oneself by one's own self (mind), and should not degrade oneself. For the mind (self) alone is one's friend, and the mind (self) alone is one's enemy.",
   ),
   new Shloka(
     12.13,
     "अद्वेष्टा सर्वभूतानां मैत्रः करुण एव च ।\nनिर्ममो निरहङ्कारः समदुःखसुखः क्षमी ॥",
     "One who is not envious of any living entity, who is friendly and compassionate, who is free from the sense of proprietorship and false ego, who is equal in both happiness and distress, and who is always forgiving, he is very dear to Me.",
   ),
+  new Shloka(
+    5.1,
+    "ब्रह्मण्याधाय कर्माणि सङ्गं त्यक्त्वा करोति यः। लिप्यते न स पापेन पद्मपत्रमिवाम्भसा॥",
+    "One who performs his duty without attachment, surrendering the results to the Supreme, is untouched by sin, just as a lotus leaf is untouched by water",
+  ),
+  new Shloka(
+    18.9,
+    "कार्यमित्येव यत्कर्म नियतं क्रियतेऽर्जुन। सङ्गं त्यक्त्वा फलं चैव स त्यागः सात्त्विको मतः॥",
+    "When prescribed duty is performed simply because it is a duty, giving up attachment and the result, that renunciation is considered to be in the mode of goodness (Sattva).",
+  ),
+  new Shloka(
+    18.17,
+    "यस्य नाहङ्कृतो भावो बुद्धिर्यस्य न लिप्यते। हत्वापि स इमाँल्लोकान्न हन्ति न निबध्यते॥",
+    "One who is free from the egoistic notion (that 'I am the doer') and whose intellect is not tainted, even if he slays these living beings, he neither slays nor is he bound by the action.",
+  ),
+  new Shloka(
+    17.2,
+    "दातव्यमिति यद्दानं दीयतेऽनुपकारिणे। देशे काले च पात्रे च तद्दानं सात्त्विकं स्मृतम्॥",
+    "That charity which is given as a matter of duty, without expectation of return, in the proper place, at the proper time, and to a worthy person, is considered to be Sattvic.",
+  ),
+  new Shloka(
+    17.3,
+    "सत्त्वानुरूपा सर्वस्य श्रद्धा भवति भारत। श्रद्धामयोऽयं पुरुषो यो यच्छ्रद्धः स एव सः॥",
+    "The faith of every person, O Arjuna, is in accordance with their inner nature. A person is made of his faith; whatever his faith is, that verily he is.",
+  ),
 ];
 
 export const getRandomShloka = (): Shloka => {
-  return BHAGAVAD_GITA_SHLOKAS[
-    getRandom(0, BHAGAVAD_GITA_SHLOKAS.length - 1, 1)
-  ];
+  const cnt = Number(sessionStorage.getItem("sh0DnCt") || 0);
+  if (cnt > 4) {
+    sessionStorage.setItem("sh0DnCt", "0");
+    sessionStorage.removeItem("sh0Dn");
+  } else {
+    sessionStorage.setItem("sh0DnCt", (cnt + 1).toString());
+  }
+
+  let idx = 0;
+  const zDone = sessionStorage.getItem("sh0Dn");
+  if (zDone) {
+    idx = getRandom(0, BHAGAVAD_GITA_SHLOKAS.length - 1, 1);
+  } else {
+    sessionStorage.setItem("sh0Dn", "true");
+  }
+
+  return BHAGAVAD_GITA_SHLOKAS[idx];
 };
