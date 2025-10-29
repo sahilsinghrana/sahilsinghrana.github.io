@@ -1,1 +1,0 @@
-import{g as o}from"./constants.B6b5fL-C.js";import"./utils.B5275Si-.js";const t=o(),a=document.getElementById("shlokaDevanagari"),e=document.getElementById("shlokaTranslation"),n=document.getElementById("shlokaChapter");a&&(a.innerText=t.text);e&&(e.innerText=t.translation);n&&(n.innerText=`- Bhagvat Geeta(${t.chapter})`);
