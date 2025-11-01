@@ -1,14 +1,14 @@
 ---
 import WebDev from "@images/web-dev3.webp";
-import SubSectionImage from "./SubSectionImage.astro";
+import { Image } from "astro:assets";
 ---
 
 <section id="experience" class="experience">
   <h2>Professional Experience</h2>
 
   <div class="experienceInfoWrapper">
-    <SubSectionImage
-      className="companyLogo aboutPageSectionImage"
+    <Image
+      class="companyLogo aboutPageSectionImage"
       src={WebDev}
       alt="companyHero"
       loading="eager"

@@ -1,13 +1,13 @@
 ---
 import educationPlaceholder from "@images/educationPlaceholder.webp";
-import SubSectionImage from "./SubSectionImage.astro";
+import { Image } from "astro:assets";
 ---
 
 <section id="education" class="education">
   <h2>Education</h2>
   <div class="contentWrapper">
-    <SubSectionImage
-      className="aboutPageSectionImage"
+    <Image
+      class="aboutPageSectionImage"
       src={educationPlaceholder}
       alt="companyHero"
     />

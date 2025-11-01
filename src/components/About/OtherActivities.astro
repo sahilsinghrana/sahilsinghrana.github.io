@@ -1,13 +1,13 @@
 ---
 import otherActivitiesPlaceholder from "@images/otherActivitiesPlaceholder.webp";
-import SubSectionImage from "./SubSectionImage.astro";
+import { Image } from "astro:assets";
 ---
 
 <section id="otherActivities" class="otherActivities">
   <h2 id="otherActivities">Other Activities</h2>
   <div class="contentWrapper">
-    <SubSectionImage
-      className="aboutPageSectionImage"
+    <Image
+      class="aboutPageSectionImage"
       src={otherActivitiesPlaceholder}
       alt="companyHero"
     />
