@@ -17,6 +17,8 @@ import "@assets/styles/homePage.scss";
 import { Image } from "astro:assets";
 
 import fluteImage from "../components/About/flutenobg (2).png";
+
+import shivaBG from "../assets/images/shiva.png";
 ---
 
 <head>
@@ -81,6 +83,7 @@ import fluteImage from "../components/About/flutenobg (2).png";
     <blockquote id="shlokaDevanagari"></blockquote>
     <q id="shlokaTranslation"></q>
     <p id="shlokaChapter"></p>
+    <Image src={shivaBG} id="shlokaBG" alt="shiva" />
   </div>
 
   <FeaturedTools />
@@ -135,16 +138,17 @@ import fluteImage from "../components/About/flutenobg (2).png";
   }
 
   #shlokaWrapper {
-    outline: 4px solid rgba(200, 130, 44, 0.3);
+    outline: 4px solid rgba(237, 157, 60, 0.464);
     border-radius: 12px;
     padding: 8px;
-
+    position: relative;
     margin-top: 30px;
     margin-bottom: 30px;
   }
   #shlokaDevanagari {
     font-size: 1.15rem;
-    opacity: 0.9;
+    opacity: 1;
+    color: white;
     text-align: center;
     font-weight: unset;
     margin: 7px 0 5px 0;
@@ -159,6 +163,21 @@ import fluteImage from "../components/About/flutenobg (2).png";
     margin-bottom: 7px;
     width: 100%;
     margin-top: 10px;
+  }
+
+  #shlokaBG {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 70%;
+    height: 70%;
+
+    z-index: -1;
+    opacity: 0.3;
+    border-radius: 12px;
+    object-fit: cover;
   }
 
   #shlokaChapter {
@@ -184,5 +203,6 @@ import fluteImage from "../components/About/flutenobg (2).png";
   if (shlokaDevanagari) shlokaDevanagari.innerText = shlokaData.text;
   if (shlokaTranslation) shlokaTranslation.innerText = shlokaData.translation;
   if (shlokaChapter)
-    shlokaChapter.innerText = "- Bhagvat Geeta" + `(${shlokaData.chapter})`;
+    shlokaChapter.innerText =
+      `- ${shlokaData.source || ""}` + `(${shlokaData.chapter})`;
 </script>
