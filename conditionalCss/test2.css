@@ -1,0 +1,4 @@
+body.test2 #moonPhaseCanvas:hover {
+  --joyful-yellow: #ffc663;
+  outline: 1px solid var(--joyful-yellow);
+}

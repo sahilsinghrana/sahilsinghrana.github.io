@@ -1,0 +1,4 @@
+body.test1 #moonPhaseCanvas:hover {
+  --rb-red: #c72c41;
+  outline: 1px solid var(--rb-red);
+}
