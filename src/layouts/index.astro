@@ -14,7 +14,7 @@ const { title, description, keywords, className } = Astro.props;
 
 import "@styles/global.scss";
 
-import "./test.scss";
+// import "./test.scss";
 ---
 
 <html lang="en">
@@ -47,7 +47,10 @@ import "./test.scss";
   import { getRandom } from "@components/Spotify/helpers/utils";
   import dateBasedClassInjector from "src/scripts/dateBasedClassInjector";
 
-  dateBasedClassInjector(18, 11, "test");
+  dateBasedClassInjector(19, 11, "test1");
+  dateBasedClassInjector(21, 11, "test2");
+
+  dateBasedClassInjector(28, 11, "colorful");
 
   for (let i = 0; i < 11; i++) {
     const star = document.createElement("div");
