@@ -1,0 +1,106 @@
+body.colorful {
+  // --ps-red: #ff559d;
+  --rb-red: #c72c41;
+  --br-rose: #ff559d;
+  --white: #f9eed1;
+  --coral: #fc7b53;
+  --joyful-yellow: #ffc663;
+  --gold: #ffd700;
+
+  // --pale-silver: #cfbdb7;
+  // --peach: #f7b6a6;
+  // --lav-pink: #ffb3d1;
+  // --deep-purple: #683b9c;
+
+  color: var(--white);
+
+  .myMoon {
+    filter: brightness(0.17);
+    -webkit-filter: brightness(0.17);
+    -moz-filter: brightness(0.17);
+    -ms-filter: brightness(0.17);
+    offset-path: ellipse(62vw 26vh at center);
+    animation: spin 30s infinite linear;
+    will-change: offset-distance;
+  }
+
+  header {
+    .headerContainer > .catImage {
+      filter: contrast(1.1) brightness(1.2) saturate(2) blur(0.2px)
+        hue-rotate(294deg);
+    }
+
+    .headerBottomBorder {
+      background-color: hsl(from var(--white) h s l / 0.8);
+      box-shadow: 0 2px 2px 3px hsl(from var(--br-rose) h s l / 0.2);
+      height: 1.2px;
+      opacity: 0.7;
+    }
+  }
+
+  .star {
+    opacity: 0.95;
+    width: 4px;
+    height: 4px;
+    background-color: var(--white);
+    animation-name: glowTwinkleAnimation;
+    background-position: center;
+    background-size: contain;
+    transform-origin: center;
+    animation-duration: 500ms;
+  }
+
+  .meteor {
+    background: linear-gradient(90deg, transparent, var(br-rose));
+    transform: rotate(45deg);
+  }
+
+  #profilePicContainer > picture > img {
+    box-shadow:
+      0 0 50px var(--white),
+      0 0 calc(50px * 0.5) var(--coral),
+      0 0 calc(50px * 1.35) var(--br-rose);
+
+    animation: none;
+
+    &:hover {
+      animation: none;
+    }
+  }
+
+  @keyframes glowTwinkleAnimation {
+    0% {
+      transform: scale(1, 1);
+      background-color: rgba(255, 255, 255, 0);
+    }
+    50% {
+      transform: scale(0.7, 0.7);
+      background-color: rgba(255, 255, 255, var(--max-opacity, 0.8));
+      box-shadow:
+        0 0 8px var(--joyful-yellow),
+        0 0 calc(8px * 0.5) var(--coral),
+        0 0 calc(8px * 1.35) var(--white);
+      width: 6px;
+      height: 6px;
+    }
+    70% {
+      background-color: rgba(255, 255, 255, 0.1);
+      transform: scale(1.3, 1.3);
+      box-shadow: none;
+      height: 15px;
+      width: 15px;
+      opacity: 0.8;
+      background-image: url("/icons/sunflowerico.jpg");
+    }
+    100% {
+      background-color: rgba(255, 255, 255, 0);
+      box-shadow:
+        0 0 8px var(--rb-red),
+        0 0 calc(8px * 0.5) var(--gold),
+        0 0 calc(8px * 1.35) var(--joyful-yellow);
+      transform: scale(1, 1);
+      width: 4px;
+      height: 4px;
+    }
+  }
+}

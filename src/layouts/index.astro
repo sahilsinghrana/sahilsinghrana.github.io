@@ -6,13 +6,15 @@ import Footer from "@components/Footer/index.astro";
 import Moon from "@components/General/Moon/index.astro";
 
 import OgMeta from "./Metas/OgMeta.astro";
-import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
 import DefaultMeta from "./Metas/DefaultMeta.astro";
+import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
 const { title, description, keywords, className } = Astro.props;
 
 import "@styles/global.scss";
+
+// import "./test.scss";
 ---
 
 <html lang="en">
@@ -43,6 +45,12 @@ import "@styles/global.scss";
 
 <script>
   import { getRandom } from "@components/Spotify/helpers/utils";
+  import dateBasedClassInjector from "src/scripts/dateBasedClassInjector";
+
+  dateBasedClassInjector(19, 11, "test1");
+  dateBasedClassInjector(21, 11, "test2");
+
+  dateBasedClassInjector(28, 11, "colorful");
 
   for (let i = 0; i < 11; i++) {
     const star = document.createElement("div");
