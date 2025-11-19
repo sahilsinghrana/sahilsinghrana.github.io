@@ -8,4 +8,100 @@
       font-size: 0.9rem;
     }
   }
+
+  .saggittariusLink {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.9rem;
+    font-family: "Raleway", sans-serif;
+
+    border: 2px solid rgba(1, 84, 125, 0.4);
+    padding: 10px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    opacity: 0.7;
+
+    border-radius: 10px;
+  }
+
+  .saggittariusLink:hover {
+    opacity: 1;
+    border: 2px solid rgba(1, 84, 125, 0.8);
+    transition: all 0.3s ease-in-out;
+  }
+
+  .saggittariusLink a {
+    border-radius: 10px;
+    text-decoration: none;
+    color: rgba(88, 164, 202, 0.9);
+    font-weight: bolder;
+    padding: 7px;
+    border: 1px solid rgba(1, 84, 125, 0.6);
+    margin-top: 5px;
+    font-size: 0.75rem;
+  }
+
+  .saggittariusLink p {
+    margin: 0;
+    font-weight: bold;
+    color: whitesmoke;
+  }
+
+  #shlokaWrapper {
+    outline: 2px solid rgba(237, 157, 60, 0.4);
+    border-radius: 12px;
+    padding: 8px;
+    position: relative;
+    margin-top: 30px;
+    margin-bottom: 30px;
+  }
+
+  #shlokaDevanagari {
+    font-size: 1.15rem;
+    opacity: 1;
+    color: white;
+    text-align: center;
+    font-weight: unset;
+    margin: 7px 0 5px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid rgba(241, 239, 237, 0.2);
+  }
+
+  #shlokaTranslation {
+    font-size: 0.85rem;
+    text-align: justify;
+    font-style: italic;
+    margin-bottom: 7px;
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  #shlokaBG {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 70%;
+    height: 70%;
+
+    z-index: -1;
+    opacity: 0.3;
+    border-radius: 12px;
+    object-fit: cover;
+  }
+
+  #shlokaChapter {
+    font-size: 0.75rem;
+    text-align: right;
+    font-style: italic;
+    margin-top: 10px;
+    color: #ccc;
+    font-weight: bold;
+    margin-right: 5px;
+  }
 }

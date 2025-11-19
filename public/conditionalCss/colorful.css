@@ -8,26 +8,20 @@ body.colorful {
   color: var(--white);
 }
 body.colorful .myMoon {
-  filter: brightness(0.17);
-  -webkit-filter: brightness(0.17);
-  -moz-filter: brightness(0.17);
-  -ms-filter: brightness(0.17);
+  filter: hue-rotate(298deg) brightness(0.2) saturate(200%);
+  -webkit-filter: brightness(0.2);
+  -moz-filter: brightness(0.2);
+  -ms-filter: brightness(0.2);
   offset-path: ellipse(62vw 26vh at center);
-  animation: spin 30s infinite linear;
+  animation-duration: 30s;
   will-change: offset-distance;
 }
 
 body.colorful header .headerContainer > .catImage {
-  filter: contrast(1.1) brightness(1.2) saturate(2) blur(0.2px)
+  filter: contrast(1.1) brightness(1.2) saturate(200%) blur(0.2px)
     hue-rotate(294deg);
 }
 
-body.colorful header .headerBottomBorder {
-  background-color: #000;
-  box-shadow: 0 2px 2px 3px #000;
-  height: 1.2px;
-  opacity: 0.7;
-}
 body.colorful .star {
   opacity: 0.95;
   width: 4px;
@@ -40,7 +34,7 @@ body.colorful .star {
   animation-duration: 500ms;
 }
 body.colorful .meteor {
-  background: linear-gradient(90deg, transparent, var(br-rose));
+  background: linear-gradient(90deg, transparent, var(--rb-red));
   transform: rotate(45deg);
 }
 body.colorful #profilePicContainer > picture > img {
