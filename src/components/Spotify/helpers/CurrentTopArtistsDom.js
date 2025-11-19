@@ -12,7 +12,9 @@ class ArtistCard {
     li.className = "card artistCard";
     img.src = getSmallestImageFromSpotifyImagesArray(images)?.url;
     img.alt = name;
-
+    img.loading = "lazy";
+    img.height = "55px";
+    img.width = "55px";
     a.href = external_urls?.spotify;
     a.target = "_blank";
 

@@ -2,6 +2,7 @@ import purgecss from "astro-purgecss";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
+import viteCompression from "vite-plugin-compression";
 
 // https://astro.build/config
 export default defineConfig({
@@ -17,6 +18,24 @@ export default defineConfig({
     experimental: true,
   },
   assetCacheKey: true,
+  vite: {
+    plugins: [
+      // GZIP
+      viteCompression({
+        algorithm: "gzip",
+        ext: ".gz",
+        threshold: 1024,
+        compressionOptions: { level: 9 },
+      }),
+      // BROTLI
+      viteCompression({
+        algorithm: "brotliCompress",
+        ext: ".br",
+        threshold: 1024,
+        compressionOptions: { level: 11 },
+      }),
+    ],
+  },
   integrations: [purgecss(), sitemap()],
   markdown: {
     shikiConfig: {

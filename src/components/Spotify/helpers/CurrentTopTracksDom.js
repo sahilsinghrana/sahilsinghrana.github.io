@@ -66,6 +66,9 @@ class TrackCard {
   updateCoverArtPreviewUrl(previewUrl) {
     if (previewUrl) {
       this.coverArtEl.classList.add("hasPreview");
+      this.coverArtEl.loading = "lazy";
+      this.coverArtEl.height = "55px";
+      this.coverArtEl.width = "55px";
       this.coverArtEl.addEventListener("click", () => {
         if (previewAudioEl.src === previewUrl && !previewAudioEl.paused) {
           this.coverArtEl.classList.remove("playing");
