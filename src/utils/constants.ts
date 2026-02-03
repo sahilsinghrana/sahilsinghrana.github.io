@@ -149,6 +149,12 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
     "सत्त्वानुरूपा सर्वस्य श्रद्धा भवति भारत। श्रद्धामयोऽयं पुरुषो यो यच्छ्रद्धः स एव सः॥",
     "The faith of every person, O Arjuna, is in accordance with their inner nature. A person is made of his faith; whatever his faith is, that verily he is.",
   ),
+
+  new BG_Shloka(
+    6.26,
+    "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम् ।\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत् ॥",
+    "From wherever the mind wanders due to its flickering and unsteady nature, one must certainly withdraw it and bring it back under the control of the Self.",
+  ),
 ];
 
 export const SHIVA_SHLOKAS: Shloka[] = [
@@ -188,6 +194,18 @@ export const SHIVA_SHLOKAS: Shloka[] = [
     "उत्साहाद्यत्र सिद्ध्यन्ति कार्याणि न विपश्चितः। \n न तत्र शास्त्रं न बुद्धिर्न दक्षता न चौषधम्॥",
     "Where zeal prevails, tasks succeed — not by scriptural learning, intellect, skill, or even medicine.",
     "Mahābhārata, Śānti Parva",
+  ),
+  new SHIVA_Shloka(
+    "3",
+    "न मे द्वेषरागौ न मे लोभमोहौ । \n मदो नैव मे नैव मात्सर्यभावः ॥",
+    "I have no hatred or attachment, no greed or delusion; I have no arrogance, nor any feelings of jealousy. (I am Consciousness and Bliss, I am Shiva).",
+    "Nirvāṇa Shaṭakam",
+  ),
+  new SHIVA_Shloka(
+    "144",
+    "न पूजां न विसर्जनं न मन्त्रं न च चिन्तनम् । \n क्षोभादिपरमानन्दं जायते तन्मयं पदम् ॥",
+    "Neither ritual worship, nor dismissal, nor mantra, nor contemplation... When the mind is absorbed in the supreme bliss found in the center of agitation (stillness within chaos), that is the state of Shiva.",
+    "Vijñāna Bhairava Tantra",
   ),
 ];
 

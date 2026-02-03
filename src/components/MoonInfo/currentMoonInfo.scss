@@ -7,43 +7,60 @@ $borderRadius: 10px;
   outline: 1px solid rgba(255, 255, 255, 0.4);
   margin: 1.2rem 0;
   margin-bottom: 0;
-  border-radius: $borderRadius;
+  border-radius: 12px;
   min-width: 300px;
-  background: rgba(0, 0, 0, 0.6);
+
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+
   overflow: hidden;
+  transition: all 0.3s ease;
+
   & > * {
     font-family: monospace, "Inter";
   }
 
+  &:hover {
+    border-color: rgba(255, 165, 0, 0.3);
+    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.3);
+  }
+
   #moonInfo_moonEvent {
     border: 1px solid $codeGreen;
-    border-radius: 2px;
-    background: rgba(38, 50, 38, 0.6);
+    border-radius: 4px;
+    background: rgba(38, 50, 38, 0.4);
     color: $codeGreen;
-    padding: 5px;
+    padding: 8px;
     margin-left: 10px;
     margin-right: 10px;
-    margin: 5px;
-    font-size: 0.72rem;
+    margin: 10px;
+    font-size: 0.75rem;
   }
 
   summary {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.25);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     font-size: 0.85rem;
     font-weight: bold;
-    padding: 6px;
-    padding-bottom: 8px;
-    padding-top: 8px;
+    padding: 10px 15px;
     margin: 0;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+
     &::marker {
       margin-right: 10px;
+      color: rgba(255, 255, 255, 0.7);
     }
   }
   .moonInfo {
     justify-content: start;
     align-items: start;
-    background: rgba(0, 0, 0, 0.5);
-    margin: 10px;
+    background: transparent;
+    margin: 10px 15px;
     list-style: none;
     padding-inline-start: 0;
 

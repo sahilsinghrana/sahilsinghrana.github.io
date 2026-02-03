@@ -7,3 +7,76 @@
   justify-content: center;
   align-items: center;
 }
+
+.vedic-characteristics {
+  background: linear-gradient(
+    135deg,
+    rgba(255, 165, 0, 0.05),
+    rgba(255, 255, 255, 0.02)
+  );
+  border: 1px solid rgba(255, 165, 0, 0.2);
+  padding: 2rem;
+  border-radius: 12px;
+  margin-top: 3rem;
+
+  h2 {
+    text-align: center;
+    color: #ffa500;
+    margin-bottom: 2rem;
+  }
+
+  .vedic-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+  }
+
+  .vedic-card {
+    h3 {
+      color: #ffa500;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+    }
+
+    ul {
+      color: #e0e0e0;
+      line-height: 1.8;
+      list-style: none;
+      padding: 0;
+
+      li {
+        margin-bottom: 0.5rem;
+      }
+    }
+  }
+
+  .mantra-box {
+    margin-top: 3rem;
+    padding: 2rem;
+    background: rgba(255, 165, 0, 0.03);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 165, 0, 0.1);
+
+    h3 {
+      color: #ffa500;
+      margin-bottom: 1rem;
+      text-align: center;
+      font-size: 1.4rem;
+    }
+
+    .mantra-text {
+      text-align: center;
+      font-size: 1.1rem;
+      color: #e0e0e0;
+      margin-bottom: 1rem;
+      font-style: italic;
+    }
+
+    .mantra-desc {
+      text-align: center;
+      color: #999999;
+      line-height: 1.7;
+    }
+  }
+}

@@ -44,30 +44,12 @@ import "@styles/global.scss";
 </html>
 
 <script>
-  import { getRandom } from "@components/Spotify/helpers/utils";
   import dateBasedClassInjector from "src/scripts/dateBasedClassInjector";
+  import { initStarAnimation } from "src/scripts/starAnimation";
 
   dateBasedClassInjector(19, 11, "test1");
   dateBasedClassInjector(21, 11, "test2");
-
   dateBasedClassInjector(28, 11, "colorful");
 
-  for (let i = 0; i < 11; i++) {
-    const star = document.createElement("div");
-    star.className = "star";
-
-    const animationDuration = getRandom(4, 10, 0.1);
-    const animationDelay = getRandom(1, 14);
-    const windowHeight = window.innerWidth;
-    const windowWidth = window.innerWidth;
-
-    star.style.animationDuration = animationDuration + "s";
-    star.style.animationDirection = animationDelay + "s";
-    star.style.setProperty("--max-opacity", String(getRandom(0.3, 1, 0.1)));
-
-    star.style.top = getRandom(3, windowHeight + 140, 1) + "px";
-    star.style.left = getRandom(2, windowWidth + 5, 1) + "px";
-
-    document.body.appendChild(star);
-  }
+  initStarAnimation();
 </script>

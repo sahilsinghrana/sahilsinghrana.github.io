@@ -1,6 +1,7 @@
 ---
 import ConstellationLayout from "@layouts/Constellation/ConstellationLayout.astro";
 import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astro";
+import "./_sagittarius.scss";
 ---
 
 <ConstellationLayout
@@ -366,21 +367,12 @@ import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astr
       </div>
     </section>
 
-    <section
-      class="constellation-section-full"
-      style="background: linear-gradient(135deg, rgba(255, 165, 0, 0.05), rgba(255, 255, 255, 0.02)); border: 1px solid rgba(255, 165, 0, 0.2);"
-    >
+    <section class="constellation-section-full vedic-characteristics">
       <h2>Vedic Characteristics & Qualities</h2>
-      <div
-        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-top: 2rem;"
-      >
-        <div>
-          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
-            Positive Traits (Sattvic)
-          </h3>
-          <ul
-            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
-          >
+      <div class="vedic-grid">
+        <div class="vedic-card positive">
+          <h3>Positive Traits (Sattvic)</h3>
+          <ul>
             <li>• Dharmic (righteous) nature</li>
             <li>• Spiritual wisdom and intuition</li>
             <li>• Natural teaching abilities</li>
@@ -389,13 +381,9 @@ import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astr
             <li>• Strong moral compass</li>
           </ul>
         </div>
-        <div>
-          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
-            Challenges (Rajasic/Tamasic)
-          </h3>
-          <ul
-            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
-          >
+        <div class="vedic-card challenges">
+          <h3>Challenges (Rajasic/Tamasic)</h3>
+          <ul>
             <li>• Tendency toward dogmatism</li>
             <li>• Impatience with slower learners</li>
             <li>• Restlessness and wanderlust</li>
@@ -404,13 +392,9 @@ import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astr
             <li>• Can be preachy or judgmental</li>
           </ul>
         </div>
-        <div>
-          <h3 style="color: #ffa500; margin-bottom: 1rem; font-size: 1.2rem;">
-            Spiritual Significance
-          </h3>
-          <ul
-            style="color: #e0e0e0; line-height: 1.8; list-style: none; padding: 0;"
-          >
+        <div class="vedic-card spiritual">
+          <h3>Spiritual Significance</h3>
+          <ul>
             <li>• Represents the seeker of truth</li>
             <li>• Connection to higher realms</li>
             <li>• Guardian of sacred knowledge</li>
@@ -421,20 +405,10 @@ import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astr
         </div>
       </div>
 
-      <div
-        style="margin-top: 3rem; padding: 2rem; background: rgba(255, 165, 0, 0.03); border-radius: 8px; border: 1px solid rgba(255, 165, 0, 0.1);"
-      >
-        <h3
-          style="color: #ffa500; margin-bottom: 1rem; text-align: center; font-size: 1.4rem;"
-        >
-          Mantra & Sacred Connection
-        </h3>
-        <p
-          style="text-align: center; font-size: 1.1rem; color: #e0e0e0; margin-bottom: 1rem; font-style: italic;"
-        >
-          "ॐ गुरवे नमः" (Om Gurave Namah)
-        </p>
-        <p style="text-align: center; color: #999999; line-height: 1.7;">
+      <div class="mantra-box">
+        <h3>Mantra & Sacred Connection</h3>
+        <p class="mantra-text">"ॐ गुरवे नमः" (Om Gurave Namah)</p>
+        <p class="mantra-desc">
           This mantra honors Jupiter (Guru), the ruling planet of Sagittarius,
           invoking wisdom, guidance, and spiritual enlightenment. Chanting this
           mantra while observing Sagittarius is believed to enhance one's

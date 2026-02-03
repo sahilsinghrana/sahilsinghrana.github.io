@@ -47,6 +47,9 @@ header .headerContainer {
     img {
       margin-right: 0.3em;
       border-radius: 100%;
+      width: 20px;
+      height: 20px;
+      object-fit: cover;
     }
     &:hover {
       .homeTitle {
