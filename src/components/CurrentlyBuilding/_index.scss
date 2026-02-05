@@ -24,23 +24,9 @@
   }
 
   .previewWrapper {
-    padding: 1.5rem;
-    border-radius: 16px;
-    background: linear-gradient(
-      135deg,
-      rgba(255, 255, 255, 0.05),
-      rgba(255, 255, 255, 0.02)
-    );
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-
-    &:hover {
-      transform: translateY(-5px);
-      border-color: rgba(255, 165, 0, 0.3);
-      box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
-    }
-
+    padding: 10px;
+    border: 1px solid rgba(245, 245, 245, 0.42);
+    border-radius: 12px;
     .details {
       display: flex;
       max-width: 400px;

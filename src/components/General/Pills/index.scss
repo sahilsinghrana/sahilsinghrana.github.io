@@ -1,17 +1,14 @@
 .pillSection {
-  margin-top: 25px;
+  margin-top: 20px;
   h2 {
-    font-size: 0.9rem;
-    color: rgba(255, 255, 255, 0.9);
-    margin-bottom: 12px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 0.85rem;
+    color: rgb(234, 234, 234);
   }
 
   ul {
     display: flex;
     justify-content: flex-start;
-    gap: 12px;
+    gap: 8px;
     margin-block-start: 0;
     margin-block-end: 0;
     padding-inline-start: 0;
@@ -21,83 +18,20 @@
 
     li {
       list-style: none;
-      padding: 0;
+      background-color: rgba(124, 124, 124, 0.726);
+      padding: 6px 13px;
+      border-radius: 25px;
+      font-size: 0.7rem;
       margin: 0;
-      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 
-      .pill {
-        display: inline-block;
-        padding: 8px 16px;
-        border-radius: 30px;
-        font-size: 0.75rem;
+      a {
+        color: lightgray;
         text-decoration: none;
         cursor: pointer;
-        backdrop-filter: blur(5px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        font-weight: 500;
-        transition: all 0.3s ease;
-
-        // Default style (fallback)
-        background: rgba(255, 255, 255, 0.05);
-        color: rgba(255, 255, 255, 0.8);
       }
 
       &:hover {
-        transform: translateY(-2px);
-        .pill {
-          color: white;
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-        }
-      }
-    }
-  }
-
-  &.Skills {
-    ul li {
-      .pill {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.08),
-          rgba(255, 255, 255, 0.03)
-        );
-        border-color: rgba(255, 255, 255, 0.15);
-        color: rgba(255, 255, 255, 0.85);
-      }
-
-      &:hover .pill {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.15),
-          rgba(255, 255, 255, 0.08)
-        );
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
-      }
-    }
-  }
-
-  &.Hobbies {
-    ul li {
-      .pill {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.08),
-          rgba(255, 255, 255, 0.03)
-        );
-        border-color: rgba(255, 255, 255, 0.15);
-        color: rgba(255, 255, 255, 0.85);
-      }
-
-      &:hover .pill {
-        background: linear-gradient(
-          135deg,
-          rgba(255, 255, 255, 0.15),
-          rgba(255, 255, 255, 0.08)
-        );
-        border-color: rgba(255, 255, 255, 0.3);
-        box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-        text-shadow: 0 0 5px rgba(255, 255, 255, 0.4);
+        background-color: rgb(53, 53, 53);
       }
     }
   }
