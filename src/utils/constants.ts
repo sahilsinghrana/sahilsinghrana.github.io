@@ -1,5 +1,8 @@
 import { getRandom } from "@components/Spotify/helpers/utils";
 
+import krishnaAndFluteImage from "@assets/images/shlokas/krishnaandflute.jpg";
+import type { ImageMetadata } from "astro";
+
 interface Links {
   home: string;
   about: string;
@@ -58,7 +61,7 @@ export const SAGITTARIUS = {
 };
 
 class Shloka {
-  imageUrl?: string;
+  imageUrl?: string | ImageMetadata;
   source?: string;
 
   constructor(
@@ -80,7 +83,7 @@ class BG_Shloka extends Shloka {
   ) {
     super(chapter, text, translation);
     this.source = "Bhagavad Gita";
-    this.imageUrl = "";
+    this.imageUrl = krishnaAndFluteImage;
   }
 }
 
@@ -154,6 +157,21 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
     6.26,
     "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम् ।\nततस्ततो नियम्यैतदात्मन्येव वशं नयेत् ॥",
     "From wherever the mind wanders due to its flickering and unsteady nature, one must certainly withdraw it and bring it back under the control of the Self.",
+  ),
+  new BG_Shloka(
+    3.27,
+    "प्रकृतेः क्रियमाणानि गुणैः कर्माणि सर्वशः ।\nअहङ्कारविमूढात्मा कर्ताहमिति मन्यते ॥",
+    "The spirit soul bewildered by the influence of false ego thinks himself the doer of activities that are in actuality carried out by the three modes of material nature.",
+  ),
+  new BG_Shloka(
+    2.71,
+    "विहाय कामान्यः सर्वान्पुमांश्चरति निःस्पृहः ।\nनिर्ममो निरहङ्कारः स शान्तिमधिगच्छति ॥",
+    "That person, who gives up all material desires and lives free from a sense of greed, proprietorship, and egoism, attains perfect peace.",
+  ),
+  new BG_Shloka(
+    16.4,
+    "दम्भो दर्पोऽभिमानश्च क्रोध: पारुष्यमेव च | \nअज्ञानं चाभिजातस्य पार्थ सम्पदमासुरीम् ॥",
+    "O Parth, the qualities of those who possess a demoniac nature are hypocrisy, arrogance, conceit, anger, harshness, and ignorance.",
   ),
 ];
 
