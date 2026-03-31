@@ -42,8 +42,6 @@ import fluteImage from "./flutenobg (3).png";
 <script>
   import { getCurrentMoonData } from "@utils/currentMoonData";
 
-  import "@components/General/Moon/3dMoon/main.js";
-
   const profilePicContainer = document.getElementById("profilePicContainer");
   const lunarAgePercent = parseInt(
     getCurrentMoonData().lunarAgePercent.replace("%", "").trim(),
@@ -55,4 +53,8 @@ import fluteImage from "./flutenobg (3).png";
       "--percent",
       String(triangularWavePercent),
     );
+</script>
+
+<script is:inline>
+  import "@components/General/Moon/3dMoon/main.js";
 </script>
