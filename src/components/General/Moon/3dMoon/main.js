@@ -114,7 +114,6 @@ window.addEventListener("resize", () => {
 const profileImg = document.querySelector(".profileImage");
 let currentScale = 1.0;
 let touchStartY = 0; // Track where the finger first hits the screen
-let touchStartX = 0;
 const updateMoonScale = (delta) => {
   currentScale += delta;
   // Clamp between 0.3 and 2.0

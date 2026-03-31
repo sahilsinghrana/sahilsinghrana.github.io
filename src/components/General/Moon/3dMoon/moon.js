@@ -1,5 +1,5 @@
 import * as THREE from "three";
-
+import MoonWorker from "./texture-worker.js?worker";
 export class Moon {
   constructor(scene, onComplete) {
     this.scene = scene;
@@ -8,9 +8,7 @@ export class Moon {
   }
 
   init(onComplete) {
-    const worker = new Worker(
-      "src/components/General/Moon/3dMoon/texture-worker.js",
-    );
+    const worker = new MoonWorker();
     const TEX_SIZE = 630;
     const ROUGH_SIZE = 490;
 
