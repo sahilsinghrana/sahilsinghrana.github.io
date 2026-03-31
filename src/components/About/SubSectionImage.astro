@@ -22,6 +22,11 @@ import fluteImage from "./flutenobg (3).png";
     height={height + 150}
     width={width + 150}
   />
+  <div
+    style="position: absolute; z-index: -1;top:-52%; opacity: 0.9;height: 300px;"
+    id="moonRoot"
+  >
+  </div>
   <Picture
     formats={["avif", "webp"]}
     widths={widths || [80, 450]}
@@ -36,6 +41,8 @@ import fluteImage from "./flutenobg (3).png";
 
 <script>
   import { getCurrentMoonData } from "@utils/currentMoonData";
+
+  import "@components/General/Moon/3dMoon/main.js";
 
   const profilePicContainer = document.getElementById("profilePicContainer");
   const lunarAgePercent = parseInt(

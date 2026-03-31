@@ -56,29 +56,47 @@ section.heading {
     .profileImage {
       height: 150px;
       width: 150px;
+      // pointer-events: none;
+      touch-action: none; /* Disables browser-level scrolling/zooming on this element */
+      user-select: none; /* Prevents text/image selection while dragging */
+      -webkit-user-drag: none;
+      opacity: 0.7;
       --percent: 100;
       --glow-size: calc(var(--percent) * 0.55px);
-      --glow-opacity: calc(var(--percent) / 40);
+      --glow-opacity: calc(var(--percent) / 20);
 
-      box-shadow:
-        0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
-        0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));
-      transition: box-shadow 3.5s ease-in-out;
-      box-shadow:
-        0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
-        0 0 calc(var(--glow-size) * 0.5)
-          rgba(102, 102, 102, var(--glow-opacity)),
-        0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));
+      mask-image: radial-gradient(
+        circle,
+        black 60%,
+        rgba(64, 64, 64, 0.2) 80%,
+        rgba(194, 194, 194, 0.6) 100%
+      );
+      -webkit-mask-image: radial-gradient(
+        circle,
+        black 60%,
+        rgba(64, 64, 64, 0.2) 80%,
+        rgba(194, 194, 194, 0.6) 100%
+      );
 
-      &:hover {
-        animation: glowAnimationProfilePic 3.5s ease-in-out infinite;
-      }
+      // box-shadow:
+      //   0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
+      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));
+      // transition: box-shadow 3.5s ease-in-out;
+      // box-shadow:
+      //   0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
+      //   0 0 calc(var(--glow-size) * 0.5)
+      //     rgba(102, 102, 102, var(--glow-opacity)),
+      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));
+
+      // &:hover {
+      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;
+      // }
       object-fit: cover;
       opacity: 1;
       border-radius: 100%;
-      &.Full {
-        box-shadow: 0px 0px 20px 14px #7171715e;
-      }
+      // &.Full {
+      //   box-shadow: 0px 0px 20px 14px #7171715e;
+      // }
     }
   }
 
