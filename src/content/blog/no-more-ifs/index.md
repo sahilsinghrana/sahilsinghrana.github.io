@@ -40,7 +40,7 @@ This is the JavaScript way. Traditional OOP languages use interfaces/abstract cl
 Let's say you are building a permission checker and need to check if the particular role has a specific permission.
 
 If you hardcode these rules into a single function using conditionals, adding a new role (like MANAGER) requires you to open the core logic and add another `else if`.
-This makes the function infinitely expanding and hardens the readability.
+This makes the function infinitely expanding and makes readability harder.
 
 ### One of the simple ways
 
@@ -109,7 +109,7 @@ function canAccess(role, feature) {
 
 ---
 
-#### Executing the Code
+### Executing the Code
 
 When you call the context, it seamlessly routes the data to the correct algorithm.
 
@@ -123,8 +123,7 @@ if (hasLogsAccess) {
 }
 ```
 
-The `switch` statements and nested conditionals are technical debt when dealing with varied business logic.
-The Strategy pattern implemented here boiled it down to using an object as a lookup table for functions.
+The Strategy pattern implemented here boiled down the simple approach to using an object as a lookup table for functions.
 
 ## Making it cleaner (or Advanced or maybe complex)
 
