@@ -29,9 +29,9 @@ The **Strategy Pattern** fixes this by decoupling the algorithm from its executi
 
 This is the JavaScript way. Traditional OOP languages use interfaces/abstract classes.
 
-### Defenition
+## Definition
 
-(ref)[https://en.wikipedia.org/wiki/Strategy_pattern]
+[Wikipedia : ref](https://en.wikipedia.org/wiki/Strategy_pattern)
 
 > Definition : In computer programming, the strategy pattern (also known as the policy pattern) is a behavioral software design pattern that enables selecting an algorithm at runtime. Instead of implementing a single algorithm directly, code receives runtime instructions as to which in a family of algorithms to use.
 
@@ -73,7 +73,7 @@ function canAccessFeature(role, feature) {
 
 In JavaScript, we don't need heavy class-based architectures to implement this. We use an object literal to map types directly to their respective functions.
 
-#### Defining the Strategies
+### Defining the Strategies
 
 First, separate the algorithms into an object. Each key is the condition, and each value is the logic.
 
@@ -93,7 +93,7 @@ const PermissionStrategies = {
 
 ---
 
-#### The Context (Execution)
+### The Context (Execution)
 
 Next, write a single function that acts as the context. It takes the input, looks up the correct strategy, and executes it.
 
@@ -148,7 +148,7 @@ const CUSTOMER_FEATURES = [FEATURES.DASHBOARD];
 const TECHNICIAN_FEATURES = [FEATURES.DASHBOARD, FEATURES.MAINTENANCE_LOGS];
 ```
 
-###### Why do this ?
+##### Why do this ?
 
 - TYPOS! will not fail silently.
 - IntelliSense & Autocomplete
