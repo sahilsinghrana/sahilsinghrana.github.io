@@ -1,7 +1,7 @@
 // GENERATE USING AI
 
 import * as THREE from "three";
-// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Moon } from "./moon.js";
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 // import { Starfield } from "./stars.js";
@@ -38,8 +38,8 @@ const moonRoot = document
   .getElementById("moonRoot")
   .appendChild(renderer.domElement);
 
-// const controls = new OrbitControls(camera, renderer.domElement);
-// controls.enableDamping = true;
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
 
 // Lighting
 const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.1);
@@ -117,7 +117,7 @@ function animate() {
     // Optional: Make it tilt slightly as you scroll
     moon.mesh.rotation.x = currentScrollY * 0.001;
   }
-
+  controls.update();
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }

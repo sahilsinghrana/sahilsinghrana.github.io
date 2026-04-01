@@ -44,23 +44,24 @@ section.heading {
     justify-content: center;
     align-items: center;
     position: relative;
-    // pointer-events: none;
+    pointer-events: none;
 
     .flutebg {
       pointer-events: none;
       touch-action: none;
-      user-select: none; /* Prevents text/image selection while dragging */
+      user-select: none;
       -webkit-user-drag: none;
       mix-blend-mode: lighten;
-      opacity: 0.27;
+      opacity: 0.25;
       z-index: -1;
       position: absolute;
-      filter: brightness(0.7);
+      filter: brightness(0.6);
     }
 
     .profileImage {
       height: 150px;
       width: 150px;
+      z-index: 10;
       pointer-events: all;
       touch-action: none;
       user-select: none; /* Prevents text/image selection while dragging */

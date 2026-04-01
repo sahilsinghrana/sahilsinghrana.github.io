@@ -15,16 +15,17 @@ import fluteImage from "./flutenobg (3).png";
 ---
 
 <div id="profilePicContainer" class="profilePicContainer">
-  <!-- <Image
+  <Image
     src={fluteImage}
     alt={"FLutee"}
     class="flutebg"
     height={height + 150}
     width={width + 150}
     loading="lazy"
-  /> -->
+    fetchpriority={"low"}
+  />
   <div
-    style="position: absolute; z-index: -10;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all;"
+    style="position: absolute; z-index: -2;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all;"
     id="moonRoot"
   >
   </div>
@@ -37,7 +38,7 @@ import fluteImage from "./flutenobg (3).png";
     height={height}
     width={width}
     loading={loading}
-    fetchpriority={loading === "eager" ? "high" : "auto"}
+    fetchpriority={"high"}
   />
 </div>
 
