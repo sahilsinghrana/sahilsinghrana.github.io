@@ -8,7 +8,6 @@ $mobileBreakpoint: 486px;
 
 header .headerContainer {
   padding: 0.8em 0.9em;
-
   display: grid;
   grid-template-columns: 1fr 2fr;
   align-items: center;
@@ -30,7 +29,7 @@ header .headerContainer {
     transform: scaleX(-1);
 
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     @media screen and (max-width: $mobileBreakpoint) {
       position: absolute;
       transform: scaleX(1);
@@ -77,6 +76,7 @@ header .headerContainer {
       font-size: 0.8em;
       color: rgba(255, 255, 255, 0.856);
       text-decoration: none;
+      z-index: 1;
 
       &:first-child {
         margin-left: 0;

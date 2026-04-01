@@ -2,6 +2,13 @@ $mobileBreakpoint: 486px;
 
 .about {
   margin-top: 3.2em;
+  .heading {
+    pointer-events: none;
+
+    & > * {
+      pointer-events: initial;
+    }
+  }
 }
 
 .aboutPage {
