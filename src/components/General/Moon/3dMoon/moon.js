@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import MoonWorker from "./texture-worker.js?worker";
 export class Moon {
   constructor(scene, onComplete) {
     this.scene = scene;
@@ -8,10 +7,11 @@ export class Moon {
   }
 
   init(onComplete) {
-    const worker = new MoonWorker();
+    const worker = new Worker(
+      new URL("./texture-worker.js?worker", import.meta.url),
+    );
     const TEX_SIZE = 630;
     const ROUGH_SIZE = 490;
-
     worker.onmessage = (e) => {
       const diffuseTex = new THREE.DataTexture(
         new Uint8Array(e.data.diffuse),
