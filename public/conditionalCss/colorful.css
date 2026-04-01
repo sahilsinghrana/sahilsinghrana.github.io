@@ -1,5 +1,5 @@
 body.colorful {
-  --rb-red: #c72c41;
+  --rb-red: #c72c41d8;
   --br-rose: #ff559d;
   --white: #f9eed1;
   --coral: #fc7b53;
@@ -23,7 +23,7 @@ body.colorful header .headerContainer > .catImage {
 }
 
 body.colorful .star {
-  opacity: 0.95;
+  opacity: 0.9;
   width: 4px;
   height: 4px;
   background-color: var(--white);
@@ -31,7 +31,7 @@ body.colorful .star {
   background-position: center;
   background-size: contain;
   transform-origin: center;
-  animation-duration: 500ms;
+  animation-duration: 700ms;
 }
 body.colorful .meteor {
   background: linear-gradient(90deg, transparent, var(--rb-red));
@@ -64,11 +64,11 @@ body.colorful #profilePicContainer > picture > img:hover {
   }
   70% {
     background-color: rgba(255, 255, 255, 0.1);
-    transform: scale(1.3, 1.3);
+    transform: scale(1.2, 1.2);
     box-shadow: none;
     height: 15px;
     width: 15px;
-    opacity: 0.8;
+    opacity: 0.75;
     background-image: url("/icons/sunflowerico.jpg");
   }
   100% {

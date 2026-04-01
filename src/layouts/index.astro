@@ -44,12 +44,18 @@ import "@styles/global.scss";
 </html>
 
 <script>
-  import dateBasedClassInjector from "src/scripts/dateBasedClassInjector";
+  import dateBasedClassInjector, {
+    dateBasedJsInjector,
+  } from "src/scripts/dateBasedClassInjector";
   import { initStarAnimation } from "src/scripts/starAnimation";
 
   dateBasedClassInjector(19, 11, "test1");
   dateBasedClassInjector(21, 11, "test2");
+
   dateBasedClassInjector(28, 11, "colorful");
+
+  dateBasedClassInjector(28, 11, "tulips");
+  dateBasedJsInjector(28, 11, "tulips");
 
   initStarAnimation();
 </script>
