@@ -19,7 +19,7 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 0, 3.5);
 
-camera.position.z = isMobile ? 4.7 : 3.5;
+camera.position.z = isMobile ? 4.5 : 3.5;
 
 const renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -90,12 +90,13 @@ window.addEventListener(
 
 window.toggleMoon = (val) => moon.setVisibility(val);
 
+let autoRotationY = 0;
 function animate() {
   // Spin moon based on scroll position
   if (moon.mesh) {
+    autoRotationY += 0.001;
     // Base rotation + Scroll-driven rotation
-    moon.mesh.rotation.y = currentScrollY * 0.005;
-
+    moon.mesh.rotation.y = autoRotationY + currentScrollY * 0.005;
     // Optional: Make it tilt slightly as you scroll
     moon.mesh.rotation.x = currentScrollY * 0.001;
   }

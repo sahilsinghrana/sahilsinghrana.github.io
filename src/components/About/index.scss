@@ -64,18 +64,18 @@ section.heading {
       --percent: 100;
       --glow-size: calc(var(--percent) * 0.55px);
       --glow-opacity: calc(var(--percent) / 20);
-
       mask-image: radial-gradient(
         circle,
-        black 60%,
-        rgba(64, 64, 64, 0.2) 80%,
-        rgba(194, 194, 194, 0.6) 100%
+        black 30%,
+        rgba(0, 0, 0, 0.4) 70%,
+        transparent 100%
       );
+
       -webkit-mask-image: radial-gradient(
         circle,
-        black 60%,
-        rgba(64, 64, 64, 0.2) 80%,
-        rgba(194, 194, 194, 0.6) 100%
+        black 30%,
+        rgba(0, 0, 0, 0.4) 70%,
+        transparent 100%
       );
 
       // box-shadow:
