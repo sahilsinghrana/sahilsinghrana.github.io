@@ -38,7 +38,7 @@ const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true;
 
 // Lighting
-const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.2);
+const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.1);
 sunLight.position.set(5, 3, 2);
 scene.add(sunLight);
 scene.add(new THREE.AmbientLight(0x1a2a4a, 0.048));
@@ -142,7 +142,6 @@ if (profileImg) {
     (event) => {
       // Record initial finger position
       touchStartY = event.touches[0].clientY;
-      touchStartX = event.touches[0].clientX;
     },
     { passive: true },
   );
@@ -154,7 +153,6 @@ if (profileImg) {
       // Prevent the page from scrolling while dragging over the image
       event.preventDefault();
       const currentY = event.touches[0].clientY;
-      const currentX = event.touches[0].clientX;
       const diff = touchStartY - currentY; // Upward drag = positive diff
 
       // Sensitivity: Divide by a factor (e.g., 200) so it doesn't scale too wildly
@@ -165,7 +163,6 @@ if (profileImg) {
 
       // Reset start point to current for continuous smooth scaling
       touchStartY = currentY;
-      touchStartX = currentX;
     },
     { passive: false },
   );
