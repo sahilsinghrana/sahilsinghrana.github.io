@@ -21,9 +21,10 @@ import fluteImage from "./flutenobg (3).png";
     class="flutebg"
     height={height + 150}
     width={width + 150}
+    loading="lazy"
   />
   <div
-    style="position: absolute; z-index: -20;top:-52%; opacity: 0.99;height: 300px;"
+    style="position: absolute; z-index: -10;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all;"
     id="moonRoot"
   >
   </div>
@@ -36,6 +37,7 @@ import fluteImage from "./flutenobg (3).png";
     height={height}
     width={width}
     loading={loading}
+    fetchpriority={loading === "eager" ? "high" : "auto"}
   />
 </div>
 

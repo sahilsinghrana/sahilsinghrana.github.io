@@ -1,13 +1,13 @@
 // GENERATE USING AI
 
 import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Moon } from "./moon.js";
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 // import { Starfield } from "./stars.js";
 
 console.log("SETTING UP");
-const isMobile = window.innerWidth < 768;
+const isMobile = window.innerWidth < 500;
 // Setup Scene
 const scene = new THREE.Scene();
 // scene.background = new THREE.Color(0x000005);
@@ -19,10 +19,10 @@ const camera = new THREE.PerspectiveCamera(
 );
 camera.position.set(0, 0, 3.5);
 
-camera.position.z = isMobile ? 4.5 : 3.5;
+camera.position.z = isMobile ? 4.3 : 3.5;
 
 const renderer = new THREE.WebGLRenderer({
-  antialias: true,
+  antialias: false,
   alpha: true,
   // powerPreference: "high-performance",
   stencil: false,
@@ -32,10 +32,12 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 renderer.shadowMap.enabled = true;
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
-document.getElementById("moonRoot").appendChild(renderer.domElement);
+const moonRoot = document
+  .getElementById("moonRoot")
+  .appendChild(renderer.domElement);
 
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
+// const controls = new OrbitControls(camera, renderer.domElement);
+// controls.enableDamping = true;
 
 // Lighting
 const sunLight = new THREE.DirectionalLight(0xfff8f0, 3.1);
@@ -90,11 +92,24 @@ window.addEventListener(
 
 window.toggleMoon = (val) => moon.setVisibility(val);
 
+let isVisible = true;
 let autoRotationY = 0;
+
+const observer = new IntersectionObserver(
+  (entries) => {
+    isVisible = entries[0].isIntersecting;
+    if (isVisible) animate(); // Restart loop when visible
+  },
+  { threshold: 0.01 },
+);
+
+observer.observe(moonRoot);
+
 function animate() {
+  if (!isVisible) return; // KILL loop if off-screen
   // Spin moon based on scroll position
   if (moon.mesh) {
-    autoRotationY += 0.001;
+    autoRotationY += 0.002;
     // Base rotation + Scroll-driven rotation
     moon.mesh.rotation.y = autoRotationY + currentScrollY * 0.005;
     // Optional: Make it tilt slightly as you scroll

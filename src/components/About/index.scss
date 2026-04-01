@@ -44,8 +44,13 @@ section.heading {
     justify-content: center;
     align-items: center;
     position: relative;
+    pointer-events: none;
 
     .flutebg {
+      pointer-events: none;
+      touch-action: none;
+      user-select: none; /* Prevents text/image selection while dragging */
+      -webkit-user-drag: none;
       mix-blend-mode: lighten;
       opacity: 0.27;
       z-index: -1;
@@ -56,8 +61,8 @@ section.heading {
     .profileImage {
       height: 150px;
       width: 150px;
-      // pointer-events: none;
-      touch-action: none; /* Disables browser-level scrolling/zooming on this element */
+      pointer-events: all;
+      touch-action: none;
       user-select: none; /* Prevents text/image selection while dragging */
       -webkit-user-drag: none;
       opacity: 0.7;
