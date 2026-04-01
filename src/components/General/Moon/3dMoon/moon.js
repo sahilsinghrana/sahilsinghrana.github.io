@@ -7,7 +7,9 @@ export class Moon {
   }
 
   init(onComplete) {
-    const worker = new Worker(new URL("./texture-worker.js", import.meta.url));
+    const worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
+      type: "module",
+    });
     const TEX_SIZE = 630;
     const ROUGH_SIZE = 490;
     worker.onmessage = (e) => {
