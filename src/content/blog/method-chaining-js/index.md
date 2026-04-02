@@ -4,9 +4,10 @@ image:
   url: "./titleImage.webp"
   alt: "Method Chaining in Javascript"
 pubDate: 2024-06-28
-title: Method Chaining in Javascript
+title: Keep it flowing; Method Chaining in Javascript
 description: "How to chain methods?"
 slug: chain-javascript-methods
+sortOrder: 5
 featured: true
 tags:
   [
@@ -27,7 +28,7 @@ tags:
 
 Method chaining in JavaScript lets us link multiple method calls together in a single statement, making our code more readable and modular. Think of it like the builder pattern where you can stack up commands to create something awesome step by step! In this blog post, we'll dive into how method chaining works.
 
-### Table of Contents
+## Table of Contents
 
 - [Method Chaining in Javascript](#method-chaining-in-javascript)
   - [Why and How?](#why-and-how)

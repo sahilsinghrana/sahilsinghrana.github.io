@@ -4,8 +4,9 @@ image:
   url: "./titleImage.webp"
   alt: "Convert Normal Strings to template literals in JavaScript"
 pubDate: 2024-05-29
-title: Convert Normal Strings to template literals in JavaScript
+title: Access variables from plain js strings.
 description: "Convert plain JavaScript strings into template literals for dynamic content interpolation."
+sortOrder: 2
 slug: convert-string-to-literal
 featured: true
 tags:

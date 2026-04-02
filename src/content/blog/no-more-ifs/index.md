@@ -8,6 +8,7 @@ title: "No More Ifs"
 description: "The strategy Pattern."
 slug: no-more-ifs
 featured: true
+sortOrder: 3
 tags:
   [
     "JavaScript",

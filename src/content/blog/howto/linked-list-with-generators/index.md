@@ -4,11 +4,13 @@ image:
   url: "./titleImage.webp"
   alt: "Linked List with Javascript Generators and Iterators"
 pubDate: 2024-06-06
-title: Linked List with Javascript Generators and Iterators
+title: Access Linked list Nodes Using JS Generators and Iterators
 description: "Linked list combined with Javascript Generators and Iterators"
 slug: linked-list-with-generators
+sortOrder: 6
 featured: true
-tags: [
+tags:
+  [
     "JavaScript Linked List",
     "Linked List in JavaScript",
     "JavaScript Generators",
@@ -22,8 +24,8 @@ tags: [
     "JavaScript Tutorials",
     "Web Development",
     "Programming Concepts",
-    "Sahil Singh Rana"
-]
+    "Sahil Singh Rana",
+  ]
 ---
 
 # Enhancing Linked Lists with JavaScript Generators

@@ -5,11 +5,18 @@ import FeaturedCard from "../../FeaturedCard/index.astro";
 
 const blogEntries = (
   await getCollection("blog", ({ data }) => !!data.featured)
-).sort(
-  (a, b) =>
-    new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime(),
-);
+).sort((a, b) => {
+  const orderA = a.data.sortOrder ?? 99;
+  const orderB = b.data.sortOrder ?? 99;
 
+  if (orderA !== orderB) {
+    return orderA - orderB;
+  }
+
+  return (
+    new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
+  );
+});
 const snippetsEntries = await getCollection(
   "snippets",
   ({ data }) => !!data.featured,
