@@ -1,21 +1,30 @@
+import postcssImport from "postcss-import";
+import postcssFlexbugsFixes from "postcss-flexbugs-fixes";
+import autoprefixer from "autoprefixer";
+import cssnano from "cssnano";
+import postcssReporter from "postcss-reporter";
+import postcssDupSelectors from "postcss-combine-duplicated-selectors";
+import postcssUrl from "postcss-url";
+import postcssPresetEnv from "postcss-preset-env";
+
 const isProd = process.env.NODE_ENV === "production";
 
-module.exports = {
+const config = {
   map: isProd ? false : { inline: true },
 
   plugins: [
-    require("postcss-import"),
-    require("postcss-flexbugs-fixes")(),
-    require("postcss-url")({
+    postcssImport,
+    postcssFlexbugsFixes(),
+    postcssUrl({
       url: "inline",
       maxSize: 10,
       fallback: "copy",
     }),
-    require("postcss-combine-duplicated-selectors")({
+    postcssDupSelectors({
       removeDuplicatedProperties: false,
       removeDuplicatedValues: true,
     }),
-    require("postcss-preset-env")({
+    postcssPresetEnv({
       stage: 3,
       features: {
         "nesting-rules": true,
@@ -25,11 +34,13 @@ module.exports = {
       preserve: false,
     }),
 
-    require("autoprefixer"),
-    require("cssnano")({ preset: "advanced" }),
-    require("postcss-reporter")({
+    autoprefixer,
+    cssnano({ preset: "advanced" }),
+    postcssReporter({
       clearReportedMessages: true,
       throwError: false,
     }),
   ].filter(Boolean),
 };
+
+export default config;
