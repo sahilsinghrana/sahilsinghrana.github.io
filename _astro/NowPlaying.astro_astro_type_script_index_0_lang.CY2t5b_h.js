@@ -1,0 +1,1 @@
+import{c as e,d as a}from"./handlers.bNXeweRS.js";async function o(){clearTimeout(window.topSongsTimeout);try{e(await a())}catch(t){console.error(t)}finally{window.topSongsTimeout=setTimeout(o,5e3)}}o();
