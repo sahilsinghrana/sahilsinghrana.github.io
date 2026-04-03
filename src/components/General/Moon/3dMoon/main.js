@@ -18,6 +18,11 @@ console.log("SETTING UP");
 // LOWER: Strictly forces only small phones into the mobile layout.
 const MOBILE_WIDTH_THRESHOLD = 500;
 
+// Maximum aspect ratio clamp for ultra-wide monitors.
+// 16:9 monitors are ~1.77. Setting this to 1.8 prevents ultra-wide monitors (21:9)
+// from forcing the vertical FOV too low and blowing up the moon size.
+const MAX_ASPECT_RATIO = 1.8;
+
 // Camera settings
 // INITIAL_FOV (Field of View in degrees)
 // HIGHER (> 60): Wider camera angle. The moon will appear smaller, and edge distortion (fisheye) increases.
@@ -35,7 +40,7 @@ const FAR_CLIP = 1000;
 // Technically, this moves the camera backward/forward on the Z-axis.
 // HIGHER: Camera moves further back -> Moon looks smaller.
 // LOWER: Camera moves closer -> Moon looks larger.
-const FIXED_CAMERA_DISTANCE_MOBILE = 4.5;
+const FIXED_CAMERA_DISTANCE_MOBILE = 4.2;
 const FIXED_CAMERA_DISTANCE_DESKTOP = 2.7;
 
 // Lighting
@@ -123,15 +128,13 @@ const FIXED_CAMERA_DISTANCE = isMobile
 
 camera.position.set(0, 0, FIXED_CAMERA_DISTANCE);
 
-// Calculate FIXED HORIZONTAL FOV once.
-// This is the mathematical trick that locks the horizontal scale.
-// Without this, reducing window height would cause the moon to artificially inflate.
+// Calculate FIXED HORIZONTAL FOV once, using the clamped aspect ratio.
+const initialAspect = window.innerWidth / window.innerHeight;
+const clampedInitialAspect = Math.min(initialAspect, MAX_ASPECT_RATIO);
+
 const FIXED_HORIZONTAL_FOV =
   2 *
-  Math.atan(
-    Math.tan((INITIAL_FOV * Math.PI) / 360) *
-      (window.innerWidth / window.innerHeight),
-  ) *
+  Math.atan(Math.tan((INITIAL_FOV * Math.PI) / 360) * clampedInitialAspect) *
   (180 / Math.PI);
 
 // WebGLRenderer Configuration
@@ -288,17 +291,15 @@ window.addEventListener("resize", () => {
   // 1. Update the physical aspect ratio.
   camera.aspect = width / height;
 
-  // 2. Recalculate the vertical FOV to maintain the exact horizontal framing we locked in earlier.
+  // Math aspect is clamped to prevent massive FOV changes on ultra-wides
+  const clampedAspect = Math.min(camera.aspect, MAX_ASPECT_RATIO);
+
   const tanHalfHoriz = Math.tan((FIXED_HORIZONTAL_FOV * Math.PI) / 360);
-  camera.fov = 2 * Math.atan(tanHalfHoriz / camera.aspect) * (180 / Math.PI);
+  camera.fov = 2 * Math.atan(tanHalfHoriz / clampedAspect) * (180 / Math.PI);
 
-  // 3. Reset distance (in case device orientation flipped and changed mobile vs desktop logic).
   camera.position.z = FIXED_CAMERA_DISTANCE;
-
-  // 4. Push internal math updates to the Three.js core.
   camera.updateProjectionMatrix();
 
-  // 5. Tell the renderer to paint the new pixel dimensions.
   renderer.setSize(width, height);
 });
 
