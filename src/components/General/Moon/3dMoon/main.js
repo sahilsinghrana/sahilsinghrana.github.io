@@ -69,7 +69,7 @@ const PHASE_LIGHT_RADIUS = 5;
 // AUTO_ROTATION_SPEED (Radians per frame)
 // HIGHER: Moon spins like a top.
 // LOWER: Barely noticeable drift. Negative values reverse the spin direction.
-const AUTO_ROTATION_SPEED = 0.002;
+const AUTO_ROTATION_SPEED = 0.0032;
 
 // SCROLL_ROTATION_MULTIPLIER (Radians per pixel scrolled)
 // HIGHER: Scrolling causes rapid, dizzying spins.
