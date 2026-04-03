@@ -1,5 +1,3 @@
-import * as THREE from "three";
-
 // Texture resolution constants live at module scope so they are visible alongside
 // the worker call and can be adjusted without hunting inside the init() body.
 // These must match the size values expected by the worker (e.g. texture-worker.js).
@@ -20,7 +18,9 @@ export class Moon {
     this.init(onComplete);
   }
 
-  init(onComplete) {
+  async init(onComplete) {
+    const THREE = await import("three");
+
     const worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
       type: "module",
     });

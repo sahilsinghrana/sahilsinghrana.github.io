@@ -1,6 +1,5 @@
 // GENERATE USING AI
 
-import { Moon } from "./moon.js";
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 
 console.log("SETTING UP");
@@ -147,14 +146,10 @@ async function initThreeJS() {
   if (isInitialized) return;
   console.log("LAZY INITIALIZING 3D ENVIRONMENT");
 
-  // Dynamic imports defer the entire three.js bundle until this function is called.
-  // If the moon never enters the viewport (e.g. the user never scrolls that far), the
-  // browser never downloads, parses, or compiles three.js — a significant saving on
-  // initial page load, especially on mobile connections.
-  // Promise.all fetches both modules in parallel rather than waiting for one before the other.
-  const [THREE, { OrbitControls }] = await Promise.all([
+  const [THREE, { OrbitControls }, { Moon }] = await Promise.all([
     import("three"),
     import("three/addons/controls/OrbitControls.js"),
+    import("./moon.js"),
   ]);
 
   // Setup Scene
@@ -470,6 +465,11 @@ const cleanupThreeJS = () => {
   // dispose() must be called before nulling the ref — it needs the live controls object
   // to locate the DOM element it originally attached its internal listeners to.
   controls?.dispose();
+
+  // moon.dispose() removes the mesh from the scene and releases all GPU-side resources
+  // (textures, material, geometry). Without this, each page navigation leaks ~3 texture
+  // uploads and a geometry buffer on the GPU.
+  moon?.dispose();
 
   if (renderer) {
     renderer.dispose();
