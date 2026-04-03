@@ -1,0 +1,29 @@
+{
+  "name": "Node.js & TypeScript",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm",
+  "features": {
+    "ghcr.io/devcontainer-config/features/dot-config:4": {}
+  },
+
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  // "features": {},
+
+  // Use 'forwardPorts' to make a list of ports inside the container available locally.
+  "forwardPorts": [4232],
+
+  "updateContentCommand": "npm ci --frozen-lockfile --prefer-offline --no-audit --no-fund",
+  "postAttachCommand": "echo 'Codespace is ready. Run npm run dev to start.'",
+
+  // Configure tool-specific properties.
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "files.autoSave": "afterDelay",
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "astro.language-server.runtime": "node"
+      },
+      "extensions": ["astro-build.astro-vscode", "esbenp.prettier-vscode"]
+    }
+  }
+}

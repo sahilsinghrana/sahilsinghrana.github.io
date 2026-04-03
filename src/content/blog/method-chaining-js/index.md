@@ -4,8 +4,8 @@ image:
   url: "./titleImage.webp"
   alt: "Method Chaining in Javascript"
 pubDate: 2024-06-28
-title: Keep it flowing; Method Chaining in Javascript
-description: "How to chain methods?"
+title: Keep it flowing with Method Chaining
+description: "How to chain methods in javascript?"
 slug: chain-javascript-methods
 sortOrder: 5
 featured: true

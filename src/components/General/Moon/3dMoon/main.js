@@ -37,8 +37,8 @@ const FAR_CLIP = 1000;
 // Technically, this moves the camera backward/forward on the Z-axis.
 // HIGHER: Camera moves further back -> Moon looks smaller.
 // LOWER: Camera moves closer -> Moon looks larger.
-const FIXED_CAMERA_DISTANCE_MOBILE = 4.2;
-const FIXED_CAMERA_DISTANCE_DESKTOP = 2.7;
+const FIXED_CAMERA_DISTANCE_MOBILE = 4.15;
+const FIXED_CAMERA_DISTANCE_DESKTOP = 2.9;
 
 // Lighting
 // Colors must be in hex format (0xRRGGBB).

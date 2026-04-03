@@ -1,0 +1,26 @@
+version: 2
+updates:
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      devcontainer-updates:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "sunday"
+    open-pull-requests-limit: 3
+    groups:
+      dependencies:
+        applies-to: version-updates
+        update-types:
+          - "patch"
+          - "minor"
+    ignore:
+      - dependency-name: "astro"
+        update-types: ["version-update:semver-major"]

@@ -12,12 +12,23 @@ export default defineConfig({
   build: {
     format: "file",
   },
+  vite: {
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("node_modules/three")) {
+              return "threejs-vendor";
+            }
+          },
+        },
+      },
+    },
+  },
   contentCollectionCache: true,
   prefetch: {
     defaultStrategy: "hover",
   },
-
-  vite: {},
   integrations: [
     purgecss(),
     sitemap(),
