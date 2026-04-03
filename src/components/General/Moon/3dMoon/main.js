@@ -1,7 +1,5 @@
 // GENERATE USING AI
 
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { Moon } from "./moon.js";
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 
@@ -108,78 +106,138 @@ const VISIBILITY_THRESHOLD = 0.01;
 
 // ============================================================
 
-const isMobile = window.innerWidth < MOBILE_WIDTH_THRESHOLD;
-
-// Setup Scene
-// Creates the main 3D environment where everything will live.
-const scene = new THREE.Scene();
-
-const camera = new THREE.PerspectiveCamera(
-  INITIAL_FOV,
-  window.innerWidth / window.innerHeight,
-  NEAR_CLIP,
-  FAR_CLIP,
-);
-
-// FIXED CAMERA DISTANCE → moon size is controlled by width, not height.
-const FIXED_CAMERA_DISTANCE = isMobile
-  ? FIXED_CAMERA_DISTANCE_MOBILE
-  : FIXED_CAMERA_DISTANCE_DESKTOP;
-
-camera.position.set(0, 0, FIXED_CAMERA_DISTANCE);
+// isMobileNow / getMobileDistance are functions, not constants.
+// window.innerWidth changes on device orientation flip or browser resize.
+// A constant computed at load time would permanently lock the value to the initial viewport,
+// giving the wrong camera depth after the user rotates their phone or resizes the window.
+const isMobileNow = () => window.innerWidth < MOBILE_WIDTH_THRESHOLD;
+const getMobileDistance = () =>
+  isMobileNow() ? FIXED_CAMERA_DISTANCE_MOBILE : FIXED_CAMERA_DISTANCE_DESKTOP;
 
 // Calculate FIXED HORIZONTAL FOV once, using the clamped aspect ratio.
-const initialAspect = window.innerWidth / window.innerHeight;
-const clampedInitialAspect = Math.min(initialAspect, MAX_ASPECT_RATIO);
-
+// This acts as the anchor for all future resize math: instead of re-deriving from the
+// vertical FOV on every resize (which drifts due to floating-point round trips), we lock
+// the horizontal angle once and back-calculate the vertical FOV from it each time.
 const FIXED_HORIZONTAL_FOV =
   2 *
-  Math.atan(Math.tan((INITIAL_FOV * Math.PI) / 360) * clampedInitialAspect) *
+  Math.atan(
+    Math.tan((INITIAL_FOV * Math.PI) / 360) *
+      Math.min(window.innerWidth / window.innerHeight, MAX_ASPECT_RATIO),
+  ) *
   (180 / Math.PI);
 
-// WebGLRenderer Configuration
-// antialias: true -> Smooths jagged edges. Costs minor GPU overhead.
-// alpha: true -> Makes the canvas background transparent so HTML/CSS underneath shows through.
-// depth: true -> Enables the Z-buffer, ensuring polygons in front hide polygons in back.
-const renderer = new THREE.WebGLRenderer({
-  antialias: true,
-  alpha: true,
-  stencil: false,
-  depth: true,
-});
+// Global state variables for lifecycle management
+let scene, camera, renderer, controls, sunLight, moon, observer;
+let isInitialized = false;
+let isVisible = false;
+let currentScrollY = 0;
+let autoRotationY = 0;
+let moonBaseScale = MOON_INITIAL_SCALE;
 
-// Set initial size and canvas quality.
-// min(devicePixelRatio, 2) prevents high-density screens (like 3x iPhones) from rendering too many pixels and tanking frame rates.
-renderer.setSize(window.innerWidth, window.innerHeight);
-renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-// toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
-// ACESFilmicToneMapping is the industry standard for realistic cinematic lighting.
-// Other options: THREE.NoToneMapping (flat), THREE.LinearToneMapping, THREE.ReinhardToneMapping.
-renderer.toneMapping = THREE.ACESFilmicToneMapping;
+// null is used instead of 0 because 0 is a valid frame ID returned by requestAnimationFrame.
+// Checking (animationFrameId !== null) is therefore unambiguous; checking (animationFrameId)
+// would incorrectly treat frame 0 as "no active animation".
+let animationFrameId = null;
 
 const moonRoot = document.getElementById("moonRoot");
-moonRoot.appendChild(renderer.domElement);
 
-// OrbitControls setup
-// Allows mouse drag to orbit around the moon without affecting camera position directly.
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; // Adds physical inertia/glide to the rotation.
-controls.enableZoom = false; // Disabled because you built custom wheel/touch scaling.
-controls.enablePan = false; // Prevents right-click dragging the moon off-center.
+// ===================== CORE INITIALIZATION =====================
+// This function only runs when the element actually nears the viewport.
+async function initThreeJS() {
+  if (isInitialized) return;
+  console.log("LAZY INITIALIZING 3D ENVIRONMENT");
 
-// Lighting setup
-const sunLight = new THREE.DirectionalLight(
-  SUN_LIGHT_COLOR,
-  SUN_LIGHT_INTENSITY,
-);
-sunLight.position.set(
-  SUN_LIGHT_POSITION.x,
-  SUN_LIGHT_POSITION.y,
-  SUN_LIGHT_POSITION.z,
-);
-scene.add(sunLight);
-scene.add(new THREE.AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY));
+  // Dynamic imports defer the entire three.js bundle until this function is called.
+  // If the moon never enters the viewport (e.g. the user never scrolls that far), the
+  // browser never downloads, parses, or compiles three.js — a significant saving on
+  // initial page load, especially on mobile connections.
+  // Promise.all fetches both modules in parallel rather than waiting for one before the other.
+  const [THREE, { OrbitControls }] = await Promise.all([
+    import("three"),
+    import("three/addons/controls/OrbitControls.js"),
+  ]);
+
+  // Setup Scene
+  // Creates the main 3D environment where everything will live.
+  scene = new THREE.Scene();
+
+  camera = new THREE.PerspectiveCamera(
+    INITIAL_FOV,
+    window.innerWidth / window.innerHeight,
+    NEAR_CLIP,
+    FAR_CLIP,
+  );
+
+  // FIXED CAMERA DISTANCE → moon size is controlled by width, not height.
+  camera.position.set(0, 0, getMobileDistance());
+
+  // WebGLRenderer Configuration
+  // antialias: true -> Smooths jagged edges. Costs minor GPU overhead.
+  // alpha: true -> Makes the canvas background transparent so HTML/CSS underneath shows through.
+  // depth: true -> Enables the Z-buffer, ensuring polygons in front hide polygons in back.
+  renderer = new THREE.WebGLRenderer({
+    antialias: true,
+    alpha: true,
+    stencil: false,
+    depth: true,
+    powerPreference: "high-performance", // ASTRO OPTIMIZATION: Requests dedicated GPU
+  });
+
+  // Set initial size and canvas quality.
+  // min(devicePixelRatio, 2) prevents high-density screens (like 3x iPhones) from rendering too many pixels and tanking frame rates.
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+  // toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
+  // ACESFilmicToneMapping is the industry standard for realistic cinematic lighting.
+  // Other options: THREE.NoToneMapping (flat), THREE.LinearToneMapping, THREE.ReinhardToneMapping.
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+
+  // toneMappingExposure scales overall brightness before the tone curve is applied.
+  // 1.0 is neutral. HIGHER brightens the scene before compression; LOWER darkens it.
+  renderer.toneMappingExposure = 1.0;
+
+  moonRoot.appendChild(renderer.domElement);
+
+  // OrbitControls setup
+  // Allows mouse drag to orbit around the moon without affecting camera position directly.
+  controls = new OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; // Adds physical inertia/glide to the rotation.
+  controls.enableZoom = false; // Disabled because you built custom wheel/touch scaling.
+  controls.enablePan = false; // Prevents right-click dragging the moon off-center.
+
+  // Lighting setup
+  sunLight = new THREE.DirectionalLight(SUN_LIGHT_COLOR, SUN_LIGHT_INTENSITY);
+  sunLight.position.set(
+    SUN_LIGHT_POSITION.x,
+    SUN_LIGHT_POSITION.y,
+    SUN_LIGHT_POSITION.z,
+  );
+  scene.add(sunLight);
+
+  // A DirectionalLight always points from its position toward its target object.
+  // The target defaults to position (0,0,0) which is correct, but it must be part of
+  // the scene graph for Three.js to compute its world matrix each frame. Without
+  // scene.add(sunLight.target), any calls to sunLight.target.position.set() are silently
+  // ignored by the renderer and the light direction never changes.
+  scene.add(sunLight.target);
+
+  scene.add(
+    new THREE.AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY),
+  );
+
+  const currentAgePercent = getCurrentMoonData().lunarAgePercent;
+  setMoonPhase(currentAgePercent);
+
+  // Load the custom Moon 3D model into the scene
+  moon = new Moon(scene, () => {
+    console.log("3D Moon loaded");
+    updateMoonScale(0); // Apply initial scale once loaded
+  });
+
+  isInitialized = true;
+  window.toggleMoon = (val) => moon?.setVisibility?.(val);
+}
 
 // Dynamic Phase Controller
 // Translates a percentage (0 to 1) into a 360-degree orbit for the sunLight around the moon.
@@ -207,17 +265,6 @@ const setMoonPhase = (input) => {
   }
 };
 
-const currentAgePercent = getCurrentMoonData().lunarAgePercent;
-setMoonPhase(currentAgePercent);
-
-// Load the custom Moon 3D model into the scene
-const moon = new Moon(scene, () => {
-  console.log("3D Moon loaded");
-});
-
-// Moon scale tracking
-let moonBaseScale = MOON_INITIAL_SCALE;
-
 const updateMoonScale = (delta) => {
   // Math.max/min clamps the final scale strictly between the defined limits.
   moonBaseScale = Math.max(
@@ -231,41 +278,12 @@ const updateMoonScale = (delta) => {
   }
 };
 
-updateMoonScale(0);
-
-let currentScrollY = 0;
-let autoRotationY = 0;
-let isVisible = true;
-
-// Scroll listener
-// { passive: true } tells the browser this listener won't call preventDefault(), allowing hardware-accelerated scrolling.
-window.addEventListener(
-  "scroll",
-  () => {
-    currentScrollY = window.scrollY;
-  },
-  { passive: true },
-);
-
-window.toggleMoon = (val) => moon.setVisibility?.(val);
-
-// IntersectionObserver acts as a performance guard.
-// If the canvas div is scrolled out of view, it immediately halts the heavy animate() loop.
-const observer = new IntersectionObserver(
-  (entries) => {
-    isVisible = entries[0].isIntersecting;
-    if (isVisible) animate(); // Re-ignite loop when visible.
-  },
-  { threshold: VISIBILITY_THRESHOLD },
-);
-
-observer.observe(moonRoot);
-
+// ===================== RENDER LOOP =====================
 // Main rendering loop (executes up to 60/120 times per second depending on monitor refresh rate)
 function animate() {
-  if (!isVisible) return; // Hard kill switch if off-screen.
+  if (!isVisible || !isInitialized) return; // Hard kill switch if off-screen or not loaded.
 
-  if (moon.mesh) {
+  if (moon?.mesh) {
     // Add continuous base spin.
     autoRotationY += AUTO_ROTATION_SPEED;
 
@@ -278,13 +296,69 @@ function animate() {
   // Required for enableDamping to glide smoothly.
   controls.update();
   renderer.render(scene, camera);
-  requestAnimationFrame(animate);
+  animationFrameId = requestAnimationFrame(animate);
 }
 
-animate();
+// ===================== EVENT LISTENERS =====================
+
+// Stored as a named reference so it can be explicitly removed during cleanup.
+// An anonymous function passed to addEventListener cannot be removed with removeEventListener later.
+const onScroll = () => {
+  currentScrollY = window.scrollY;
+};
+
+// Scroll listener
+// { passive: true } tells the browser this listener won't call preventDefault(), allowing hardware-accelerated scrolling.
+window.addEventListener("scroll", onScroll, { passive: true });
+
+// IntersectionObserver acts as a performance guard AND a true lazy-loader.
+if (moonRoot) {
+  // Stored in the outer scope so cleanupThreeJS can call observer.disconnect().
+  observer = new IntersectionObserver(
+    (entries) => {
+      isVisible = entries[0].isIntersecting;
+
+      if (isVisible) {
+        if (!isInitialized) {
+          // initThreeJS is async due to dynamic imports. animate() is chained via .then()
+          // so the render loop only starts after the scene is fully built.
+          initThreeJS().then(() => animate());
+        } else {
+          animate(); // Re-ignite loop when visible.
+        }
+      } else if (animationFrameId !== null) {
+        cancelAnimationFrame(animationFrameId); // Explicitly stop frame requests
+        animationFrameId = null;
+      }
+    },
+    // rootMargin "500px" tells it to start loading 500px BEFORE it enters the screen, preventing load stutter.
+    { threshold: VISIBILITY_THRESHOLD, rootMargin: "500px" },
+  );
+
+  observer.observe(moonRoot);
+}
+
+// ===================== RESIZE HANDLING =====================
+
+// ResizeObserver watches the canvas container element directly rather than the window.
+// This avoids spurious resize events triggered by the mobile browser's address bar
+// sliding in and out during scroll — those change window.innerHeight but not the
+// container dimensions, and would needlessly recalculate the projection matrix.
+let resizeTimer = null;
+const resizeObserver = new ResizeObserver(() => {
+  // Debounce: wait until the resize gesture fully settles before recalculating.
+  // Without this, dragging a window edge fires the callback hundreds of times per second,
+  // thrashing updateProjectionMatrix and renderer.setSize on every intermediate pixel.
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(onContainerResize, 100);
+});
+
+if (moonRoot) resizeObserver.observe(moonRoot);
 
 // Window resize execution
-window.addEventListener("resize", () => {
+const onContainerResize = () => {
+  if (!isInitialized) return;
+
   const width = window.innerWidth;
   const height = window.innerHeight;
 
@@ -297,11 +371,14 @@ window.addEventListener("resize", () => {
   const tanHalfHoriz = Math.tan((FIXED_HORIZONTAL_FOV * Math.PI) / 360);
   camera.fov = 2 * Math.atan(tanHalfHoriz / clampedAspect) * (180 / Math.PI);
 
-  camera.position.z = FIXED_CAMERA_DISTANCE;
+  // getMobileDistance() re-evaluates the current viewport width on every call, so the
+  // camera distance correctly switches between mobile and desktop thresholds after a
+  // resize or orientation change instead of staying locked to the value from page load.
+  camera.position.z = getMobileDistance();
   camera.updateProjectionMatrix();
 
   renderer.setSize(width, height);
-});
+};
 
 // User Input Interception (Mouse Wheel + Touch)
 const profileImg = document.querySelector(".profileImage");
@@ -309,43 +386,121 @@ const profileImg = document.querySelector(".profileImage");
 if (profileImg) {
   let touchStartY = 0;
 
-  // Desktop: Intercept the physical mouse wheel
-  profileImg.addEventListener(
-    "wheel",
-    (event) => {
-      event.preventDefault(); // Stops the page from scrolling while zooming the moon.
+  // Named handler references are required here for the same reason as onScroll above:
+  // they must be individually removable during cleanup. They are stored on the element
+  // itself to avoid extra module-level variables and to keep the handlers co-located
+  // with the element they belong to.
+  const onWheel = (event) => {
+    if (!isInitialized) return;
+    event.preventDefault(); // Stops the page from scrolling while zooming the moon.
 
-      // event.deltaY > 0 means the user is pulling the wheel backwards (scroll down).
-      const delta = event.deltaY > 0 ? -WHEEL_SCALE_STEP : WHEEL_SCALE_STEP;
-      updateMoonScale(delta);
-    },
-    { passive: false }, // Required to allow preventDefault().
-  );
+    // event.deltaY > 0 means the user is pulling the wheel backwards (scroll down).
+    const delta = event.deltaY > 0 ? -WHEEL_SCALE_STEP : WHEEL_SCALE_STEP;
+    updateMoonScale(delta);
+  };
 
   // Mobile: Record initial touch point
-  profileImg.addEventListener(
-    "touchstart",
-    (e) => {
-      touchStartY = e.touches[0].clientY;
-    },
-    { passive: true },
-  );
+  const onTouchStart = (e) => {
+    touchStartY = e.touches[0].clientY;
+  };
 
   // Mobile: Calculate drag distance
-  profileImg.addEventListener(
-    "touchmove",
-    (e) => {
-      e.preventDefault(); // Prevents the browser from pulling the whole page down (refresh behavior) or scrolling.
-      const currentY = e.touches[0].clientY;
+  const onTouchMove = (e) => {
+    if (!isInitialized) return;
+    e.preventDefault(); // Prevents the browser from pulling the whole page down (refresh behavior) or scrolling.
+    const currentY = e.touches[0].clientY;
 
-      // Calculate pixel distance moved, then divide by sensitivity factor.
-      const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
+    // Calculate pixel distance moved, then divide by sensitivity factor.
+    const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
 
-      updateMoonScale(delta);
+    updateMoonScale(delta);
 
-      // Reset origin to current point so the next frame calculates from here.
-      touchStartY = currentY;
-    },
-    { passive: false },
-  );
+    // Reset origin to current point so the next frame calculates from here.
+    touchStartY = currentY;
+  };
+
+  // Desktop: Intercept the physical mouse wheel
+  profileImg.addEventListener("wheel", onWheel, { passive: false }); // Required to allow preventDefault().
+  profileImg.addEventListener("touchstart", onTouchStart, { passive: true });
+  profileImg.addEventListener("touchmove", onTouchMove, { passive: false });
+
+  // Attach handler refs to the element so cleanupThreeJS can find and remove them.
+  // Without this, each Astro page revisit would attach a fresh set of duplicate listeners
+  // on top of the ones from the previous visit, multiplying scroll and wheel sensitivity.
+  profileImg._moonHandlers = { onWheel, onTouchStart, onTouchMove };
 }
+
+// ===================== ASTRO MEMORY CLEANUP =====================
+// Prevents memory leaks when navigating between pages in Astro (View Transitions).
+const cleanupThreeJS = () => {
+  if (!isInitialized) return;
+  console.log("CLEANING UP 3D ENVIRONMENT");
+
+  if (animationFrameId !== null) {
+    cancelAnimationFrame(animationFrameId);
+    animationFrameId = null;
+  }
+
+  // Disconnect the IntersectionObserver — without this it keeps firing after cleanup and
+  // would attempt to re-initialize or re-animate a scene that no longer exists.
+  observer?.disconnect();
+
+  // Disconnect the ResizeObserver and clear any debounce timer that hasn't fired yet.
+  resizeObserver?.disconnect();
+  clearTimeout(resizeTimer);
+
+  window.removeEventListener("scroll", onScroll);
+
+  // Remove the profileImg interaction listeners registered during init.
+  // OrbitControls also attaches its own internal pointer and wheel listeners directly
+  // to the canvas DOM element; controls.dispose() is the only way to remove those —
+  // they are not accessible through any public API.
+  if (profileImg?._moonHandlers) {
+    const { onWheel, onTouchStart, onTouchMove } = profileImg._moonHandlers;
+    profileImg.removeEventListener("wheel", onWheel);
+    profileImg.removeEventListener("touchstart", onTouchStart);
+    profileImg.removeEventListener("touchmove", onTouchMove);
+    delete profileImg._moonHandlers;
+  }
+
+  if (moonRoot && renderer) {
+    moonRoot.removeChild(renderer.domElement);
+  }
+
+  // dispose() must be called before nulling the ref — it needs the live controls object
+  // to locate the DOM element it originally attached its internal listeners to.
+  controls?.dispose();
+
+  if (renderer) {
+    renderer.dispose();
+    renderer.forceContextLoss();
+  }
+
+  // Clear references to allow Garbage Collection
+  scene = null;
+  camera = null;
+  renderer = null;
+  controls = null;
+  sunLight = null;
+  moon = null;
+  isInitialized = false;
+};
+
+// Named references allow these listeners to remove themselves after firing once.
+// A listener stored anonymously would survive indefinitely, calling cleanupThreeJS()
+// on every subsequent navigation even after the scene is already destroyed.
+const onBeforeSwap = () => {
+  cleanupThreeJS();
+  document.removeEventListener("astro:before-swap", onBeforeSwap);
+  window.removeEventListener("pagehide", onPageHide);
+};
+
+const onPageHide = () => {
+  cleanupThreeJS();
+  document.removeEventListener("astro:before-swap", onBeforeSwap);
+  window.removeEventListener("pagehide", onPageHide);
+};
+
+// Listen for Astro's specific page swap event, or standard browser hide events
+document.addEventListener("astro:before-swap", onBeforeSwap);
+window.addEventListener("pagehide", onPageHide);
