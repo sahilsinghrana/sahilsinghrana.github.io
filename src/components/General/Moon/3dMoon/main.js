@@ -2,6 +2,16 @@
 
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 
+import {
+  PerspectiveCamera,
+  Scene,
+  DirectionalLight,
+  AmbientLight,
+  WebGLRenderer,
+  ACESFilmicToneMapping,
+} from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
 console.log("SETTING UP");
 
 /* ====================== TWEAKABLE OPTIONS ======================
@@ -103,6 +113,11 @@ const WHEEL_SCALE_STEP = 0.05;
 // HIGHER (e.g., 1.0): The entire canvas must be on screen, or the animation pauses.
 const VISIBILITY_THRESHOLD = 0.01;
 
+// Minimum duration (ms) the loader ring stays visible before it is allowed to fade out.
+// Prevents a jarring instant-dismiss on fast devices where textures load nearly immediately.
+// The fade-out itself adds an additional ~600ms of graceful transition on top of this floor.
+const LOADER_MIN_DISPLAY_MS = 1500;
+
 // ============================================================
 
 // isMobileNow / getMobileDistance are functions, not constants.
@@ -140,23 +155,89 @@ let animationFrameId = null;
 
 const moonRoot = document.getElementById("moonRoot");
 
+// ===================== ORBITAL LOADER =====================
+// The loader ring is injected around .profileImage and removed only after the first
+// fully rendered frame of the moon has been confirmed on screen (see onMoonReady).
+// It uses an SVG orbital ellipse — a tilted planetary ring — with a small comet dot
+// completing one slow orbit. The aesthetic references an orrery or armillary sphere:
+// thin, precise, astronomical. The ellipse proportions (rx/ry ratio) mimic a ring
+// viewed at ~30° inclination, matching the subtle tilt of a tulip's stem-to-cup angle.
+
+const profileImg = document.querySelector(".profileImage");
+
+// loaderStartTime records when the loader was injected so we can enforce the minimum
+// display duration even when textures load faster than LOADER_MIN_DISPLAY_MS.
+let loaderStartTime = 0;
+
+// loaderEl holds the injected SVG wrapper so cleanupThreeJS can forcibly remove it
+// during page transitions without waiting for the fade-out timer.
+let loaderEl = null;
+// dismissLoader enforces the minimum display time then fades the loader out gracefully.
+// It is safe to call multiple times — once loaderEl is null (already removed) it exits.
+const dismissLoader = () => {
+  loaderEl = profileImg.parentElement.querySelector(".moonLoader");
+  if (!loaderEl) return;
+
+  const elapsed = performance.now() - loaderStartTime;
+  const remaining = Math.max(0, LOADER_MIN_DISPLAY_MS - elapsed);
+
+  setTimeout(() => {
+    if (!loaderEl) return; // Guard: may have been force-removed by cleanupThreeJS.
+
+    // CSS transition on opacity triggers the fade. The element is physically removed
+    // from the DOM only after the transition ends to avoid a jarring snap-to-gone.
+    loaderEl.style.transition = "opacity 0.6s ease-out";
+    loaderEl.style.opacity = "0";
+
+    loaderEl.addEventListener(
+      "transitionend",
+      () => {
+        loaderEl?.remove();
+        loaderEl = null;
+      },
+      { once: true },
+    );
+  }, remaining);
+};
+
+// onMoonReady is passed into the Moon constructor as its onComplete callback.
+// Moon's worker.onmessage calls it after scene.add(mesh) — confirming the mesh is in the
+// scene graph and textures are on the GPU — but before a frame has been painted.
+// We therefore defer the actual loader dismissal until after the next renderer.render()
+// call has completed and requestAnimationFrame has fired, which is the earliest moment
+// a real pixel from the moon has reached the screen.
+// A double-rAF is used (rAF inside rAF) because a single rAF fires at the START of the
+// next paint cycle — the frame is not composited yet. The inner rAF fires at the start
+// of the frame AFTER the paint, guaranteeing the previous frame (containing the moon)
+// has been shown to the user before the loader begins its fade.
+const onMoonReady = () => {
+  console.log("3D Moon loaded");
+  updateMoonScale(0); // Apply initial scale once loaded.
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      dismissLoader();
+    });
+  });
+};
+
 // ===================== CORE INITIALIZATION =====================
 // This function only runs when the element actually nears the viewport.
 async function initThreeJS() {
   if (isInitialized) return;
   console.log("LAZY INITIALIZING 3D ENVIRONMENT");
 
-  const [THREE, { OrbitControls }, { Moon }] = await Promise.all([
-    import("three"),
-    import("three/addons/controls/OrbitControls.js"),
-    import("./moon.js"),
-  ]);
+  // Three.js core and OrbitControls are statically imported at the top of this module.
+  // Only Moon remains as a dynamic import because it owns the texture worker and
+  // geometry — keeping it in a separate chunk means the heavy texture generation code
+  // is never downloaded until the IntersectionObserver fires.
+  const { Moon } = await import("./moon.js");
 
   // Setup Scene
   // Creates the main 3D environment where everything will live.
-  scene = new THREE.Scene();
+  scene = new Scene();
 
-  camera = new THREE.PerspectiveCamera(
+  camera = new PerspectiveCamera(
     INITIAL_FOV,
     window.innerWidth / window.innerHeight,
     NEAR_CLIP,
@@ -170,7 +251,7 @@ async function initThreeJS() {
   // antialias: true -> Smooths jagged edges. Costs minor GPU overhead.
   // alpha: true -> Makes the canvas background transparent so HTML/CSS underneath shows through.
   // depth: true -> Enables the Z-buffer, ensuring polygons in front hide polygons in back.
-  renderer = new THREE.WebGLRenderer({
+  renderer = new WebGLRenderer({
     antialias: true,
     alpha: true,
     stencil: false,
@@ -186,7 +267,7 @@ async function initThreeJS() {
   // toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
   // ACESFilmicToneMapping is the industry standard for realistic cinematic lighting.
   // Other options: THREE.NoToneMapping (flat), THREE.LinearToneMapping, THREE.ReinhardToneMapping.
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMapping = ACESFilmicToneMapping;
 
   // toneMappingExposure scales overall brightness before the tone curve is applied.
   // 1.0 is neutral. HIGHER brightens the scene before compression; LOWER darkens it.
@@ -202,7 +283,7 @@ async function initThreeJS() {
   controls.enablePan = false; // Prevents right-click dragging the moon off-center.
 
   // Lighting setup
-  sunLight = new THREE.DirectionalLight(SUN_LIGHT_COLOR, SUN_LIGHT_INTENSITY);
+  sunLight = new DirectionalLight(SUN_LIGHT_COLOR, SUN_LIGHT_INTENSITY);
   sunLight.position.set(
     SUN_LIGHT_POSITION.x,
     SUN_LIGHT_POSITION.y,
@@ -217,18 +298,15 @@ async function initThreeJS() {
   // ignored by the renderer and the light direction never changes.
   scene.add(sunLight.target);
 
-  scene.add(
-    new THREE.AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY),
-  );
+  scene.add(new AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY));
 
   const currentAgePercent = getCurrentMoonData().lunarAgePercent;
   setMoonPhase(currentAgePercent);
 
-  // Load the custom Moon 3D model into the scene
-  moon = new Moon(scene, () => {
-    console.log("3D Moon loaded");
-    updateMoonScale(0); // Apply initial scale once loaded
-  });
+  // Load the custom Moon 3D model into the scene.
+  // onMoonReady is used instead of an inline callback so the loader dismissal is tied
+  // to a confirmed painted frame rather than to scene.add() — see onMoonReady() above.
+  moon = new Moon(scene, onMoonReady);
 
   isInitialized = true;
   window.toggleMoon = (val) => moon?.setVisibility?.(val);
@@ -376,7 +454,6 @@ const onContainerResize = () => {
 };
 
 // User Input Interception (Mouse Wheel + Touch)
-const profileImg = document.querySelector(".profileImage");
 
 if (profileImg) {
   let touchStartY = 0;
@@ -456,6 +533,14 @@ const cleanupThreeJS = () => {
     profileImg.removeEventListener("touchstart", onTouchStart);
     profileImg.removeEventListener("touchmove", onTouchMove);
     delete profileImg._moonHandlers;
+  }
+
+  // Force-remove the loader immediately on page transition rather than waiting for its
+  // fade-out timer. Leaving it in the DOM across a View Transition would cause it to
+  // persist into the incoming page briefly before the old DOM is discarded.
+  if (loaderEl) {
+    loaderEl.remove();
+    loaderEl = null;
   }
 
   if (moonRoot && renderer) {

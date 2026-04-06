@@ -11,19 +11,19 @@ const {
   loading,
 } = Astro.props;
 
-import fluteImage from "./flutenobg (3).png";
+// import fluteImage from "./flutenobg (3).png";
+// <Image
+//     src={fluteImage}
+//     alt={"FLutee"}
+//     class="flutebg"
+//     height={height + 150}
+//     width={width + 150}
+//     loading="lazy"
+//     fetchpriority={"low"}
+//   />
 ---
 
 <div id="profilePicContainer" class="profilePicContainer">
-  <Image
-    src={fluteImage}
-    alt={"FLutee"}
-    class="flutebg"
-    height={height + 150}
-    width={width + 150}
-    loading="lazy"
-    fetchpriority={"low"}
-  />
   <div
     style="position: absolute; z-index: -2;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all;"
     id="moonRoot"
@@ -59,3 +59,100 @@ import fluteImage from "./flutenobg (3).png";
 </script>
 
 <script src="../General/Moon/3dMoon/main.js"></script>
+
+<script>
+  const profileImg = document.querySelector(".profileImage");
+  const createLoader = () => {
+    if (!profileImg) return;
+
+    const svg = `
+    <svg
+
+      class="moonLoader"
+      viewBox="0 0 150 150"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <defs>
+        <!-- Comet tail gradient: bright head fading to transparent over ~35% of the arc -->
+        <linearGradient id="cometTail" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stop-color="#c8d8f0" stop-opacity="0"/>
+          <stop offset="65%"  stop-color="#c8d8f0" stop-opacity="0.18"/>
+          <stop offset="100%" stop-color="#dce8ff" stop-opacity="0.72"/>
+        </linearGradient>
+
+        <!-- Full ring gradient: feathers both ends so the ellipse feels continuous
+             rather than having a hard start/stop edge -->
+        <linearGradient id="ringFade" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%"   stop-color="#8fa8cc" stop-opacity="0.08"/>
+          <stop offset="30%"  stop-color="#8fa8cc" stop-opacity="0.22"/>
+          <stop offset="70%"  stop-color="#8fa8cc" stop-opacity="0.22"/>
+          <stop offset="100%" stop-color="#8fa8cc" stop-opacity="0.08"/>
+        </linearGradient>
+      </defs>
+
+      <!-- Static orbital ring: the full tilted ellipse at low opacity.
+           Acts as the "track" the comet travels — like Saturn's ring plane. -->
+      <ellipse
+        cx="75" cy="75"
+        rx="71" ry="22"
+        fill="none"
+        stroke="url(#ringFade)"
+        stroke-width="0.7"
+      />
+
+      <!-- Comet arc: a partial stroke of the same ellipse path, animated to orbit.
+           pathLength="1" normalizes the dash math regardless of actual arc length.
+           dasharray="0.18 0.82" means 18% of the ellipse is "lit" at any moment —
+           the head — and the remaining 82% is the gap (invisible). The gradient fill
+           gives the head a bright leading edge that fades into the tail behind it. -->
+      <ellipse
+        cx="75" cy="75"
+        rx="71" ry="22"
+        fill="none"
+        stroke="url(#cometTail)"
+        stroke-width="1.4"
+        stroke-linecap="round"
+        pathLength="1"
+        stroke-dasharray="0.18 0.82"
+      >
+        <animateTransform
+          attributeName="transform"
+          type="rotate"
+          from="0 75 75"
+          to="360 75 75"
+          dur="3.2s"
+          repeatCount="indefinite"
+        />
+      </ellipse>
+
+      <!-- Comet head: a single small circle that leads the arc.
+           It orbits on the same ellipse path via animateMotion so its position
+           is always geometrically correct rather than approximated by a rotation offset.
+           mpath href points at an invisible <path> tracing the ellipse so the dot
+           follows the true curve rather than a transformed circle center. -->
+      <circle r="2.2" fill="#dce8ff" opacity="0.9">
+        <animateMotion
+          dur="3.2s"
+          repeatCount="indefinite"
+          rotate="auto"
+        >
+          <mpath href="#orbitPath"/>
+        </animateMotion>
+      </circle>
+
+      <!-- Named orbit path used by animateMotion above. Invisible — exists only as
+           a motion guide so the comet head tracks the ellipse exactly. -->
+      <path
+        id="orbitPath"
+        d="M 146,75 A 71,22 0 1,1 145.999,75.001"
+        fill="none"
+        stroke="none"
+      />
+    </svg>
+  `;
+    profileImg.insertAdjacentHTML("afterend", svg);
+  };
+
+  createLoader();
+</script>

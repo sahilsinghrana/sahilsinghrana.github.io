@@ -53,17 +53,17 @@ section.heading {
     position: relative;
     pointer-events: none;
 
-    .flutebg {
-      pointer-events: none;
-      touch-action: none;
-      user-select: none;
-      -webkit-user-drag: none;
-      mix-blend-mode: lighten;
-      opacity: 0.25;
-      z-index: -1;
-      position: absolute;
-      filter: brightness(0.6);
-    }
+    // .flutebg {
+    //   pointer-events: none;pointer-events
+    //   touch-action: none;touch-action
+    //   user-select: none;user-select
+    //   -webkit-user-drag: none;-webkit-user-drag
+    //   mix-blend-mode: lighten;mix-blend-mode
+    //   opacity: 0.25;opacity
+    //   z-index: -1;z-index
+    //   position: absolute;position
+    //   filter: brightness(0.6);filter
+    // }
 
     .profileImage {
       height: 150px;
@@ -93,23 +93,40 @@ section.heading {
 
       // box-shadow:
       //   0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));
-      // transition: box-shadow 3.5s ease-in-out;
+      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));box-shadow
+      // transition: box-shadow 3.5s ease-in-out;transition
       // box-shadow:
       //   0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
       //   0 0 calc(var(--glow-size) * 0.5)
       //     rgba(102, 102, 102, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));
+      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));box-shadow
 
       // &:hover {
-      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;
+      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;animation
       // }
       object-fit: cover;
       opacity: 1;
       border-radius: 100%;
       // &.Full {
-      //   box-shadow: 0px 0px 20px 14px #7171715e;
+      //   box-shadow: 0px 0px 20px 14px #7171715e;box-shadow
       // }
+    }
+
+    .moonLoader {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+
+      transform: translate(-50%, -50%);
+
+      width: 190;
+      height: 190;
+
+      z-index: 11;
+
+      opacity: 1;
+
+      pointer-events: none;
     }
   }
 
