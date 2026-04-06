@@ -4,6 +4,10 @@ import { defineConfig } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
 import compressor from "astro-compressor";
 
+import playformInline from "@playform/inline";
+
+import playformCompress from "@playform/compress";
+
 // https://astro.build/config
 export default defineConfig({
   compressHTML: true,
@@ -32,6 +36,8 @@ export default defineConfig({
   integrations: [
     purgecss(),
     sitemap(),
+    playformInline(),
+    playformCompress(),
     compressor({
       gzip: true,
       brotli: true,

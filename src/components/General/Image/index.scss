@@ -8,8 +8,6 @@
   overflow: hidden;
   box-shadow: 0px 6px 6px 4px #91919121;
   border: 1px solid rgba(194, 194, 194, 0.22);
-
-  // font-family: "Raleway", "Roboto", "Manrope", "Inter", Arial, sans-serif;
 }
 
 .sectionHeaderImage {
@@ -17,7 +15,7 @@
   width: 100%;
   object-fit: cover;
 
-  // filter: grayscale(0.5);
+  // filter: grayscale(0.5);filter
   filter: grayscale(0.4) blur(0.2px) brightness(0.8);
 } /* opacity: 0.4; */
 
