@@ -1,8 +1,8 @@
-import purgecss from "astro-purgecss";
+// import purgecss from "astro-purgecss";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
 import rehypeExternalLinks from "rehype-external-links";
-import compressor from "astro-compressor";
+// import compressor from "astro-compressor";
 import playformInline from "@playform/inline";
 
 import playformCompress from "@playform/compress";
@@ -14,6 +14,7 @@ export default defineConfig({
   site: "https://sahilrana.in",
   build: {
     format: "file",
+    inlineStylesheets: "always",
   },
   image: {
     config: {
@@ -55,15 +56,22 @@ export default defineConfig({
     defaultStrategy: "hover",
   },
   integrations: [
-    purgecss(),
     sitemap(),
     playformInline(),
-    playformCompress(),
-    compressor({
-      gzip: true,
-      brotli: true,
-      zstd: true,
+    // purgecss(),
+    playformCompress({
+      CSS: true,
+      HTML: true,
+      Image: true,
+      JavaScript: true,
+      SVG: true,
+      Logger: 1,
     }),
+    // compressor({
+    //   gzip: true,
+    //   brotli: true,
+    //   zstd: true,
+    // }),
   ],
   markdown: {
     shikiConfig: {
@@ -123,7 +131,7 @@ export default defineConfig({
       provider: fontProviders.local(),
       cssVariable: "--font-raleway",
       options: {
-        display: "swap",
+        display: "optional",
         variants: [
           {
             weight: "400",
@@ -138,7 +146,7 @@ export default defineConfig({
       provider: fontProviders.local(),
       cssVariable: "--font-roboto",
       options: {
-        display: "swap",
+        display: "optional",
         variants: [
           {
             weight: "400",
@@ -157,7 +165,7 @@ export default defineConfig({
       provider: fontProviders.local(),
       cssVariable: "--font-inter",
       options: {
-        display: "swap",
+        display: "optional",
         variants: [
           {
             weight: "200",

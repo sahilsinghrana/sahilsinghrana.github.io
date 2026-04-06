@@ -141,6 +141,9 @@ $mobileBreakpoint: 486px;
 .topTrackAndArtistContainer {
   display: flex;
   justify-content: space-between;
+  font-family:
+    var(--font-inter), var(--font-manrope), var(--font-roboto),
+    var(--font-raleway), Arial, sans-serif;
 }
 @media screen and (max-width: $mobileBreakpoint) {
   .topTrackAndArtistContainer {
