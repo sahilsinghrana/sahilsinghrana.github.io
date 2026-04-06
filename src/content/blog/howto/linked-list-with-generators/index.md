@@ -4,8 +4,8 @@ image:
   url: "./titleImage.webp"
   alt: "Linked List with Javascript Generators and Iterators"
 pubDate: 2024-06-06
-title: Access Linked list Nodes Using JS Generators and Iterators
-description: "Linked list combined with Javascript Generators and Iterators"
+title: Access linked list with JS Generators
+description: "Combining linked list with JS generators & iterators"
 slug: linked-list-with-generators
 sortOrder: 6
 featured: true

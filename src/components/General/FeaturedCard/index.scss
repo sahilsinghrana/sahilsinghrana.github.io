@@ -15,19 +15,26 @@
     h3 {
       font-size: 0.8rem;
       margin: 0;
-      opacity: 0.95;
+      opacity: 0.9;
       margin-bottom: 2px;
+
+      &::first-letter {
+        font-weight: 900;
+        opacity: 0.95;
+        font-size: 0.82rem;
+      }
     }
 
     p {
-      font-size: 0.75rem;
-      opacity: 0.9;
+      font-size: 0.73rem;
+      opacity: 0.85;
       margin: 0;
+      margin-left: 0.22ch;
     }
 
     &:hover {
-      opacity: 0.98;
-      color: whitesmoke;
+      opacity: 1 !important;
+      color: whitesmoke !important;
     }
   }
 }

@@ -5,7 +5,7 @@ image:
   alt: "Convert Normal Strings to template literals in JavaScript"
 pubDate: 2024-05-29
 title: Access variables from plain js strings.
-description: "Convert plain JavaScript strings into template literals."
+description: "Convert plain JS strings to template literals"
 sortOrder: 2
 slug: convert-string-to-literal
 featured: true
