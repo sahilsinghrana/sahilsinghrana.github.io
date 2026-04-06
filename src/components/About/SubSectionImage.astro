@@ -12,23 +12,15 @@ const {
 } = Astro.props;
 
 // import fluteImage from "./flutenobg (3).png";
-// <Image
-//     src={fluteImage}
-//     alt={"FLutee"}
-//     class="flutebg"
-//     height={height + 150}
-//     width={width + 150}
-//     loading="lazy"
-//     fetchpriority={"low"}
-//   />
 ---
 
 <div id="profilePicContainer" class="profilePicContainer">
   <div
-    style="position: absolute; z-index: -2;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all;"
+    style="position: absolute; z-index: -2;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all; background:transparent;"
     id="moonRoot"
   >
   </div>
+
   <Picture
     formats={["avif", "webp"]}
     widths={widths || [80, 450]}
@@ -69,7 +61,7 @@ const {
     <svg
 
       class="moonLoader"
-      viewBox="0 0 190 190"
+      viewBox="0 0 250 250"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
