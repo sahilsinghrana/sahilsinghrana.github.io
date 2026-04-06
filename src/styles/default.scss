@@ -3,7 +3,9 @@
 :root {
   --content-width: 80vw;
   --content-max-width: 700px;
-
+  --font-main:
+    var(--font-raleway), var(--font-manrope), var(--font-inter),
+    var(--font-roboto), Arial, sans-serif;
   --accent1: brown;
 
   --bottom-spacing: 15px;
@@ -25,6 +27,7 @@
 }
 
 body {
+  font-family: var(--font-main);
   font-size: var(--fs-base);
 }
 
@@ -90,7 +93,7 @@ h6 {
 p {
   font-size: var(--fs-p);
   line-height: var(--line-height-body);
-  // margin: 0 0 1rem;
+  // margin: 0 0 1rem;margin
 }
 
 .hidden {

@@ -18,7 +18,7 @@ $mobileBreakpoint: 486px;
   align-items: start;
   margin-bottom: 2em;
 
-  font-family: "Manrope", "Raleway", "Inter", "Roboto", Arial, sans-serif;
+  font-family: var(--font-main);
 
   a::after {
     content: " 🔗";
@@ -54,15 +54,15 @@ section.heading {
     pointer-events: none;
 
     // .flutebg {
-    //   pointer-events: none;pointer-events
-    //   touch-action: none;touch-action
-    //   user-select: none;user-select
-    //   -webkit-user-drag: none;-webkit-user-drag
-    //   mix-blend-mode: lighten;mix-blend-mode
-    //   opacity: 0.25;opacity
-    //   z-index: -1;z-index
-    //   position: absolute;position
-    //   filter: brightness(0.6);filter
+    //   pointer-events: none;pointer-eventspointer-events
+    //   touch-action: none;touch-actiontouch-action
+    //   user-select: none;user-selectuser-select
+    //   -webkit-user-drag: none;-webkit-user-drag-webkit-user-drag
+    //   mix-blend-mode: lighten;mix-blend-modemix-blend-mode
+    //   opacity: 0.25;opacityopacity
+    //   z-index: -1;z-indexz-index
+    //   position: absolute;positionposition
+    //   filter: brightness(0.6);filterfilter
     // }
 
     .profileImage {
@@ -93,22 +93,22 @@ section.heading {
 
       // box-shadow:
       //   0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));box-shadowbox-shadow
-      // transition: box-shadow 3.5s ease-in-out;transitiontransition
+      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));box-shadowbox-shadowbox-shadow
+      // transition: box-shadow 3.5s ease-in-out;transitiontransitiontransition
       // box-shadow:
       //   0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
       //   0 0 calc(var(--glow-size) * 0.5)
       //     rgba(102, 102, 102, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));box-shadowbox-shadow
+      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));box-shadowbox-shadowbox-shadow
 
       // &:hover {
-      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;animationanimation
+      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;animationanimationanimation
       // }
       object-fit: cover;
       opacity: 1;
       border-radius: 100%;
       // &.Full {
-      //   box-shadow: 0px 0px 20px 14px #7171715e;box-shadowbox-shadow
+      //   box-shadow: 0px 0px 20px 14px #7171715e;box-shadowbox-shadowbox-shadow
       // }
     }
 

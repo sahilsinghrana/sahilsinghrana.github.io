@@ -1,4 +1,4 @@
-@import url("./fonts.scss");
+// @import url("./fonts.scss");
 
 * {
   box-sizing: border-box;
@@ -31,7 +31,7 @@ body {
   background-color: #000;
   color: rgba(245, 245, 245, 0.9);
 
-  font-family: "Roboto", "Manrope", "Inter", "Raleway", Arial, sans-serif;
+  font-family: var(--font-main);
   font-optical-sizing: auto;
   font-kerning: auto;
   text-rendering: geometricPrecision;

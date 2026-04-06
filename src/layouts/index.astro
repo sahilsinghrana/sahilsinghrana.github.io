@@ -1,5 +1,6 @@
 ---
 import { Head } from "astro-capo";
+import { Font } from "astro:assets";
 
 import Header from "@components/Header/index.astro";
 import Footer from "@components/Footer/index.astro";
@@ -19,6 +20,10 @@ import "@styles/global.scss";
 
 <html lang="en">
   <Head>
+    <Font cssVariable="--font-manrope" />
+    <Font cssVariable="--font-raleway" />
+    <Font cssVariable="--font-roboto" />
+    <Font cssVariable="--font-inter" />
     <DefaultMeta />
     <GtagHeadScripts />
     <OgMeta title={title} description={description} />
