@@ -16,5 +16,5 @@ export function getCleanCanonicalUrl(
     cleanPath = cleanPath.slice(0, -1);
   }
 
-  return new URL(cleanPath || "/", site);
+  return new URL(cleanPath || "", site);
 }
