@@ -1,16 +1,17 @@
 ---
-const currentUrl = new URL(Astro.url.pathname, Astro.site);
+import { getCleanCanonicalUrl } from "@utils/getCanonicalUrl";
+
+const currentUrl = getCleanCanonicalUrl(Astro.url.pathname, Astro.site);
 ---
 
-<meta content="text/html;charset=utf-8" http-equiv="Content-Type" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
 <link
   rel="preload"
-  href="/fonts/Manrope-Regular.ttf"
+  href="/fonts/Manrope-Regular.woff2"
   as="font"
-  type="font/ttf"
+  type="font/woff2"
   crossorigin
 />
 

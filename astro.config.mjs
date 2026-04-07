@@ -10,10 +10,10 @@ import playformCompress from "@playform/compress";
 // https://astro.build/config
 export default defineConfig({
   compressHTML: true,
-  trailingSlash: "ignore",
+  trailingSlash: "never",
   site: "https://sahilrana.in",
   build: {
-    format: "file",
+    format: "directory",
     inlineStylesheets: "always",
   },
   image: {
