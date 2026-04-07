@@ -62,7 +62,7 @@ export default defineConfig({
     playformCompress({
       CSS: true,
       HTML: true,
-      Image: true,
+      Image: false,
       JavaScript: true,
       SVG: true,
       Logger: 1,

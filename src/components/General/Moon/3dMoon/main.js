@@ -110,7 +110,7 @@ const VISIBILITY_THRESHOLD = 0.01;
 // Minimum duration (ms) the loader ring stays visible before it is allowed to fade out.
 // Prevents a jarring instant-dismiss on fast devices where textures load nearly immediately.
 // The fade-out itself adds an additional ~600ms of graceful transition on top of this floor.
-const LOADER_MIN_DISPLAY_MS = 2500;
+const LOADER_MIN_DISPLAY_MS = 2800;
 
 // ============================================================
 
@@ -169,7 +169,8 @@ let loaderEl = null;
 // dismissLoader enforces the minimum display time then fades the loader out gracefully.
 // It is safe to call multiple times — once loaderEl is null (already removed) it exits.
 const dismissLoader = () => {
-  loaderEl = profileImg.parentElement.querySelector(".moonLoader");
+  loaderEl = document.querySelector("#profilePicContainer > .moonLoader");
+  console.log({ loaderEl, profileImg });
   if (!loaderEl) return;
 
   const elapsed = performance.now() - loaderStartTime;
