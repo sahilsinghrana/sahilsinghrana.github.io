@@ -13,7 +13,7 @@ export default defineConfig({
   trailingSlash: "never",
   site: "https://sahilrana.in",
   build: {
-    format: "directory",
+    format: "file",
     inlineStylesheets: "always",
   },
   image: {
