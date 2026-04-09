@@ -2,16 +2,6 @@
 
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 
-import {
-  PerspectiveCamera,
-  Scene,
-  DirectionalLight,
-  AmbientLight,
-  WebGLRenderer,
-  ACESFilmicToneMapping,
-} from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-
 console.log("SETTING UP");
 
 // Mobile detection threshold (in pixels)
@@ -220,6 +210,17 @@ const onMoonReady = () => {
 // This function only runs when the element actually nears the viewport.
 async function initThreeJS() {
   if (isInitialized) return;
+
+  const {
+    PerspectiveCamera,
+    Scene,
+    DirectionalLight,
+    AmbientLight,
+    WebGLRenderer,
+    ACESFilmicToneMapping,
+  } = await import("three");
+  const { OrbitControls } =
+    await import("three/addons/controls/OrbitControls.js");
   console.log("LAZY INITIALIZING 3D ENVIRONMENT");
 
   // Three.js core and OrbitControls are statically imported at the top of this module.

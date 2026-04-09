@@ -43,8 +43,21 @@ export default defineConfig({
       rollupOptions: {
         output: {
           manualChunks(id) {
-            if (id.includes("node_modules/three")) {
-              return "threejs-vendor";
+            if (
+              id.includes("node_modules/three") &&
+              !id.includes("OrbitControls")
+            ) {
+              return "threejs-core";
+            }
+
+            if (id.includes("OrbitControls")) {
+              return "orbit-controls";
+            }
+            if (id.endsWith("texture-worker.js")) {
+              return "texture-worker";
+            }
+            if (id.endsWith("moon.js")) {
+              return "moon-core";
             }
           },
         },
