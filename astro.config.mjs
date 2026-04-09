@@ -47,17 +47,18 @@ export default defineConfig({
               id.includes("node_modules/three") &&
               !id.includes("OrbitControls")
             ) {
-              return "threejs-core";
+              return "vendor-threejs";
             }
 
-            if (id.includes("OrbitControls")) {
-              return "orbit-controls";
+            if (
+              id.endsWith("/3dMoon/moon.js") ||
+              id.includes("OrbitControls")
+            ) {
+              return "3dmoon-core";
             }
-            if (id.endsWith("texture-worker.js")) {
-              return "texture-worker";
-            }
-            if (id.endsWith("moon.js")) {
-              return "moon-core";
+
+            if (id.includes("/src/utils/")) {
+              return "app-utils";
             }
           },
         },
@@ -66,7 +67,7 @@ export default defineConfig({
   },
   contentCollectionCache: true,
   prefetch: {
-    defaultStrategy: "hover",
+    defaultStrategy: "viewport",
   },
   integrations: [
     sitemap(),
@@ -78,7 +79,6 @@ export default defineConfig({
       Image: false,
       JavaScript: true,
       SVG: true,
-      Logger: 1,
     }),
     // compressor({
     //   gzip: true,
