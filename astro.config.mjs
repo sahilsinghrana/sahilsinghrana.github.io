@@ -11,7 +11,7 @@ import playformCompress from "@playform/compress";
 export default defineConfig({
   compressHTML: true,
   trailingSlash: "never",
-  site: "https://sahilrana.in",
+  site: "https://www.sahilrana.in",
   build: {
     format: "file",
     inlineStylesheets: "always",
