@@ -46,6 +46,13 @@ section.heading {
   display: grid;
   place-items: center;
 
+  #moonRoot {
+    canvas {
+      pointer-events: all;
+      z-index: 1;
+    }
+  }
+
   .profilePicContainer {
     display: flex;
     justify-content: center;
@@ -54,24 +61,29 @@ section.heading {
     pointer-events: none;
 
     // .flutebg {
-    //   pointer-events: none;pointer-eventspointer-events
-    //   touch-action: none;touch-actiontouch-action
-    //   user-select: none;user-selectuser-select
-    //   -webkit-user-drag: none;-webkit-user-drag-webkit-user-drag
-    //   mix-blend-mode: lighten;mix-blend-modemix-blend-mode
-    //   opacity: 0.25;opacityopacity
-    //   z-index: -1;z-indexz-index
-    //   position: absolute;positionposition
-    //   filter: brightness(0.6);filterfilter
+    //   pointer-events: none;pointer-eventspointer-eventspointer-events
+    //   touch-action: none;touch-actiontouch-actiontouch-action
+    //   user-select: none;user-selectuser-selectuser-select
+    //   -webkit-user-drag: none;-webkit-user-drag-webkit-user-drag-webkit-user-drag
+    //   mix-blend-mode: lighten;mix-blend-modemix-blend-modemix-blend-mode
+    //   opacity: 0.25;opacityopacityopacity
+    //   z-index: -1;z-indexz-indexz-index
+    //   position: absolute;positionpositionposition
+    //   filter: brightness(0.6);filterfilterfilter
     // }
 
     .profileImage {
       height: 150px;
       width: 150px;
-      z-index: 10;
+      // z-index: ;z-index
       pointer-events: all;
       touch-action: none;
       user-select: none; /* Prevents text/image selection while dragging */
+      -moz-user-select: none; /* Firefox */
+      -webkit-user-select: none; /* Safari */
+      -ms-user-select: none; /* IE10+ */
+
+      user-drag: none;
       -webkit-user-drag: none;
       opacity: 0.7;
       --percent: 100;
@@ -93,22 +105,22 @@ section.heading {
 
       // box-shadow:
       //   0 0 var(--glow-size) rgba(65, 65, 65, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));box-shadowbox-shadowbox-shadow
-      // transition: box-shadow 3.5s ease-in-out;transitiontransitiontransition
+      //   0 0 calc(var(--glow-size) * 2) rgba(25, 25, 25, var(--glow-opacity));box-shadowbox-shadowbox-shadowbox-shadow
+      // transition: box-shadow 3.5s ease-in-out;transitiontransitiontransitiontransition
       // box-shadow:
       //   0 0 var(--glow-size) rgba(119, 119, 119, var(--glow-opacity)),
       //   0 0 calc(var(--glow-size) * 0.5)
       //     rgba(102, 102, 102, var(--glow-opacity)),
-      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));box-shadowbox-shadowbox-shadow
+      //   0 0 calc(var(--glow-size) * 1.35) rgba(85, 85, 85, var(--glow-opacity));box-shadowbox-shadowbox-shadowbox-shadow
 
       // &:hover {
-      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;animationanimationanimation
+      //   animation: glowAnimationProfilePic 3.5s ease-in-out infinite;animationanimationanimationanimation
       // }
       object-fit: cover;
       opacity: 1;
       border-radius: 100%;
       // &.Full {
-      //   box-shadow: 0px 0px 20px 14px #7171715e;box-shadowbox-shadowbox-shadow
+      //   box-shadow: 0px 0px 20px 14px #7171715e;box-shadowbox-shadowbox-shadowbox-shadow
       // }
     }
 

@@ -41,8 +41,8 @@ const FAR_CLIP = 1000;
 // Technically, this moves the camera backward/forward on the Z-axis.
 // HIGHER: Camera moves further back -> Moon looks smaller.
 // LOWER: Camera moves closer -> Moon looks larger.
-const FIXED_CAMERA_DISTANCE_MOBILE = 4.15;
-const FIXED_CAMERA_DISTANCE_DESKTOP = 2.9;
+const FIXED_CAMERA_DISTANCE_MOBILE = 3.95;
+const FIXED_CAMERA_DISTANCE_DESKTOP = 3.1;
 
 // Lighting
 // Colors must be in hex format (0xRRGGBB).
@@ -327,7 +327,7 @@ const setMoonPhase = (input) => {
 
   // Orbit the light source around the Y-axis using basic trigonometry.
   if (sunLight) {
-    sunLight.position.x = -Math.cos(angle) * radius;
+    sunLight.position.x = Math.cos(angle) * radius;
     sunLight.position.z = Math.sin(angle) * radius;
     sunLight.position.y = 0;
     sunLight.target.position.set(0, 0, 0); // Forces the light to always point directly at the moon center.
