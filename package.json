@@ -17,7 +17,7 @@
   "author": {
     "name": "Sahil Rana",
     "email": "ranasahil98@gmail.com",
-    "url": "https://sahilrana.in"
+    "url": "https://www.sahilrana.in"
   },
   "lint-staged": {
     "*.{js,ts,astro,json,md}": "prettier --write",
