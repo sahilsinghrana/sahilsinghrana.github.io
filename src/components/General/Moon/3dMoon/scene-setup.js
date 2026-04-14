@@ -28,7 +28,7 @@ const MAX_ASPECT_RATIO = 1.8;
 // INITIAL_FOV (Field of View in degrees)
 // HIGHER (> 60): Wider camera angle. The moon will appear smaller, and edge distortion (fisheye) increases.
 // LOWER (< 30): Narrower camera angle. The moon will appear larger, flattening the 3D perspective (orthographic feel).
-const INITIAL_FOV = 45;
+const INITIAL_FOV = 40;
 
 // NEAR_CLIP / FAR_CLIP (Frustum rendering limits)
 // Objects closer than NEAR_CLIP or further than FAR_CLIP are not rendered by the GPU.
