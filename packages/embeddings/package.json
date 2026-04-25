@@ -1,0 +1,22 @@
+{
+  "name": "@sahilsinghrana/embeddings",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js"
+  },
+  "scripts": {
+    "build": "echo \"No build step needed for library\""
+  },
+  "dependencies": {
+    "@openrouter/sdk": "^0.12.21",
+    "@pinecone-database/pinecone": "^7.2.0",
+    "dotenv": "^16.1.4",
+    "fast-glob": "^3.3.3",
+    "gray-matter": "^4.0.3",
+    "html-to-text": "^9.0.5",
+    "remove-markdown": "^0.3.0"
+  }
+}
