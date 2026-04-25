@@ -1,0 +1,37 @@
+<div class="chat-container" style="width: 100%; margin-top: 15px;">
+  <iframe
+    src="https://selene.sahilrana.in/"
+    title="Selene"
+    width="100%"
+    id="seleneChatIframe"
+    style="border: none; border-radius: 12px; overflow: hidden; display: block; height: 86px;"
+    allow="clipboard-read; clipboard-write;"
+    sandbox="allow-scripts allow-same-origin allow-forms "
+    loading="lazy"
+  >
+  </iframe>
+</div>
+
+<script type="module">
+  const resizeIframe = (event) => {
+    console.log("Message received from iframe:", event.data);
+    if (event.data?.type === "seleneHeight") {
+      const iframe = document.getElementById("seleneChatIframe");
+      let receivedHeight = event.data.height;
+      const receivedIsExpanded = event.data.isExpanded;
+
+      if (!receivedHeight) {
+        if (receivedIsExpanded) {
+          receivedHeight = 400;
+        } else {
+          receivedHeight = 86;
+        }
+      }
+
+      if (iframe) {
+        iframe.style.height = `${receivedHeight}px`;
+      }
+    }
+  };
+  window.addEventListener("message", resizeIframe, false);
+</script>
