@@ -8,6 +8,77 @@ const DEFAULT_CONTENT_SECTIONS = [
 const DEFAULT_BATCH_SIZE = 16;
 const DEFAULT_MAX_EMBEDDING_CHARS = 32000;
 
+// Default chunker configurations
+const DEFAULT_HTML_CHUNKER_CONFIG = {
+  chunkSize: 1024,
+  chunkOverlap: 102,
+  separators: [
+    "\n\n",
+    "\n",
+    "<p>",
+    "<h1>",
+    "<h2>",
+    "<h3>",
+    "<h4>",
+    "<h5>",
+    "<h6>",
+    "<li>",
+    "<tr>",
+    " ",
+    "",
+  ],
+};
+
+const DEFAULT_BLOG_CHUNKER_CONFIG = {
+  chunkSize: 1536,
+  chunkOverlap: 154,
+  separators: [
+    "\n\n",
+    "\n",
+    "## ",
+    "### ",
+    "#### ",
+    "```\n",
+    "```",
+    "- ",
+    "* ",
+    "1. ",
+    " ",
+    "",
+  ],
+};
+
+// Homepage-specific chunker config
+const DEFAULT_HOMEPAGE_CHUNKER_CONFIG = {
+  chunkSize: 800,
+  chunkOverlap: 80,
+  separators: [
+    "\n\n",
+    "\n",
+    "<h1>",
+    "<h2>",
+    "<h3>",
+    "<section",
+    "<div",
+    "<nav",
+    "<ul>",
+    "<li>",
+    " ",
+    "",
+  ],
+  // Pages that should be treated as homepage for chunking
+  homepagePatterns: ["index", "home", ""],
+};
+
+const DEFAULT_TOKEN_OPTIMIZATION = {
+  enabled: true,
+  leadContentRatio: 0.3,
+};
+
+const DEFAULT_CHUNKING_CONFIG = {
+  enabled: true, // Disabled by default, set to true to enable chunking
+};
+
 function buildPineconeBaseUrl(indexName, environment) {
   if (!indexName || !environment) return undefined;
   return `https://${indexName}-${environment}.svc.pinecone.io`;
@@ -102,5 +173,10 @@ export function loadConfig(options = {}) {
       options.pageCollectionName ?? process.env.PAGE_COLLECTION_NAME ?? "pages",
     batchSize: options.batchSize ?? DEFAULT_BATCH_SIZE,
     maxEmbeddingChars: options.maxEmbeddingChars ?? DEFAULT_MAX_EMBEDDING_CHARS,
+    htmlChunker: options.htmlChunker ?? DEFAULT_HTML_CHUNKER_CONFIG,
+    blogChunker: options.blogChunker ?? DEFAULT_BLOG_CHUNKER_CONFIG,
+    homepageChunker: options.homepageChunker ?? DEFAULT_HOMEPAGE_CHUNKER_CONFIG,
+    tokenOptimization: options.tokenOptimization ?? DEFAULT_TOKEN_OPTIMIZATION,
+    chunking: options.chunking ?? DEFAULT_CHUNKING_CONFIG,
   };
 }

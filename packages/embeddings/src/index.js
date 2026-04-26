@@ -18,6 +18,7 @@ export function createEmbeddingsPipeline(config) {
   const contentLoader = new ContentLoader({
     contentSections: config.contentSections,
     maxEmbeddingChars: config.maxEmbeddingChars,
+    blogChunkerConfig: config.blogChunker,
   });
 
   const pageLoader = new PageLoader({
@@ -25,6 +26,8 @@ export function createEmbeddingsPipeline(config) {
     sourceDir: config.pageSourceDir,
     collectionName: config.pageCollectionName,
     maxEmbeddingChars: config.maxEmbeddingChars,
+    htmlChunkerConfig: config.htmlChunker,
+    homepageChunkerConfig: config.homepageChunker,
   });
 
   const embedder = new OpenRouterEmbeddingsClient({
@@ -42,10 +45,17 @@ export function createEmbeddingsPipeline(config) {
     namespace: config.pineconeNamespace,
   });
 
+  // Determine chunking options from config
+  const chunkingOptions = {
+    enabled: config.chunking?.enabled ?? false,
+    tokenOptimization: config.tokenOptimization,
+  };
+
   return new EmbeddingsPipeline({
     contentLoaders: [contentLoader, pageLoader],
     embedder,
     indexer,
     batchSize: config.batchSize,
+    chunkingOptions,
   });
 }

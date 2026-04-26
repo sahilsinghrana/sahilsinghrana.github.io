@@ -4,6 +4,12 @@ import fg from "fast-glob";
 import { htmlToText } from "html-to-text";
 import matter from "gray-matter";
 import removeMarkdown from "remove-markdown";
+import {
+  createHtmlChunker,
+  createHomepageChunker,
+  chunkDocuments,
+  chunkHomepageDocuments,
+} from "./chunker.js";
 
 function normalizeFileId(relativePath) {
   let slug = relativePath.replace(/\\\\/g, "/");
@@ -67,6 +73,8 @@ export class PageLoader {
     sourceDir = "src/pages",
     collectionName = "pages",
     maxEmbeddingChars,
+    htmlChunkerConfig,
+    homepageChunkerConfig,
     distIgnore = [
       "**/404.html",
       "**/blog/posts/**/*.html",
@@ -83,6 +91,8 @@ export class PageLoader {
     this.maxEmbeddingChars = maxEmbeddingChars;
     this.distIgnore = distIgnore;
     this.sourceIgnore = sourceIgnore;
+    this.htmlChunker = createHtmlChunker(htmlChunkerConfig);
+    this.homepageChunker = createHomepageChunker(homepageChunkerConfig);
   }
 
   async distExists() {
@@ -188,5 +198,96 @@ export class PageLoader {
     }
 
     return documents;
+  }
+
+  /**
+   * Check if a document is the homepage
+   * @param {Object} document - Document with metadata
+   * @returns {boolean} True if homepage
+   */
+  _isHomepage(document) {
+    const slug = document.metadata?.slug || "";
+    const url = document.metadata?.url || "";
+
+    // Check for common homepage patterns
+    const homepagePatterns = ["index", "home", ""];
+    const isIndexPage = homepagePatterns.includes(slug.toLowerCase());
+    const isRootUrl = url === "/" || url === "";
+
+    return isIndexPage || isRootUrl;
+  }
+
+  /**
+   * Chunk loaded documents into smaller pieces
+   * @param {Array} documents - Documents from loadDocuments()
+   * @param {Object} options - Chunking options
+   * @returns {Array} Chunked documents
+   */
+  async chunkDocuments(documents, options = {}) {
+    const { enableTokenOptimization = false } = options;
+
+    // Separate homepage from other pages
+    const homepageDocs = documents.filter((doc) => this._isHomepage(doc));
+    const otherDocs = documents.filter((doc) => !this._isHomepage(doc));
+
+    const chunkedDocs = [];
+
+    // Chunk homepage with special chunker (link-aware)
+    if (homepageDocs.length > 0) {
+      console.log(
+        `Found ${homepageDocs.length} homepage document(s), using link-aware chunking...`,
+      );
+
+      const docsForChunking = homepageDocs.map((doc) => ({
+        content: doc.text,
+        metadata: doc.metadata,
+      }));
+
+      const homepageChunked = chunkHomepageDocuments(
+        docsForChunking,
+        this.homepageChunker,
+        {
+          preserveLeadContent: enableTokenOptimization,
+        },
+      );
+
+      // Reformat with homepage-specific metadata
+      for (const chunk of homepageChunked) {
+        chunkedDocs.push({
+          id: `${chunk.metadata.parentId}:chunk${chunk.metadata.chunkIndex}`,
+          text: chunk.content,
+          metadata: {
+            ...chunk.metadata,
+            content: chunk.content,
+          },
+        });
+      }
+    }
+
+    // Chunk other pages with standard HTML chunker
+    if (otherDocs.length > 0) {
+      const docsForChunking = otherDocs.map((doc) => ({
+        content: doc.text,
+        metadata: doc.metadata,
+      }));
+
+      const otherChunked = chunkDocuments(docsForChunking, this.htmlChunker, {
+        preserveLeadContent: enableTokenOptimization,
+      });
+
+      // Reformat to match expected output structure
+      for (const chunk of otherChunked) {
+        chunkedDocs.push({
+          id: `${chunk.metadata.parentId}:chunk${chunk.metadata.chunkIndex}`,
+          text: chunk.content,
+          metadata: {
+            ...chunk.metadata,
+            content: chunk.content,
+          },
+        });
+      }
+    }
+
+    return chunkedDocs;
   }
 }

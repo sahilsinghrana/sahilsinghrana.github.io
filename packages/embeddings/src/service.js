@@ -7,7 +7,14 @@ function chunkArray(array, size) {
 }
 
 export class EmbeddingsPipeline {
-  constructor({ contentLoader, contentLoaders, embedder, indexer, batchSize }) {
+  constructor({
+    contentLoader,
+    contentLoaders,
+    embedder,
+    indexer,
+    batchSize,
+    chunkingOptions,
+  }) {
     const loaders = [];
 
     if (contentLoader) loaders.push(contentLoader);
@@ -23,13 +30,30 @@ export class EmbeddingsPipeline {
     this.embedder = embedder;
     this.indexer = indexer;
     this.batchSize = batchSize;
+    this.chunkingOptions = chunkingOptions || { enabled: false };
   }
 
   async generate() {
     const documentMap = new Map();
 
     for (const loader of this.contentLoaders) {
-      const documents = await loader.loadDocuments();
+      let documents = await loader.loadDocuments();
+
+      // Apply chunking if enabled
+      if (
+        this.chunkingOptions.enabled &&
+        typeof loader.chunkDocuments === "function"
+      ) {
+        console.log(
+          `Chunking ${documents.length} documents with ${loader.constructor.name}...`,
+        );
+        documents = await loader.chunkDocuments(documents, {
+          enableTokenOptimization:
+            this.chunkingOptions.tokenOptimization?.enabled ?? false,
+        });
+        console.log(`Chunked into ${documents.length} chunks.`);
+      }
+
       for (const document of documents) {
         if (!document || !document.id) {
           continue;
