@@ -286,7 +286,7 @@ export function createBlogChunker(options = {}) {
  * @returns {Object} Cleaned metadata without keywords
  */
 export function stripKeywords(metadata) {
-  const { keywords, ...clean } = metadata;
+  const { tags, ...clean } = metadata;
   return clean;
 }
 

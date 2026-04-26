@@ -5,7 +5,7 @@ const DEFAULT_CONTENT_SECTIONS = [
   { collection: "blog", baseDir: "src/content/blog" },
   { collection: "snippets", baseDir: "src/content/snippets" },
 ];
-const DEFAULT_BATCH_SIZE = 16;
+const DEFAULT_BATCH_SIZE = 14;
 const DEFAULT_MAX_EMBEDDING_CHARS = 32000;
 
 // Default chunker configurations
@@ -30,7 +30,7 @@ const DEFAULT_HTML_CHUNKER_CONFIG = {
 };
 
 const DEFAULT_BLOG_CHUNKER_CONFIG = {
-  chunkSize: 1536,
+  chunkSize: 1024,
   chunkOverlap: 154,
   separators: [
     "\n\n",

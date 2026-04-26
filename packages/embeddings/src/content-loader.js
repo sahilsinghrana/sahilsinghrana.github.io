@@ -37,7 +37,7 @@ function buildEmbeddingInput(data, content, maxChars) {
   return joined.length > maxChars ? `${joined.slice(0, maxChars)}...` : joined;
 }
 
-function getMetadata(data, collection, slug, sourcePath) {
+function getMetadata(data, collection, slug) {
   // Strip keywords from metadata to reduce token usage
   const { tags, image, ...cleanData } = data;
 
