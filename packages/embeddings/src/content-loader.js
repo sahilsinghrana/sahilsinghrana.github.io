@@ -39,13 +39,20 @@ function buildEmbeddingInput(data, content, maxChars) {
 
 function getMetadata(data, collection, slug, sourcePath) {
   // Strip keywords from metadata to reduce token usage
-  const { keywords, ...cleanData } = data;
+  const { tags, image, ...cleanData } = data;
+
+  let url = `/${collection}/${slug}`;
+
+  if (collection === "blog") {
+    url = `/blog/posts/${slug}`;
+  } else if (collection === "snippets") {
+    url = `/snippets/${slug}`;
+  }
 
   const metadata = {
     collection,
     slug,
-    sourcePath,
-    url: `/${collection}/${slug}`,
+    url: url,
   };
 
   // Keep: title, description, pubDate, tags (strip keywords from tags if present)
@@ -55,13 +62,6 @@ function getMetadata(data, collection, slug, sourcePath) {
   if (cleanData.author) metadata.author = cleanData.author;
   if (cleanData.featured !== undefined)
     metadata.featured = Boolean(cleanData.featured);
-
-  // Keep tags but ensure keywords are not included
-  if (cleanData.tags && Array.isArray(cleanData.tags)) {
-    metadata.tags = cleanData.tags.filter(
-      (t) => typeof t === "string" && !t.toLowerCase().includes("keyword"),
-    );
-  }
 
   return metadata;
 }
