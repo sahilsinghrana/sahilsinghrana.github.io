@@ -6,6 +6,7 @@ import esp32Car from "@images/projects/esp8266car.webp";
 import diziPlayer from "@images/projects/diziPlayer.webp";
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
 import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
+import atrij from "@images/projects/atrij.png";
 
 export const diziPlayerMeta = {
   title: "Dizi Player",
@@ -21,6 +22,25 @@ export const diziPlayerMeta = {
     {
       Icon: ExternalLink,
       link: "https://dizi.sahilrana.in",
+      description: "Preview",
+    },
+  ],
+};
+
+export const atrijMeta = {
+  title: "Atrij",
+  image: atrij,
+  content:
+    "A static site continuously self developed by an autonomous AI Agent. Hosted and deployed on a Mobile device.",
+  links: [
+    {
+      Icon: Github,
+      link: "https://github.com/sahilsinghrana/atrij",
+      description: "Github",
+    },
+    {
+      Icon: ExternalLink,
+      link: "https://rexx.sahilrana.in",
       description: "Preview",
     },
   ],

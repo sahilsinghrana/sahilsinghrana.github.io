@@ -11,7 +11,7 @@
 
   .previews {
     display: flex;
-    // justify-content: center;
+    // justify-content: center;justify-content
     flex-direction: column;
     align-items: center;
     gap: 8px;
@@ -75,9 +75,14 @@
         font-size: 0.7rem;
         background: rgba(143, 0, 0, 0.753);
         color: white;
-        padding: 2px 4px;
+        padding: 2px 6px;
         margin: 0;
         border-radius: 6px;
+
+        &.live {
+          background: rgba(0, 143, 0, 0.753);
+          padding: 2px 8px;
+        }
       }
 
       .links {

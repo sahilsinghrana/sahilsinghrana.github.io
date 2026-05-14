@@ -1,0 +1,45 @@
+---
+import Image from "astro/components/Image.astro";
+
+import { atrijMeta } from "@utils/projects";
+
+import "./index.scss";
+---
+
+<div class="atrijPreviewWrapper previewWrapper">
+  <div class="details">
+    <div class="info">
+      <h2 class="atrijTitle">
+        अत्रिज
+        <span class="small">(Atrij)</span>
+      </h2>
+      <p>
+        {atrijMeta.content}
+      </p>
+    </div>
+    <Image
+      src={atrijMeta.image}
+      alt={"Atrij preview"}
+      class="previewImage"
+      width={300}
+      height={300}
+    />
+  </div>
+  <div class="footer">
+    <p class="status live"><span>Live</span></p>
+    <ul class="links">
+      {
+        atrijMeta.links.map((link) => {
+          const { Icon, link: url } = link;
+          return (
+            <li>
+              <a aria-label={url} href={url} target="_blank">
+                <Icon />
+              </a>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</div>

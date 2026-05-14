@@ -1,6 +1,7 @@
 ---
 import DiziplayerPreview from "./DiziplayerPreview/index.astro";
 import JsonViewerPreview from "./JsonViewerPreview/index.astro";
+import AtrijPreview from "./AtrijPreview/index.astro";
 
 import "./_index.scss";
 ---
@@ -8,6 +9,7 @@ import "./_index.scss";
 <section class="currentlyBuildingWrapper">
   <h2 class="title">Building right now!</h2>
   <div class="previews">
+    <AtrijPreview />
     <JsonViewerPreview />
     <DiziplayerPreview />
   </div>
