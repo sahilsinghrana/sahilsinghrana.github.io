@@ -1,8 +1,11 @@
 .atrijPreviewWrapper {
-  .atrijTitle {
-    height: 12px;
-    margin-top: 7%;
-    font-size: 1.3rem;
+  .atrijTitle h2 {
+    height: 23px;
+    font-weight: bolder;
+    margin-top: 3%;
+    font-size: 1.8rem !important;
+    text-align: center;
+    text-shadow: 3px -4px 4px #b51e1e;
     .small {
       font-size: 0.8rem;
     }
