@@ -2,7 +2,6 @@ $codeGreen: rgba(0, 189, 0, 0.8);
 $borderRadius: 10px;
 .currentMoonInfo {
   font-size: 0.75rem;
-
   position: relative;
   outline: 1px solid rgba(255, 255, 255, 0.4);
   margin: 1.2rem 0;
@@ -16,6 +15,9 @@ $borderRadius: 10px;
     rgba(255, 255, 255, 0.02)
   );
   border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top-color: green;
+  border-top-width: 2.5px;
+
   backdrop-filter: blur(10px);
 
   overflow: hidden;
@@ -27,6 +29,8 @@ $borderRadius: 10px;
 
   &:hover {
     border-color: rgba(255, 165, 0, 0.3);
+    border-top-color: rgb(0, 76, 0);
+    border-top-width: 2.5px;
     box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.3);
   }
 

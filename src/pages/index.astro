@@ -8,6 +8,7 @@ import Spotify from "@components/Spotify/index.astro";
 import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
 import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
+import TulipFrame from "@components/TulipFrame/index.astro";
 
 import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
@@ -63,6 +64,7 @@ import shivaBG from "../assets/images/shiva.png";
   className="homePage"
 >
   <About />
+  <TulipFrame />
   <CurrentMoonInfo />
   <div class="saggittariusLink" style="position: relative;">
     <p>Interested in Sagittarius ?</p>

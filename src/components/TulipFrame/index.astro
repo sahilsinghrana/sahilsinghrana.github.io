@@ -1,0 +1,28 @@
+---
+import Tulips from "@assets/images/tulipsongrass.webp";
+// import Tulips from "@assets/images/tulips_cartoonsh_upscaled.webp";
+
+import { Image } from "astro:assets";
+---
+
+<div class="tulipContainer" id="tulipContainer">
+  <Image class="tulips" src={Tulips} alt={"Tulips"} />
+</div>
+
+<style>
+  .tulipContainer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    position: relative;
+    height: 160px;
+  }
+
+  .tulips {
+    position: absolute;
+    width: auto;
+    z-index: -1;
+    bottom: -45px;
+    height: 205px;
+  }
+</style>
