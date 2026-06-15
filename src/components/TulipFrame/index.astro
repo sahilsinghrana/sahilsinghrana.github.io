@@ -1,12 +1,15 @@
 ---
-import Tulips from "@assets/images/tulipsongrass.webp";
+// import Tulips from "@assets/images/tulipsongrass.webp";
+import Tulips from "@assets/images/tulips_animated_compressed_trimmed.gif";
+import MossPole from "@assets/images/moss_pole.webp";
 // import Tulips from "@assets/images/tulips_cartoonsh_upscaled.webp";
 
 import { Image } from "astro:assets";
 ---
 
 <div class="tulipContainer" id="tulipContainer">
-  <Image class="tulips" src={Tulips} alt={"Tulips"} />
+  <Image class="tulips" height={200} src={Tulips} alt={"Tulips"} />
+  <Image class="mossPole" height={200} src={MossPole} alt={"MossPole"} />
 </div>
 
 <style>
@@ -15,15 +18,24 @@ import { Image } from "astro:assets";
     justify-content: center;
     width: 100%;
     position: relative;
-    height: 160px;
+    height: 180px;
   }
 
   .tulips {
     position: absolute;
     width: auto;
-    z-index: -1;
-    bottom: -45px;
+    mix-blend-mode: lighten;
+    z-index: -2;
+    bottom: -25px;
     height: 200px;
-    filter: brightness(0.9);
+  }
+
+  .mossPole {
+    position: absolute;
+    width: auto;
+    z-index: -1;
+    left: 40px;
+    bottom: -25px;
+    height: 200px;
   }
 </style>
