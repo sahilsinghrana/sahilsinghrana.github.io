@@ -8,15 +8,16 @@ import { Image } from "astro:assets";
 ---
 
 <div class="tulipContainer" id="tulipContainer">
-  <Image class="tulips" height={200} src={Tulips} alt={"Tulips"} />
+  <img class="tulips" height={200} src={Tulips.src} alt={"Tulips"} />
   <Image class="mossPole" height={200} src={MossPole} alt={"MossPole"} />
 </div>
 
 <style>
   .tulipContainer {
     display: flex;
+    margin: 0 auto;
     justify-content: center;
-    width: 100%;
+    width: 356px;
     position: relative;
     height: 180px;
   }
@@ -34,8 +35,8 @@ import { Image } from "astro:assets";
     position: absolute;
     width: auto;
     z-index: -1;
-    left: 40px;
+    left: -75px;
     bottom: -25px;
-    height: 200px;
+    height: 180px;
   }
 </style>
