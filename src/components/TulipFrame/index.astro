@@ -9,7 +9,14 @@ import { Image } from "astro:assets";
 
 <div class="tulipContainer" id="tulipContainer">
   <img class="tulips" height={200} src={Tulips.src} alt={"Tulips"} />
-  <Image class="mossPole" height={200} src={MossPole} alt={"MossPole"} />
+  <div class="glow-card"></div>
+  <Image
+    class="mossPole"
+    height={160}
+    width={115}
+    src={MossPole}
+    alt={"MossPole"}
+  />
 </div>
 
 <style>
@@ -28,15 +35,16 @@ import { Image } from "astro:assets";
     mix-blend-mode: lighten;
     z-index: -2;
     bottom: -25px;
-    height: 200px;
+    height: 170px;
+    transform: translateX(15px);
   }
 
   .mossPole {
     position: absolute;
     width: auto;
     z-index: -1;
-    left: -75px;
-    bottom: -25px;
-    height: 180px;
+    left: -32px;
+    bottom: -23px;
+    height: 156px;
   }
 </style>
