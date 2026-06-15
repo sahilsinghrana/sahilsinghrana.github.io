@@ -31,7 +31,7 @@ export const atrijMeta = {
   title: "Atrij",
   image: atrij,
   content:
-    "A static site continuously self developed by an autonomous AI Agent. Hosted and deployed on a Mobile device.",
+    "An Astro.js static site by an autonomous AI agent which countinously monitors, generates ideas, reviews them, creates Red Green TDD implementation plan, develops and deploys.",
   links: [
     {
       Icon: Github,
