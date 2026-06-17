@@ -16,7 +16,7 @@
   transform-origin: bottom center;
   /* z-index: -99; */
 
-  animation: bloom-and-fade 6.5s ease-in-out forwards;
+  animation: bloom-and-fade 6.8s ease-in-out forwards;
 }
 
 @keyframes bloom-and-fade {

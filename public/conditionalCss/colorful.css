@@ -7,11 +7,12 @@ body.colorful {
   --gold: #ffd700;
   color: var(--white);
 }
+
 body.colorful .myMoon {
-  filter: hue-rotate(298deg) brightness(0.2) saturate(200%);
-  -webkit-filter: brightness(0.2);
-  -moz-filter: brightness(0.2);
-  -ms-filter: brightness(0.2);
+  filter: hue-rotate(288deg) brightness(0.4) saturate(200%);
+  -webkit-filter: hue-rotate(288deg) brightness(0.4) saturate(200%);
+  -moz-filter: hue-rotate(288deg) brightness(0.4) saturate(200%);
+  -ms-filter: hue-rotate(288deg) brightness(0.4) saturate(200%);
   offset-path: ellipse(62vw 26vh at center);
   animation-duration: 30s;
   will-change: offset-distance;
@@ -42,11 +43,8 @@ body.colorful #profilePicContainer > picture > img {
     0 0 50px var(--white),
     0 0 calc(50px * 0.5) var(--coral),
     0 0 calc(50px * 1.35) var(--br-rose);
-  animation: none;
 }
-body.colorful #profilePicContainer > picture > img:hover {
-  animation: none;
-}
+
 @keyframes glowTwinkleAnimation {
   0% {
     transform: scale(1, 1);
