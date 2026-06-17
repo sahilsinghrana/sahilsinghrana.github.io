@@ -1,0 +1,19 @@
+#fireworks-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -996;
+  overflow: hidden;
+
+  will-change: opacity;
+  transform: translate3d(
+    0,
+    0,
+    0
+  ); /* Forces isolation into its own GPU compositing layer */
+  backface-visibility: hidden;
+  contain: strict; /* Prevents canvas updates from triggering page layout recalculations */
+}

@@ -1,0 +1,11 @@
+html {
+  filter: grayscale(100%);
+}
+
+body.gray {
+  filter: grayscale(100%);
+}
+
+body.gray .myMoon {
+  display: none;
+}

@@ -172,6 +172,8 @@ function createTulip() {
   tulipContainer.appendChild(tulip);
 }
 
+createTulip();
+
 // Start generating
 setInterval(() => {
   Array.from({ length: 20 }, (_, idx) => {
