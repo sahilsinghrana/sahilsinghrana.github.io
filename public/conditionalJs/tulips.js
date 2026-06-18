@@ -174,8 +174,15 @@ function createTulip() {
 
 createTulip();
 
+let isTabVisible = true;
+document.addEventListener("visibilitychange", () => {
+  isTabVisible = !document.hidden;
+});
+
 // Start generating
 setInterval(() => {
+  if (!isTabVisible) return;
+
   Array.from({ length: 20 }, (_, idx) => {
     setTimeout(createTulip, 1700 * (idx + 1));
   });

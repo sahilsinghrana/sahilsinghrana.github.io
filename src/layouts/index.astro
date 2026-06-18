@@ -50,15 +50,15 @@ import "@styles/global.scss";
 
 <script>
   import dateBasedClassInjector, {
+    dateBasedJsAndCssInjector,
     dateBasedJsInjector,
   } from "src/scripts/dateBasedClassInjector";
   import { initStarAnimation } from "src/scripts/starAnimation";
 
-  // dateBasedClassInjector(17, 6, "tulips");
-  // dateBasedClassInjector(17, 6, "colorful");
-  // dateBasedClassInjector(17, 6, "fireworks");
-  // dateBasedJsInjector(17, 6, "tulips");
-  // dateBasedJsInjector(17, 6, "fireworks");
+  // dateBasedJsInjector(18, 6, "bdAlert");
+  // dateBasedClassInjector(18, 6, "colorful");
+  // dateBasedJsAndCssInjector(18, 6, "tulips");
+  // dateBasedJsAndCssInjector(18, 6, "fireworks");
 
   dateBasedClassInjector(16, 1, "tulips");
   dateBasedJsInjector(16, 1, "tulips");
@@ -77,11 +77,10 @@ import "@styles/global.scss";
 
   dateBasedClassInjector(25, 1, "gray");
 
+  dateBasedJsInjector(28, 11, "bdAlert");
   dateBasedClassInjector(28, 11, "colorful");
-  dateBasedClassInjector(28, 11, "tulips");
-  dateBasedClassInjector(28, 11, "fireworks");
-  dateBasedJsInjector(28, 11, "tulips");
-  dateBasedJsInjector(28, 11, "fireworks");
+  dateBasedJsAndCssInjector(28, 11, "tulips");
+  dateBasedJsAndCssInjector(28, 11, "fireworks");
 
   initStarAnimation();
 </script>

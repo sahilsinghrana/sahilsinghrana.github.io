@@ -206,7 +206,13 @@ setTimeout(createFirework, 3800);
 //   createFirework();
 // }, SPAWN_INTERVAL_MS);
 
+let isTabVisible = true;
+document.addEventListener("visibilitychange", () => {
+  isTabVisible = !document.hidden;
+});
+
 setInterval(() => {
+  if (!isTabVisible) return;
   Array.from({ length: 5 }, (_, idx) => {
     setTimeout(
       createFirework,

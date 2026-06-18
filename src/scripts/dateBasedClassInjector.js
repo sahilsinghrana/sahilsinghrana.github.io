@@ -1,3 +1,10 @@
+function injectClass(fileName) {
+  const link = document.createElement("link");
+  link.rel = "stylesheet";
+  link.href = `/conditionalCss/${fileName}.css`;
+  document.head.appendChild(link);
+}
+
 export default function dateBasedClassInjector(
   day = 28,
   month = 11,
@@ -15,10 +22,7 @@ export default function dateBasedClassInjector(
 
     if (isTargetDate && !body.classList.contains(className)) {
       body.classList.add(className);
-      const link = document.createElement("link");
-      link.rel = "stylesheet";
-      link.href = `/conditionalCss/${className}.css`;
-      document.head.appendChild(link);
+      injectClass(className);
     }
 
     return isTargetDate;
@@ -68,4 +72,9 @@ export async function dateBasedJsInjector(
     console.error("JS Injector Error:", err);
     return false;
   }
+}
+
+export async function dateBasedJsAndCssInjector(day, month, entityName) {
+  dateBasedClassInjector(day, month, entityName);
+  dateBasedJsInjector(day, month, entityName);
 }
