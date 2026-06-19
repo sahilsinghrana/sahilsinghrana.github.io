@@ -75,10 +75,13 @@ const mainMessage = `You might not be aware,
 
 const extendedMsg = `
 "Eyes like midnight ocean,
-Shining hairs, a natural delight.
+Shining hairs; a natural delight.
 
-Bluntness so sharp, 
+Bluntness so sharp,
 cuts through, all the noise;
+
+Infinite curiosity;
+hey! relentless kitten,
 honest you too are not,
 beneath the facade,
 there's a version, hidden.
@@ -92,9 +95,11 @@ there's a pleasing calm.
 
 It's your day,
 It's your night,
-Celebrate with full of heart,
-For whatever it is,
-I'll still blame the stars;
+Celebrate with full of heart.
+
+
+Don't Stop, You've worked so hard, Victory is your rightful crown, you belong among the elites.
+Fools; ahh that's me, For whatever it is will only blame the stars;
 `;
 
 function createBdAlert() {

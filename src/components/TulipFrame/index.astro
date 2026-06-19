@@ -8,15 +8,14 @@ import { Image } from "astro:assets";
 ---
 
 <div class="tulipContainer" id="tulipContainer">
-  <img class="tulips" height={200} src={Tulips.src} alt={"Tulips"} />
-  <div class="glow-card"></div>
-  <Image
-    class="mossPole"
-    height={160}
-    width={115}
-    src={MossPole}
-    alt={"MossPole"}
+  <img
+    class="tulips"
+    decoding="sync"
+    height={200}
+    src={Tulips.src}
+    alt={"Tulips"}
   />
+  <Image class="mossPole" height={220} src={MossPole} alt={"MossPole"} />
 </div>
 
 <style>
