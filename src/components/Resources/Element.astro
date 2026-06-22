@@ -1,0 +1,27 @@
+---
+import { Image } from "astro:assets";
+
+const { img, title, description } = Astro.props;
+---
+
+<div class="designElementWrapper">
+  <button
+    class="designElementBtn"
+    command="show-modal"
+    commandfor={title + "-dialog"}
+  >
+    <Image
+      src={img}
+      alt={`The ` + title}
+      class={"designElementImg " + title}
+      height={170}
+      width={170}
+    />
+  </button>
+  <dialog class="designElementDialogWrapper" id={title + "-dialog"}>
+    <p class="designElementInfo">
+      {description}
+    </p>
+    <button commandfor={title + "-dialog"} command="close">Close</button>
+  </dialog>
+</div>

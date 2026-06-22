@@ -1,0 +1,34 @@
+.resourceDesignElementsWrapper {
+  .designElementsList {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .designElementBtn {
+    padding: 0;
+    line-height: 0;
+    cursor: pointer;
+  }
+
+  .designElementImg {
+    height: 120px;
+    width: 120px;
+    &.Cat {
+      width: 120px;
+      object-fit: cover;
+      object-position: right center;
+    }
+  }
+
+  .designElementDialogWrapper {
+    & button {
+      cursor: pointer;
+      background-color: red;
+    }
+  }
+
+  .designElementInfo {
+  }
+}

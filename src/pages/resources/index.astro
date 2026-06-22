@@ -9,6 +9,7 @@ import moonFacts from "@utils/moonFacts";
 
 import "./_index.scss";
 import RefLink from "@components/Links/RefLink.astro";
+import ElementsInfo from "@components/Resources/ElementsInfo.astro";
 ---
 
 <Layout
@@ -17,6 +18,9 @@ import RefLink from "@components/Links/RefLink.astro";
   keywords={resourcesPageKeywords}
 >
   <SectionHeaderImage title="Resources" Image={placeholderImage} />
+
+  <ElementsInfo />
+
   <div class="resourcesMoonFactsWrapper">
     <h2>Amazing facts about the moon</h2>
     <ul class="list">

@@ -1,0 +1,18 @@
+---
+import Element from "./Element.astro";
+
+import { ELEMENTS } from "./elementInfos";
+
+import "./ElementsInfo.scss";
+---
+
+<div class="resourceDesignElementsWrapper">
+  <h2>Design elements</h2>
+  <ul class="designElementsList">
+    {
+      ELEMENTS.map((el) => (
+        <Element img={el.img} title={el.title} description={el.description} />
+      ))
+    }
+  </ul>
+</div>
