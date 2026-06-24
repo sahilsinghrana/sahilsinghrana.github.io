@@ -11,7 +11,13 @@ import "./ElementsInfo.scss";
   <ul class="designElementsList">
     {
       ELEMENTS.map((el) => (
-        <Element img={el.img} title={el.title} description={el.description} />
+        <Element
+          img={el.img}
+          shortDesc={el.shortDesc}
+          title={el.title}
+          dName={el.name}
+          description={el.description}
+        />
       ))
     }
   </ul>

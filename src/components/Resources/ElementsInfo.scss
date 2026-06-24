@@ -1,34 +1,194 @@
 .resourceDesignElementsWrapper {
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.6rem;
+    margin-top: 2rem;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    font-weight: lighter;
+  }
+}
+
+.resourceDesignElementsWrapper {
   .designElementsList {
     display: flex;
-    gap: 10px;
+    gap: 20px; /* Increased for a cleaner, modern layout layout spacing */
     justify-content: center;
     flex-wrap: wrap;
+    width: 100%;
+    padding: 20px 0;
+  }
+
+  .designElementWrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 260px;
+    perspective: 1000px; /* Prepares wrapper context for subtle 3D hover depth */
+  }
+
+  .designElementTitle {
+    font-weight: 600;
+    font-size: 1.2rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #e2e8f0;
+    margin-bottom: 0.75rem;
+    text-align: center;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
   }
 
   .designElementBtn {
-    padding: 0;
-    line-height: 0;
+    width: 100%;
+    padding: 1.5rem 1.25rem;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+
+    /* Elegant translucent surface styling */
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.07) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    color: #f8fafc;
+    outline: none;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+
+    /* Smooth transitions across layout properties */
+    transition:
+      transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+      background 0.3s ease,
+      border-color 0.3s ease,
+      box-shadow 0.3s ease;
+
+    &:hover {
+      background: linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.06) 0%,
+        rgba(255, 255, 255, 0.12) 100%
+      );
+      border-color: rgba(255, 255, 255, 0.2);
+      transform: translateY(-6px);
+      box-shadow:
+        0 12px 40px rgba(0, 0, 0, 0.6),
+        0 0 15px rgba(255, 255, 255, 0.03);
+
+      .designElementImg {
+        transform: scale(1.08);
+        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+      }
+    }
+
+    &:active {
+      transform: translateY(-2px);
+    }
   }
 
   .designElementImg {
-    height: 120px;
-    width: 120px;
+    height: 125px;
+    width: 125px;
+    object-fit: contain;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    transition:
+      transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+      filter 0.4s ease;
+
     &.Cat {
-      width: 120px;
-      object-fit: cover;
-      object-position: right center;
+      background-position: right center;
     }
   }
 
+  .designElementShortDesc {
+    width: 100%;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    color: #94a3b8;
+    font-weight: 400;
+  }
+
+  /* Fancy Glassmorphic Dark-Mode Dialog Structure */
   .designElementDialogWrapper {
-    & button {
-      cursor: pointer;
-      background-color: red;
+    box-sizing: border-box;
+    padding: 0;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 28px;
+    background: radial-gradient(
+      circle at top left,
+      #111827f2 0%,
+      #030712f9 100%
+    );
+    box-shadow:
+      0 30px 70px rgba(0, 0, 0, 0.8),
+      inset 0 1px 1px rgba(255, 255, 255, 0.05);
+    max-width: 440px;
+    width: 85%;
+    max-height: 75vh;
+    overflow-y: scroll;
+    /* 1. REMOVE the bare display: flex from here so the browser can hide it natively */
+    display: none;
+
+    &::backdrop {
+      background: rgba(2, 6, 23, 0.15);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
     }
+
+    /* 2. ADD this rule below to apply your layout rules ONLY when the modal is active */
+    &[open] {
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      animation: dialogLuxuryEntrance 0.4s cubic-bezier(0.16, 1, 0.3, 1)
+        forwards;
+    }
+
+    button {
+      font-size: 1.1rem;
+      padding: 0 4px;
+      cursor: pointer;
+    }
+  }
+
+  .designElementDialogTitle {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+    color: white;
   }
 
   .designElementInfo {
+    font-family:
+      "Caveat", "Dancing Script", "Pacifico", "Georgia", cursive; /* Prioritizes readable, premium webcursive choices */
+    font-size: 1.2rem; /* Cursive scripts scale small, scaled up for legibility context */
+    line-height: 1.7;
+    letter-spacing: 0.5px;
+    white-space: pre-line;
+    color: #f1f5f9;
+    text-align: center;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    padding: 0 10px;
+  }
+}
+
+/* Modal scale-up entrance animation logic */
+@keyframes dialogFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }

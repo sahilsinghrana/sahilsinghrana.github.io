@@ -1,27 +1,32 @@
 ---
 import { Image } from "astro:assets";
 
-const { img, title, description } = Astro.props;
+const { dName, img, title, description, shortDesc } = Astro.props;
 ---
 
 <div class="designElementWrapper">
+  <p class="designElementTitle">{title}</p>
   <button
     class="designElementBtn"
     command="show-modal"
-    commandfor={title + "-dialog"}
+    commandfor={dName + "-dialog"}
   >
     <Image
       src={img}
-      alt={`The ` + title}
-      class={"designElementImg " + title}
+      alt={`The ` + dName}
+      class={"designElementImg " + dName}
       height={170}
       width={170}
     />
+    <p class="designElementShortDesc">{shortDesc}</p>
   </button>
-  <dialog class="designElementDialogWrapper" id={title + "-dialog"}>
+  <dialog class="designElementDialogWrapper" id={dName + "-dialog"}>
+    <p class="designElementDialogTitle">
+      {title}
+    </p>
     <p class="designElementInfo">
       {description}
     </p>
-    <button commandfor={title + "-dialog"} command="close">Close</button>
+    <button commandfor={dName + "-dialog"} command="close">Close</button>
   </dialog>
 </div>
