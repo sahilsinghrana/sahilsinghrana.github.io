@@ -1,0 +1,81 @@
+<div id="chessWidgetWrapper">
+  <div id="chessProfile">
+    <div>
+      <img id="chessProfileImg" />
+      <p id="chessUserName">sahilsinghrana</p>
+    </div>
+    <ul id="chessRatingsWrapper">
+      <li>
+        <span id="chessGameType">Blitz</span>
+        <span id="chessGameTypeRating"></span>
+      </li>
+      <li>
+        <span id="chessGameType">Rapid</span>
+        <span id="chessGameTypeRating"></span>
+      </li>
+      <li>
+        <span id="chessGameType">Bullet</span>
+        <span id="chessGameTypeRating"></span>
+      </li>
+    </ul>
+  </div>
+
+  <div id="chessLastGamesWrapper">
+    <!-- <div>
+      <p>Opponennt userId</p>
+      <p>Opponennt userId</p>
+    </div> -->
+  </div>
+</div>
+
+<script>
+  import { getLastFiveGames, CHESS_USERNAME } from "scripts/chessdotcom";
+
+  function createGameElement(game) {
+    const userColor =
+      game.black.username === CHESS_USERNAME
+        ? "black"
+        : game.white.username === CHESS_USERNAME
+          ? "white"
+          : null;
+
+    console.log({ game, userColor });
+    if (!userColor) return null;
+
+    const userGame = game[userColor];
+    const opponentGame = game[userColor === "white" ? "black" : "white"];
+
+    const userResult = userGame.result;
+    const timeClass = game.time_class;
+    const logos = { rapid: "⌚", blitz: "⚡", bullet: "🌷" };
+    const gameLogo = logos[timeClass];
+
+    const gameWrapperEl = document.createElement("div");
+    gameWrapperEl.classList.add("chessGameItemWrapper");
+
+    const opponentWrapper = document.createElement("div");
+    opponentWrapper.classList.add("chessGameItemOpponent");
+    opponentWrapper.textContent = `${gameLogo} ${opponentGame.username} (${opponentGame.rating})`;
+
+    const resultEl = document.createElement("div");
+    resultEl.classList.add("chessGameResult");
+    resultEl.classList.add(userResult);
+    resultEl.textContent = userResult === "win" ? "W" : "L";
+
+    gameWrapperEl.append(opponentWrapper);
+    gameWrapperEl.append(resultEl);
+
+    return gameWrapperEl;
+  }
+
+  getLastFiveGames().then((games) => {
+    if (!games) return;
+
+    const gamesWrapper = document.getElementById("chessLastGamesWrapper");
+
+    games.forEach((game) => {
+      const el = createGameElement(game);
+      if (el) gamesWrapper?.append(el);
+    });
+  });
+</script>

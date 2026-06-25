@@ -9,6 +9,7 @@ import CurrentMoonInfo from "@components/MoonInfo/CurrentMoonInfo.astro";
 import CurrentlyBuilding from "@components/CurrentlyBuilding/index.astro";
 import FeaturedBlogs from "@components/General/Blog/FeaturedList/index.astro";
 import TulipFrame from "@components/TulipFrame/index.astro";
+import ChessWidget from "@components/ChessWidget/index.astro";
 
 import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
@@ -71,6 +72,8 @@ import shivaBG from "../assets/images/shiva.png";
     </a>
   </div>
   <CurrentlyBuilding />
+
+  <ChessWidget />
 
   <div id="shlokaWrapper" style="position: relative;">
     <blockquote id="shlokaDevanagari"></blockquote>
