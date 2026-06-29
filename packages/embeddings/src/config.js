@@ -11,7 +11,7 @@ const DEFAULT_MAX_EMBEDDING_CHARS = 32000;
 // Default chunker configurations
 const DEFAULT_HTML_CHUNKER_CONFIG = {
   chunkSize: 1024,
-  chunkOverlap: 102,
+  chunkOverlap: 302,
   separators: [
     "\n\n",
     "\n",
@@ -31,7 +31,7 @@ const DEFAULT_HTML_CHUNKER_CONFIG = {
 
 const DEFAULT_BLOG_CHUNKER_CONFIG = {
   chunkSize: 1024,
-  chunkOverlap: 154,
+  chunkOverlap: 354,
   separators: [
     "\n\n",
     "\n",
@@ -51,7 +51,7 @@ const DEFAULT_BLOG_CHUNKER_CONFIG = {
 // Homepage-specific chunker config
 const DEFAULT_HOMEPAGE_CHUNKER_CONFIG = {
   chunkSize: 800,
-  chunkOverlap: 80,
+  chunkOverlap: 180,
   separators: [
     "\n\n",
     "\n",
