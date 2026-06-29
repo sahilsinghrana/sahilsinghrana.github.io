@@ -1,35 +1,117 @@
+---
+import { Image } from "astro:assets";
+
+import "./index.scss";
+
+import chessLogo from "./chesslogo.png";
+---
+
 <div id="chessWidgetWrapper">
+  <Image
+    src={chessLogo}
+    alt="chess.com logo"
+    width="100"
+    class="chesscomLogo"
+  />
+
   <div id="chessProfile">
+    <img id="chessProfileImg" height="60" width="60" alt="Profile Picture" />
     <div>
-      <img id="chessProfileImg" />
-      <p id="chessUserName">sahilsinghrana</p>
+      <a id="chessProfileLink" target="_blank" rel="noopener noreferrer">
+        <p id="chessUserName">sahilsinghrana</p>
+      </a>
+      <div id="chessRatingsWrapper">
+        <div>
+          <span class="chessGameType">⚡Blitz</span>
+          <span class="chessGameTypeRating" id="chessGameTypeRatingBlitz"
+          ></span>
+        </div>
+        <div>
+          <span class="chessGameType">⌚Rapid</span>
+          <span class="chessGameTypeRating" id="chessGameTypeRatingRapid"
+          ></span>
+        </div>
+        <div>
+          <span class="chessGameType">🌷Bullet</span>
+          <span class="chessGameTypeRating" id="chessGameTypeRatingBullet"
+          ></span>
+        </div>
+      </div>
     </div>
-    <ul id="chessRatingsWrapper">
-      <li>
-        <span id="chessGameType">Blitz</span>
-        <span id="chessGameTypeRating"></span>
-      </li>
-      <li>
-        <span id="chessGameType">Rapid</span>
-        <span id="chessGameTypeRating"></span>
-      </li>
-      <li>
-        <span id="chessGameType">Bullet</span>
-        <span id="chessGameTypeRating"></span>
-      </li>
-    </ul>
   </div>
 
   <div id="chessLastGamesWrapper">
-    <!-- <div>
-      <p>Opponennt userId</p>
-      <p>Opponennt userId</p>
-    </div> -->
+    <button
+      id="chessGamesToggleHeader"
+      aria-expanded="true"
+      aria-controls="chessGamesContent"
+    >
+      <span>Last 5 games</span>
+      <svg
+        class="chessToggleArrow"
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.5"
+      >
+        <polyline points="6 9 12 15 18 9"></polyline>
+      </svg>
+    </button>
+
+    <div id="chessGamesContent" class="collapsed"></div>
   </div>
 </div>
 
 <script>
-  import { getLastFiveGames, CHESS_USERNAME } from "scripts/chessdotcom";
+  import { getPlayerProfile } from "scripts/chessdotcom";
+  import {
+    getLastFiveGames,
+    CHESS_USERNAME,
+    getPlayerStats,
+  } from "scripts/chessdotcom";
+
+  const profileLinkEl = document.getElementById("chessProfileLink");
+  if (profileLinkEl) {
+    profileLinkEl.href = `https://www.chess.com/member/${CHESS_USERNAME}`;
+  }
+
+  getPlayerProfile().then((res) => {
+    if (!res?.avatar) return;
+    const profilePicEl = document.getElementById("chessProfileImg");
+    if (profilePicEl) profilePicEl.src = res.avatar;
+  });
+
+  function getCurrentRating(ratingObj = {}) {
+    return {
+      rating: ratingObj?.last?.rating,
+      date: ratingObj?.last?.date,
+    };
+  }
+
+  async function updateUserRatings() {
+    const res = (await getPlayerStats()) || {};
+    const { chess_blitz, chess_bullet, chess_rapid } = res;
+
+    const blitzRating = getCurrentRating(chess_blitz);
+    const bulletRating = getCurrentRating(chess_bullet);
+    const rapidRating = getCurrentRating(chess_rapid);
+
+    const blitzRatingEl = document.getElementById("chessGameTypeRatingBlitz");
+    if (blitzRating?.rating && blitzRatingEl)
+      blitzRatingEl.textContent = blitzRating.rating;
+
+    const bulletRatingEl = document.getElementById("chessGameTypeRatingBullet");
+    if (bulletRating?.rating && bulletRatingEl)
+      bulletRatingEl.textContent = bulletRating.rating;
+
+    const rapidRatingEl = document.getElementById("chessGameTypeRatingRapid");
+    if (rapidRating?.rating && rapidRatingEl)
+      rapidRatingEl.textContent = rapidRating.rating;
+  }
+
+  updateUserRatings();
 
   function createGameElement(game) {
     const userColor =
@@ -39,7 +121,6 @@
           ? "white"
           : null;
 
-    console.log({ game, userColor });
     if (!userColor) return null;
 
     const userGame = game[userColor];
@@ -50,17 +131,39 @@
     const logos = { rapid: "⌚", blitz: "⚡", bullet: "🌷" };
     const gameLogo = logos[timeClass];
 
-    const gameWrapperEl = document.createElement("div");
+    const gameWrapperEl = document.createElement("a");
     gameWrapperEl.classList.add("chessGameItemWrapper");
+    gameWrapperEl.href = game.url;
+    gameWrapperEl.target = "_blank";
+    gameWrapperEl.rel = "noopener noreferrer";
 
     const opponentWrapper = document.createElement("div");
     opponentWrapper.classList.add("chessGameItemOpponent");
     opponentWrapper.textContent = `${gameLogo} ${opponentGame.username} (${opponentGame.rating})`;
 
+    const drawOutcomes = [
+      "agreed",
+      "repetition",
+      "stalemate",
+      "insufficient",
+      "timevsinsufficient",
+      "draw",
+    ];
+
+    let resultText = "L";
+    let resultClass = "lose";
+
+    if (userResult === "win") {
+      resultText = "W";
+      resultClass = "win";
+    } else if (drawOutcomes.includes(userResult)) {
+      resultText = "D";
+      resultClass = "draw";
+    }
+
     const resultEl = document.createElement("div");
-    resultEl.classList.add("chessGameResult");
-    resultEl.classList.add(userResult);
-    resultEl.textContent = userResult === "win" ? "W" : "L";
+    resultEl.classList.add("chessGameResult", resultClass);
+    resultEl.textContent = resultText;
 
     gameWrapperEl.append(opponentWrapper);
     gameWrapperEl.append(resultEl);
@@ -71,11 +174,29 @@
   getLastFiveGames().then((games) => {
     if (!games) return;
 
-    const gamesWrapper = document.getElementById("chessLastGamesWrapper");
+    const gamesContent = document.getElementById("chessGamesContent");
 
     games.forEach((game) => {
       const el = createGameElement(game);
-      if (el) gamesWrapper?.append(el);
+      if (el && gamesContent) gamesContent.append(el);
     });
   });
+
+  const toggleHeader = document.getElementById("chessGamesToggleHeader");
+  const gamesContent = document.getElementById("chessGamesContent");
+
+  if (toggleHeader && gamesContent) {
+    toggleHeader.addEventListener("click", () => {
+      const isExpanded = gamesContent.classList.contains("expanded");
+      if (isExpanded) {
+        gamesContent.classList.remove("expanded");
+        gamesContent.classList.add("collapsed");
+        toggleHeader.setAttribute("aria-expanded", "false");
+      } else {
+        gamesContent.classList.remove("collapsed");
+        gamesContent.classList.add("expanded");
+        toggleHeader.setAttribute("aria-expanded", "true");
+      }
+    });
+  }
 </script>

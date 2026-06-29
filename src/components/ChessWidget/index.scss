@@ -1,0 +1,189 @@
+#chessWidgetWrapper {
+  position: relative;
+  background-color: #262522;
+  color: #bababa;
+  border: 1px solid #312e2b;
+  border-radius: 8px;
+  padding: 14px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-sizing: border-box;
+
+  .chesscomLogo {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    color: #81b64c;
+    opacity: 0.85;
+  }
+
+  #chessProfile {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #312e2b;
+    padding-right: 32px;
+
+    #chessProfileImg {
+      border-radius: 6px;
+      object-fit: cover;
+      background-color: #312e2b;
+    }
+
+    #chessProfileLink {
+      text-decoration: none;
+      display: inline-block;
+
+      &:hover {
+        #chessUserName {
+          color: #81b64c;
+          text-decoration: underline;
+        }
+      }
+    }
+
+    #chessUserName {
+      color: #ffffff;
+      margin: 0 0 4px 0;
+      font-weight: 700;
+      font-size: 1.15rem;
+      letter-spacing: -0.3px;
+      transition: color 0.2s ease;
+    }
+
+    #chessRatingsWrapper {
+      display: flex;
+      gap: 12px;
+
+      & > div {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .chessGameType {
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: #81b64c;
+        margin-bottom: 1px;
+      }
+
+      .chessGameTypeRating {
+        color: #ffffff;
+        font-weight: 700;
+        font-size: 0.85rem;
+      }
+    }
+  }
+
+  #chessLastGamesWrapper {
+    display: flex;
+    flex-direction: column;
+
+    #chessGamesToggleHeader {
+      background: none;
+      border: none;
+      padding: 4px 0;
+      margin: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #737373;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      outline: none;
+
+      &:hover {
+        color: #dee3ea;
+      }
+
+      .chessToggleArrow {
+        transition: transform 0.2s ease-in-out;
+        color: #737373;
+      }
+
+      &[aria-expanded="false"] {
+        .chessToggleArrow {
+          transform: rotate(-90deg);
+        }
+      }
+    }
+
+    #chessGamesContent {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      overflow: hidden;
+      transition:
+        max-height 0.25s ease-in-out,
+        opacity 0.2s ease,
+        margin-top 0.2s ease;
+
+      &.expanded {
+        max-height: 250px;
+        margin-top: 6px;
+      }
+
+      &.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin-top: 0;
+      }
+    }
+
+    .chessGameItemWrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #312e2b;
+      padding: 6px 10px;
+      border-radius: 4px;
+      text-decoration: none;
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background-color: #3b3732;
+      }
+    }
+
+    .chessGameItemOpponent {
+      font-size: 0.82rem;
+      color: #dee3ea;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chessGameResult {
+      font-weight: 800;
+      font-size: 0.7rem;
+      padding: 1px 6px;
+      border-radius: 3px;
+      min-width: 14px;
+      text-align: center;
+      text-transform: uppercase;
+      color: #ffffff;
+
+      &.win {
+        background-color: #81b64c;
+      }
+
+      &.lose {
+        background-color: #e74c3c;
+      }
+
+      &.draw {
+        background-color: #737373;
+      }
+    }
+  }
+}

@@ -12,9 +12,9 @@ export async function getPlayerProfile() {
 
 export async function getPlayerStats() {
   try {
-    const res = await fetch(
-      ChessDotComBaseUrl + "/player/sahilsinghrana/stats",
-    ).then((res) => res.json());
+    const res = await fetch(ChessDotComBaseUrl + "/stats").then((res) =>
+      res.json(),
+    );
 
     return res;
   } catch (err) {
