@@ -1,6 +1,6 @@
 #chessWidgetWrapper {
   position: relative;
-  background-color: #262522;
+  background-color: #26252242;
   color: #bababa;
   border: 1px solid #312e2b;
   border-radius: 8px;
@@ -8,11 +8,15 @@
   width: 100%;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   box-sizing: border-box;
+  margin-top: 10px;
+  margin-bottom: 10px;
 
   .chesscomLogo {
+    width: 80px;
+    height: auto;
     position: absolute;
-    top: 5px;
-    right: 5px;
+    top: 2px;
+    right: 2px;
     color: #81b64c;
     opacity: 0.85;
   }
