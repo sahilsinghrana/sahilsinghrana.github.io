@@ -131,6 +131,8 @@ import chessLogo from "./chesslogo.png";
     const logos = { rapid: "⌚", blitz: "⚡", bullet: "🌷" };
     const gameLogo = logos[timeClass];
 
+    if (!gameLogo) return;
+
     const gameWrapperEl = document.createElement("a");
     gameWrapperEl.classList.add("chessGameItemWrapper");
     gameWrapperEl.href = game.url;

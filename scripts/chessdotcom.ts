@@ -48,5 +48,12 @@ export async function getLastFiveGames() {
 
   if (!latestGames) return;
 
-  return latestGames.slice(-5, latestGames.length).reverse();
+  return (
+    latestGames
+      .slice(-10)
+      // some games are of coach and etc
+      .filter((g) => ["blitz", "rapid", "bullet"].includes(g.time_class))
+      .slice(-5)
+      .reverse()
+  );
 }
