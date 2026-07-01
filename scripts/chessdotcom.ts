@@ -30,14 +30,18 @@ export async function getPlayerLatestMonthGameArchive() {
     if (!Array.isArray(res.archives) || !res.archives.length) return;
 
     const latestLink = res.archives.at(-1);
-
+    const latestLink2 = res.archives.at(-2);
     if (!latestLink) return;
 
     const latestGames = await fetch(latestLink).then((res) => res.json());
+    const latestGames2 = await fetch(latestLink2).then((res) => res.json());
 
-    if (!latestGames || !Array.isArray(latestGames.games)) return;
+    const combinedGames = [
+      ...(latestGames2?.games || []),
+      latestGames?.games || [],
+    ];
 
-    return latestGames?.games;
+    return combinedGames;
   } catch (err) {
     console.error(err);
   }
