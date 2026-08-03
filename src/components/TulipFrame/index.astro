@@ -5,45 +5,24 @@ import MossPole from "@assets/images/moss_pole.webp";
 // import Tulips from "@assets/images/tulips_cartoonsh_upscaled.webp";
 
 import { Image } from "astro:assets";
+
+import "./index.scss";
 ---
 
 <div class="tulipContainer" id="tulipContainer">
   <img
     class="tulips"
-    decoding="sync"
-    height={200}
+    decoding="async"
+    height={255}
+    width={300}
     src={Tulips.src}
     alt={"Tulips"}
   />
   <Image class="mossPole" height={220} src={MossPole} alt={"MossPole"} />
+
+  <div class="snow-wrapper">
+    <div class="snow-layer layer-1"></div>
+    <div class="snow-layer layer-2"></div>
+    <div class="snow-layer layer-3"></div>
+  </div>
 </div>
-
-<style>
-  .tulipContainer {
-    display: flex;
-    margin: 0 auto;
-    justify-content: center;
-    width: 356px;
-    position: relative;
-    height: 170px;
-  }
-
-  .tulips {
-    position: absolute;
-    width: auto;
-    mix-blend-mode: lighten;
-    z-index: -2;
-    bottom: -25px;
-    height: 170px;
-    transform: translateX(13px);
-  }
-
-  .mossPole {
-    position: absolute;
-    width: auto;
-    z-index: -1;
-    left: -32px;
-    bottom: -23px;
-    height: 156px;
-  }
-</style>

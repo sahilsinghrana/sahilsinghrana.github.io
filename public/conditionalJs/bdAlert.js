@@ -99,7 +99,6 @@ Celebrate with full of heart.
 
 
 Don't Stop, You've worked so hard, Victory is your rightful crown, you belong among the elites.
-Fools; ahh that's me, For whatever it is will only blame the stars;
 `;
 
 function createBdAlert() {

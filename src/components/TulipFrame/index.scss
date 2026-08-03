@@ -1,0 +1,151 @@
+@use "sass:math";
+@use "sass:map";
+@use "sass:list";
+
+$container-width: 356px;
+$container-height: 200px;
+
+@function generate-snow($count, $max-width, $max-height) {
+  $shadows: ();
+  @for $i from 1 through $count {
+    $x: math.random($max-width);
+    $y: math.random($max-height);
+    $opacity: math.div(math.random(60) + 40, 100);
+
+    $shadows: list.append(
+      $shadows,
+      #{$x}px #{$y}px 0 rgba(255, 255, 255, $opacity),
+      comma
+    );
+  }
+  @return $shadows;
+}
+
+.tulipContainer {
+  display: flex;
+  margin: 0 auto;
+  justify-content: center;
+  width: $container-width;
+  position: relative;
+  height: $container-height;
+  isolation: isolate;
+  mix-blend-mode: lighten;
+}
+
+.snow-wrapper {
+  position: absolute;
+  inset: 0;
+  width: 180%;
+  z-index: -3;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.tulips {
+  position: absolute;
+  width: auto;
+  mix-blend-mode: lighten;
+  z-index: -2;
+  bottom: -25px;
+  height: 170px;
+  transform: translate3d(13px, 0, 0);
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+.mossPole {
+  position: absolute;
+  width: auto;
+  z-index: -1;
+  left: -32px;
+  bottom: -23px;
+  height: 156px;
+}
+
+.snow-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border-radius: 50%;
+  background: transparent;
+  will-change: transform;
+
+  &::after {
+    content: "";
+    position: absolute;
+    top: -$container-height;
+    left: 0;
+    border-radius: 50%;
+    background: transparent;
+  }
+}
+
+@keyframes fall-and-sway {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(var(--sway), math.div($container-height, 2), 0);
+  }
+  100% {
+    transform: translate3d(0, $container-height, 0);
+  }
+}
+
+$layers: (
+  1: (
+    size: 3px,
+    speed: 5s,
+    count: 15,
+    sway: 10px,
+    blur: 0px,
+    zIndex: 0,
+  ),
+  2: (
+    size: 2px,
+    speed: 8s,
+    count: 28,
+    sway: -14px,
+    blur: 0px,
+    zIndex: -2,
+  ),
+  3: (
+    size: 1px,
+    speed: 12s,
+    count: 35,
+    sway: 6px,
+    blur: 0.5px,
+    zIndex: -3,
+  ),
+);
+
+@each $layer, $config in $layers {
+  $size: map.get($config, size);
+  $speed: map.get($config, speed);
+  $count: map.get($config, count);
+  $sway: map.get($config, sway);
+  $blur: map.get($config, blur);
+  $zIndex: map.get($config, zIndex);
+
+  $particles: generate-snow($count, $container-width, $container-height);
+
+  .layer-#{$layer} {
+    --sway: #{$sway};
+    width: $size;
+    height: $size;
+    box-shadow: $particles;
+    animation: fall-and-sway $speed linear infinite;
+    z-index: $zIndex;
+
+    @if $blur > 0px {
+      filter: blur($blur);
+    }
+
+    &::after {
+      width: $size;
+      height: $size;
+      box-shadow: $particles;
+    }
+  }
+}
