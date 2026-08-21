@@ -3,6 +3,7 @@
 @use "sass:list";
 
 $container-width: 356px;
+$snow-container-width: 400px;
 $container-height: 200px;
 
 @function generate-snow($count, $max-width, $max-height) {
@@ -35,7 +36,8 @@ $container-height: 200px;
 .snow-wrapper {
   position: absolute;
   inset: 0;
-  width: 180%;
+  width: 120%;
+  left: -10%;
   z-index: -3;
   overflow: hidden;
   pointer-events: none;
@@ -118,6 +120,14 @@ $layers: (
     blur: 0.5px,
     zIndex: -3,
   ),
+  4: (
+    size: 4px,
+    speed: 18s,
+    count: 10,
+    sway: 2px,
+    blur: 0.2px,
+    zIndex: 5,
+  ),
 );
 
 @each $layer, $config in $layers {
@@ -128,7 +138,7 @@ $layers: (
   $blur: map.get($config, blur);
   $zIndex: map.get($config, zIndex);
 
-  $particles: generate-snow($count, $container-width, $container-height);
+  $particles: generate-snow($count, $snow-container-width, $container-height);
 
   .layer-#{$layer} {
     --sway: #{$sway};

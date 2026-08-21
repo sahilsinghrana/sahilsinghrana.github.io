@@ -98,7 +98,7 @@ It's your night,
 Celebrate with full of heart.
 
 
-Don't Stop, You've worked so hard, Victory is your rightful crown, you belong among the elites.
+Don't Stop, You've worked so hard, Victory is your rightful crown, you belong among the best.
 `;
 
 function createBdAlert() {
