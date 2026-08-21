@@ -9,7 +9,7 @@ const { text } = Astro.props;
   const copyBtn = document.getElementById("copyBtn");
   let copyTimeout;
   copyBtn.addEventListener("click", () => {
-    const text: string = String(copyBtn.dataset.value || "");
+    const text = String(copyBtn.dataset.value || "");
     if (text) {
       copyBtn.dataset.copying = "true";
       navigator.clipboard.writeText(text);

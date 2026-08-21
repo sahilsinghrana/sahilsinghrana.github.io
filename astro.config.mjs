@@ -1,8 +1,8 @@
 // import purgecss from "astro-purgecss";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
+import { unified } from "@astrojs/markdown-remark";
 import rehypeExternalLinks from "rehype-external-links";
-// import compressor from "astro-compressor";
 import playformInline from "@playform/inline";
 
 import playformCompress from "@playform/compress";
@@ -87,21 +87,23 @@ export default defineConfig({
     // }),
   ],
   markdown: {
+    processor: unified({
+      rehypePlugins: [
+        [
+          rehypeExternalLinks,
+          {
+            content: {
+              type: "text",
+              value: " 🔗",
+            },
+          },
+        ],
+      ],
+    }),
     shikiConfig: {
       theme: "github-dark",
       langs: ["js", "ts", "html", "css", "bash"],
     },
-    rehypePlugins: [
-      [
-        rehypeExternalLinks,
-        {
-          content: {
-            type: "text",
-            value: " 🔗",
-          },
-        },
-      ],
-    ],
   },
   fonts: [
     {

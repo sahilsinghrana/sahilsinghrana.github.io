@@ -1,5 +1,4 @@
 import { getCurrentMoonData } from "@utils/currentMoonData";
-import type MoonEvent from "./moonEvents/MoonEvent";
 
 import moonPhaseFacts from "@utils/moonPhaseFacts";
 import getRandomFact from "@utils/constellation/randomFactGenerator";

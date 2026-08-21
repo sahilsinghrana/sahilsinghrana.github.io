@@ -14,7 +14,7 @@ updates:
     schedule:
       interval: "weekly"
       day: "sunday"
-    open-pull-requests-limit: 3
+    open-pull-requests-limit: 4
     groups:
       dependencies:
         applies-to: version-updates
