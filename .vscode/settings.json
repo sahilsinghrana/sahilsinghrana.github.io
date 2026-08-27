@@ -1,4 +1,5 @@
 {
+  "files.eol": "\n",
   "eslint.validate": ["javascript", "astro", "typescript"],
   "prettier.documentSelectors": ["**/*.astro"],
   "stylelint.validate": ["html", "astro"],

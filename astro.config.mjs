@@ -47,22 +47,20 @@ export default defineConfig({
   },
   vite: {
     build: {
-      rollupOptions: {
+      chunkSizeWarningLimit: 800,
+      rolldownOptions: {
         output: {
-          manualChunks(id) {
-            if (
-              id.includes("node_modules/three") &&
-              !id.includes("OrbitControls")
-            ) {
-              return "vendor-threejs";
-            }
-
-            if (
-              id.endsWith("/3dMoon/moon.js") ||
-              id.includes("OrbitControls")
-            ) {
-              return "3dmoon-core";
-            }
+          codeSplitting: {
+            groups: [
+              {
+                name: "vendor-threejs",
+                test: /[\\/]node_modules[\\/]three[\\/]/,
+              },
+              {
+                name: "3dmoon-core",
+                test: /[\\/]3dMoon[\\/]moon\.js$|[\\/]OrbitControls/,
+              },
+            ],
           },
         },
       },
