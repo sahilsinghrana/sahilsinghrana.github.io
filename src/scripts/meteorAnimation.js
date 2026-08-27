@@ -28,7 +28,7 @@ export function initMeteorAnimation() {
 
     const delay = i === 0 ? 0.4 : getRandom(0, 50).toFixed(2);
     const width = getRandom(45, 340);
-    const height = getRandom(0.18, 3.1, 0.1);
+    const height = getRandom(0.15, 3.1, 0.1);
     const duration = 20 - ((width - 45) / (340 - 45)) * (20 - 6);
 
     meteorDiv.style.setProperty("--duration", `${duration.toFixed(0)}s`);
@@ -37,7 +37,7 @@ export function initMeteorAnimation() {
     meteorDiv.style.setProperty("--delay", `${delay}s`);
     meteorDiv.style.setProperty(
       "--max-opacity",
-      String(getRandom(0.35, 0.49, 0.01)),
+      String(getRandom(0.35, 0.58, 0.01)),
     );
 
     meteorsFragment.appendChild(meteorDiv);

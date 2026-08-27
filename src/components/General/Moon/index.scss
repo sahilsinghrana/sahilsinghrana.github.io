@@ -7,8 +7,7 @@
 
   // opacity: 0.25;opacity
   filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
-  -webkit-filter: brightness(0.2)
-    drop-shadow(0 0 28px rgb(180 200 220 / 7%));
+  -webkit-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
   -moz-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
   -ms-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
   z-index: -3;
@@ -69,26 +68,19 @@
 @keyframes meteorFall {
   0% {
     opacity: 0;
-    transform: translate3d(0, 0, 0) rotate(45deg) scaleX(0.92);
+    transform: translate3d(0, 0, 10px) rotate(45deg) scaleX(0.92);
   }
 
   12% {
     opacity: var(--max-opacity, 0.45);
-    transform: translate3d(12vw, 12vh, 0) rotate(45deg) scaleX(1);
   }
 
   55% {
     opacity: var(--max-opacity, 0.38);
-    transform: translate3d(70vw, 70vh, 0) rotate(45deg) scaleX(1.03);
-  }
-
-  78% {
-    opacity: 0.15;
-    transform: translate3d(105vw, 105vh, 0) rotate(45deg) scaleX(1.04);
   }
 
   100% {
     opacity: 0;
-    transform: translate3d(135vw, 135vh, 0) rotate(45deg) scaleX(1.05);
+    transform: translate3d(150vh, 150vw, -10px) rotate(45deg) scaleX(1.05);
   }
 }
