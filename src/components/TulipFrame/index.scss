@@ -60,7 +60,7 @@ $container-height: 200px;
 .snow-wrapper {
   position: absolute;
   inset: 0;
-  width: 110%;
+  width: 105%;
   left: -5%;
   z-index: -3;
   overflow: hidden;
@@ -81,12 +81,14 @@ $container-height: 200px;
   bottom: -28px;
   height: 182px;
   image-rendering: auto;
+  filter: saturate(1.35) contrast(1.1) brightness(1.08);
+  animation: tulip-breathe 5s ease-in-out infinite;
   transform: translate3d(
     calc(13px + var(--parallax-x) * 9px),
     calc(var(--parallax-y) * 4px),
     0
   );
-  will-change: transform;
+  will-change: transform, filter;
   backface-visibility: hidden;
 }
 
@@ -106,6 +108,18 @@ $container-height: 200px;
   display: block;
   width: auto;
   height: 156px;
+  filter: brightness(0.95) saturate(1) contrast(1);
+}
+
+@keyframes tulip-breathe {
+  0%,
+  100% {
+    filter: saturate(1.3) contrast(1.08) brightness(1.05);
+  }
+
+  50% {
+    filter: saturate(1.42) contrast(1.12) brightness(1.14);
+  }
 }
 
 @keyframes moss-breeze {

@@ -32,13 +32,8 @@ const FAR_CLIP = 1000;
 const FIXED_CAMERA_DISTANCE_MOBILE = 3.95;
 const FIXED_CAMERA_DISTANCE_DESKTOP = 3.1;
 
-// Lighting
-// Colors must be in hex format (0xRRGGBB).
+// Lighting — original warm-white sun + deep-space ambient.
 const SUN_LIGHT_COLOR = 0xfff8f0; // Warm white.
-
-// SUN_LIGHT_INTENSITY
-// HIGHER: Washes out the texture details, making the moon bright white.
-// LOWER: Makes the lit side of the moon dim and muddy.
 const SUN_LIGHT_INTENSITY = 3.1;
 
 // SUN_LIGHT_POSITION (Vector3)
@@ -46,22 +41,31 @@ const SUN_LIGHT_INTENSITY = 3.1;
 const SUN_LIGHT_POSITION = { x: 5, y: 3, z: 2 };
 
 // AMBIENT_LIGHT_COLOR / INTENSITY
-// Ambient light hits all surfaces equally. It prevents the dark side of the moon from being pitch black (0x000000).
-// HIGHER: Removes shadows entirely, destroying the 3D depth illusion.
-// LOWER (near 0): The unlit side of the moon becomes pure black.
 const AMBIENT_LIGHT_COLOR = 0x1a2a4a; // Deep space blue.
 const AMBIENT_LIGHT_INTENSITY = 0.048;
 
+// Soft fill opposite the sun (kept subtle so original gray albedo dominates).
+const EARTHSHINE_COLOR = 0xa8b8d0;
+const EARTHSHINE_INTENSITY = 0.08;
+
+// Cool hemisphere fill — low so it does not recolor the moon.
+const HEMI_SKY_COLOR = 0x1a2848;
+const HEMI_GROUND_COLOR = 0x1a1c22;
+const HEMI_INTENSITY = 0.04;
+
 // Moon phase light settings
-// PHASE_LIGHT_RADIUS: Distance of the directional sunlight from the 0,0,0 origin.
-// Because it's a DirectionalLight, distance doesn't affect falloff/brightness, just the calculation angle.
 const PHASE_LIGHT_RADIUS = 5;
 
 // Animation & interaction speeds
-// AUTO_ROTATION_SPEED (Radians per frame)
-// HIGHER: Moon spins like a top.
-// LOWER: Barely noticeable drift. Negative values reverse the spin direction.
-const AUTO_ROTATION_SPEED = 0.0032;
+const AUTO_ROTATION_SPEED = 0.004;
+
+// Intro handoff: ease from slightly undersized into moonBaseScale as the loader fades.
+const INTRO_SCALE_FROM = 0.9;
+const INTRO_DURATION_MS = 700;
+
+// Idle breath — quieter scale, longer period.
+const BREATH_AMPLITUDE = 0.008;
+const BREATH_SPEED = 0.00085;
 
 // SCROLL_ROTATION_MULTIPLIER (Radians per pixel scrolled)
 // HIGHER: Scrolling causes rapid, dizzying spins.
@@ -123,7 +127,15 @@ const computeFixedHorizontalFov = () =>
   (180 / Math.PI);
 
 // Global state variables for lifecycle management
-let scene, camera, renderer, controls, sunLight, moon, observer;
+let scene,
+  camera,
+  renderer,
+  controls,
+  sunLight,
+  earthshineLight,
+  hemiLight,
+  moon,
+  observer;
 let isInitialized = false;
 let isInitializing = false;
 let disposeRequested = false;
@@ -132,6 +144,7 @@ let isVisible = false;
 let currentScrollY = 0;
 let autoRotationY = 0;
 let moonBaseScale = MOON_INITIAL_SCALE;
+let introStartTime = null;
 
 // null is used instead of 0 because 0 is a valid frame ID returned by requestAnimationFrame.
 // Checking (animationFrameId !== null) is therefore unambiguous; checking (animationFrameId)
@@ -201,7 +214,10 @@ const dismissLoader = () => {
 // has been shown to the user before the loader begins its fade.
 const onMoonReady = () => {
   if (disposeRequested) return;
-  updateMoonScale(0); // Apply initial scale once loaded.
+
+  // Seed scale undersized; animate() eases into moonBaseScale.
+  introStartTime = null;
+  applyMoonScale(INTRO_SCALE_FROM * moonBaseScale);
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
@@ -234,10 +250,13 @@ const disposeGpuResources = () => {
   renderer = null;
   controls = null;
   sunLight = null;
+  earthshineLight = null;
+  hemiLight = null;
   moon = null;
   isInitialized = false;
   isInitializing = false;
   fixedHorizontalFov = null;
+  introStartTime = null;
 };
 
 // ===================== CORE INITIALIZATION =====================
@@ -255,6 +274,7 @@ async function initThreeJS() {
         Scene,
         DirectionalLight,
         AmbientLight,
+        HemisphereLight,
         WebGLRenderer,
         ACESFilmicToneMapping,
       },
@@ -337,6 +357,20 @@ async function initThreeJS() {
     // ignored by the renderer and the light direction never changes.
     scene.add(sunLight.target);
 
+    earthshineLight = new DirectionalLight(
+      EARTHSHINE_COLOR,
+      EARTHSHINE_INTENSITY,
+    );
+    scene.add(earthshineLight);
+    scene.add(earthshineLight.target);
+
+    hemiLight = new HemisphereLight(
+      HEMI_SKY_COLOR,
+      HEMI_GROUND_COLOR,
+      HEMI_INTENSITY,
+    );
+    scene.add(hemiLight);
+
     scene.add(new AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY));
 
     const currentAgePercent = getCurrentMoonData().lunarAgePercent;
@@ -386,19 +420,29 @@ const setMoonPhase = (input) => {
     sunLight.position.y = 0;
     sunLight.target.position.set(0, 0, 0); // Forces the light to always point directly at the moon center.
   }
+
+  // Earthshine sits opposite the sun so the dark limb stays faintly lit.
+  if (earthshineLight) {
+    earthshineLight.position.x = Math.cos(angle + Math.PI) * radius;
+    earthshineLight.position.z = Math.sin(angle + Math.PI) * radius;
+    earthshineLight.position.y = 0.15;
+    earthshineLight.target.position.set(0, 0, 0);
+  }
+};
+
+const applyMoonScale = (scale) => {
+  if (moon?.mesh) {
+    moon.mesh.scale.setScalar(scale);
+  }
 };
 
 const updateMoonScale = (delta) => {
   // Math.max/min clamps the final scale strictly between the defined limits.
+  // animate() applies intro + breath from moonBaseScale each frame.
   moonBaseScale = Math.max(
     MOON_SCALE_MIN,
     Math.min(MOON_SCALE_MAX, moonBaseScale + delta),
   );
-
-  if (moon?.mesh) {
-    // setScalar applies the scale uniformly to X, Y, and Z.
-    moon.mesh.scale.setScalar(moonBaseScale);
-  }
 };
 
 // ===================== RENDER LOOP =====================
@@ -414,6 +458,22 @@ function animate() {
     moon.mesh.rotation.y =
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
+
+    // Loader handoff intro + quiet idle breath (heartbeat cadence).
+    const now = performance.now();
+    if (introStartTime == null) introStartTime = now;
+
+    let introT = (now - introStartTime) / INTRO_DURATION_MS;
+    if (introT > 1) introT = 1;
+    // Ease-out cubic so the settle feels like the orbit loader resolving into the sphere.
+    const eased = 1 - (1 - introT) ** 3;
+    const introScale =
+      INTRO_SCALE_FROM + (moonBaseScale - INTRO_SCALE_FROM) * eased;
+
+    const breathWave = Math.sin(now * BREATH_SPEED);
+    const breath = introT >= 1 ? 1 + breathWave * BREATH_AMPLITUDE : 1;
+
+    applyMoonScale(introScale * breath);
   }
 
   // Required for enableDamping to glide smoothly.
