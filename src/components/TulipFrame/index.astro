@@ -11,17 +11,204 @@ import "./index.scss";
   <img
     class="tulips"
     decoding="async"
-    loading="lazy"
-    height={169}
-    width={300}
+    loading="eager"
+    fetchpriority="high"
+    height={270}
+    width={480}
     src={Tulips.src}
     alt=""
   />
-  <Image class="mossPole" height={220} src={MossPole} alt={"MossPole"} />
+  <div class="mossPoleWrap">
+    <Image class="mossPole" height={220} src={MossPole} alt={"MossPole"} />
+  </div>
+
+  <div class="fireflies" aria-hidden="true"></div>
 
   <div class="snow-wrapper">
     <div class="snow-layer layer-1"></div>
     <div class="snow-layer layer-2"></div>
     <div class="snow-layer layer-3"></div>
+    <div class="snow-layer layer-4"></div>
   </div>
 </div>
+
+<script>
+  const container = document.getElementById("tulipContainer");
+  if (container) {
+    let pointerX = 0;
+    let pointerY = 0;
+    let scrollX = 0;
+    let currentX = 0;
+    let currentY = 0;
+    let rafId = 0;
+    let running = false;
+
+    const IDLE_EPSILON = 0.001;
+    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+
+    const updateScrollParallax = () => {
+      const rect = container.getBoundingClientRect();
+      const viewH = window.innerHeight || 1;
+      const centerY = rect.top + rect.height / 2;
+      scrollX = Math.max(
+        -1,
+        Math.min(1, (viewH / 2 - centerY) / (viewH * 0.5)),
+      );
+    };
+
+    const startLoop = () => {
+      if (running || document.hidden) return;
+      running = true;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const stopLoop = () => {
+      running = false;
+      cancelAnimationFrame(rafId);
+      rafId = 0;
+    };
+
+    const onPointerMove = (e: PointerEvent) => {
+      const rect = container.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      pointerX = Math.max(
+        -1,
+        Math.min(1, (e.clientX - cx) / (rect.width * 0.85)),
+      );
+      pointerY = Math.max(
+        -1,
+        Math.min(1, (e.clientY - cy) / (rect.height * 0.85)),
+      );
+      startLoop();
+    };
+
+    const onScrollOrResize = () => {
+      updateScrollParallax();
+      startLoop();
+    };
+
+    const tick = () => {
+      const targetX = Math.max(
+        -1,
+        Math.min(1, pointerX * 0.5 + scrollX * 0.55),
+      );
+      const targetY = pointerY;
+      currentX = lerp(currentX, targetX, 0.08);
+      currentY = lerp(currentY, targetY, 0.08);
+      container.style.setProperty("--parallax-x", currentX.toFixed(3));
+      container.style.setProperty("--parallax-y", currentY.toFixed(3));
+
+      const dx = Math.abs(targetX - currentX);
+      const dy = Math.abs(targetY - currentY);
+      if (dx < IDLE_EPSILON && dy < IDLE_EPSILON) {
+        currentX = targetX;
+        currentY = targetY;
+        container.style.setProperty("--parallax-x", currentX.toFixed(3));
+        container.style.setProperty("--parallax-y", currentY.toFixed(3));
+        stopLoop();
+        return;
+      }
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    const firefliesRoot = container.querySelector(".fireflies");
+    if (firefliesRoot) {
+      const FIREFLY_COUNT = 4;
+      // Earliest time (performance.now) another firefly is allowed to light
+      let nextLitAllowedAt = 0;
+
+      const rand = (min: number, max: number) =>
+        min + Math.random() * (max - min);
+
+      const placeFirefly = (el: HTMLElement) => {
+        el.style.setProperty("--x", `${rand(4, 94).toFixed(1)}%`);
+        el.style.setProperty("--y", `${rand(22, 88).toFixed(1)}%`);
+        el.style.setProperty("--size", `${rand(2, 5.5).toFixed(2)}px`);
+        el.style.setProperty("--dur", `${rand(1.8, 2.8).toFixed(2)}s`);
+      };
+
+      const scheduleLit = (el: HTMLElement) => {
+        const now = performance.now();
+        // Personal gap + never light too close to any other fly
+        const personalGap = rand(3200, 7000);
+        const minBetweenAny = rand(1400, 2800);
+        const earliestShared = nextLitAllowedAt + minBetweenAny;
+        const at = Math.max(now + personalGap, earliestShared);
+        nextLitAllowedAt = at;
+
+        window.setTimeout(
+          () => {
+            placeFirefly(el);
+            el.classList.add("is-lit");
+          },
+          Math.max(0, at - performance.now()),
+        );
+      };
+
+      const cycleFirefly = (el: HTMLElement) => {
+        el.classList.remove("is-lit");
+        void el.offsetWidth;
+        scheduleLit(el);
+      };
+
+      // First lights: spaced on a shared timeline so they never open in a burst
+      let firstSlot = performance.now() + rand(500, 1400);
+      for (let i = 0; i < FIREFLY_COUNT; i++) {
+        const el = document.createElement("span");
+        el.className = "firefly";
+        placeFirefly(el);
+        el.addEventListener("animationend", () => cycleFirefly(el));
+        firefliesRoot.appendChild(el);
+
+        const startAt = firstSlot;
+        firstSlot += rand(1600, 3800);
+        nextLitAllowedAt = startAt;
+
+        window.setTimeout(
+          () => {
+            placeFirefly(el);
+            el.classList.add("is-lit");
+          },
+          Math.max(0, startAt - performance.now()),
+        );
+      }
+    }
+
+    window.addEventListener("pointermove", onPointerMove, { passive: true });
+    window.addEventListener("scroll", onScrollOrResize, { passive: true });
+    window.addEventListener("resize", onScrollOrResize, { passive: true });
+    updateScrollParallax();
+    startLoop();
+
+    const settle = () => container.classList.add("is-settled");
+    if (typeof IntersectionObserver !== "undefined") {
+      const io = new IntersectionObserver(
+        (entries) => {
+          if (entries.some((e) => e.isIntersecting)) {
+            settle();
+            io.disconnect();
+          }
+        },
+        { threshold: 0.25 },
+      );
+      io.observe(container);
+    } else {
+      settle();
+    }
+
+    document.addEventListener(
+      "visibilitychange",
+      () => {
+        if (document.hidden) {
+          stopLoop();
+        } else {
+          updateScrollParallax();
+          startLoop();
+        }
+      },
+      { passive: true },
+    );
+  }
+</script>

@@ -37,6 +37,16 @@ import "./scss/_responsive.scss";
     <slot name="head" />
 
     <title>{title}</title>
+    <style is:global>
+      @view-transition {
+        navigation: auto;
+      }
+
+      .constellation-starfield,
+      #fireworks-canvas {
+        view-transition-name: none;
+      }
+    </style>
   </Head>
   <body class="constellation-page">
     <slot />
@@ -44,3 +54,9 @@ import "./scss/_responsive.scss";
     <Footer />
   </body>
 </html>
+
+<script>
+  import archiveBannerInjector from "src/scripts/archiveBannerInjector";
+
+  archiveBannerInjector();
+</script>

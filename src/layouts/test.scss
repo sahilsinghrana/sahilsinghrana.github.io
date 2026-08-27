@@ -48,7 +48,7 @@ body.colorful {
     transform: rotate(45deg);
   }
 
-  #profilePicContainer > picture > img {
+  #profilePicContainer > img.profileImage {
     box-shadow:
       0 0 50px var(--white),
       0 0 calc(50px * 0.5) var(--coral),

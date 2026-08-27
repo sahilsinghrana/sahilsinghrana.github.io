@@ -14,6 +14,7 @@
   offset-path: ellipse(64vw 25vh at center);
   animation: spin 25s infinite linear;
   will-change: offset-distance;
+  view-transition-name: none;
 }
 
 @keyframes spin {
@@ -39,6 +40,7 @@
   left: var(--left, 50%);
   animation-delay: var(--delay);
   z-index: -50;
+  view-transition-name: none;
 }
 
 @keyframes meteorFall {

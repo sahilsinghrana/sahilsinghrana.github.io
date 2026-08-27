@@ -27,15 +27,31 @@ body.colorful header .headerContainer > .catImage {
 }
 
 body.colorful .star {
-  opacity: 0.9;
   width: 4px;
   height: 4px;
-  background-color: var(--white);
+  background: var(--white);
   animation-name: glowTwinkleAnimation;
-  background-position: center;
-  background-size: contain;
-  transform-origin: center;
   animation-duration: 700ms;
+  transform-origin: center;
+  box-shadow:
+    0 0 6px var(--joyful-yellow),
+    0 0 10px var(--coral);
+}
+
+body.colorful .star::after {
+  content: "";
+  position: absolute;
+  inset: 50%;
+  width: 15px;
+  height: 15px;
+  margin: -7.5px 0 0 -7.5px;
+  background: url("/icons/sunflowerico.jpg") center / contain no-repeat;
+  opacity: 0;
+  transform: scale(0.4);
+  pointer-events: none;
+  animation: sunflowerFlash 700ms ease-in-out infinite;
+  animation-delay: inherit;
+  animation-duration: inherit;
 }
 
 body.colorful .meteor {
@@ -43,7 +59,7 @@ body.colorful .meteor {
   transform: rotate(45deg);
 }
 
-body.colorful #profilePicContainer > picture > img {
+body.colorful #profilePicContainer > img.profileImage {
   box-shadow:
     0 0 50px var(--white),
     0 0 calc(50px * 0.5) var(--coral),
@@ -52,39 +68,40 @@ body.colorful #profilePicContainer > picture > img {
 
 @keyframes glowTwinkleAnimation {
   0% {
-    transform: scale(1, 1);
-    background-color: rgb(255 255 255 / 0%);
+    transform: scale(1);
+    opacity: 0;
   }
 
   50% {
-    transform: scale(0.7, 0.7);
-    background-color: rgb(255 255 255 / var);
-    box-shadow:
-      0 0 8px var(--joyful-yellow),
-      0 0 calc(8px * 0.5) var(--coral),
-      0 0 calc(8px * 1.35) var(--white);
-    width: 6px;
-    height: 6px;
+    transform: scale(1.5);
+    opacity: 0.9;
   }
 
   70% {
-    background-color: rgb(255 255 255 / 10%);
-    transform: scale(1.2, 1.2);
-    box-shadow: none;
-    height: 15px;
-    width: 15px;
-    opacity: 0.75;
-    background-image: url("/icons/sunflowerico.jpg");
+    transform: scale(2.8);
+    opacity: 0.35;
   }
 
   100% {
-    background-color: rgb(255 255 255 / 0%);
-    box-shadow:
-      0 0 8px var(--rb-red),
-      0 0 calc(8px * 0.5) var(--gold),
-      0 0 calc(8px * 1.35) var(--joyful-yellow);
-    transform: scale(1, 1);
-    width: 4px;
-    height: 4px;
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+@keyframes sunflowerFlash {
+  0%,
+  50% {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+
+  70% {
+    opacity: 0.75;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.6);
   }
 }

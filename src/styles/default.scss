@@ -20,6 +20,51 @@
   --fw-heading-strong: 700;
   --fw-heading-normal: 600;
   --fw-body: 400;
+
+  /* Motion tokens — cubic-bezier baseline; linear() where supported */
+  --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-smooth: cubic-bezier(0.45, 0, 0.55, 1);
+  --ease-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-fast: 150ms;
+  --duration-normal: 280ms;
+  --duration-slow: 450ms;
+}
+
+@supports (animation-timing-function: linear(0, 1)) {
+  :root {
+    --ease-out-soft: linear(
+      0,
+      0.218 12.1%,
+      0.392 18.8%,
+      0.718 33.1%,
+      0.849 42.5%,
+      0.937 53.5%,
+      0.983 66.3%,
+      1
+    );
+    --ease-settle: linear(
+      0,
+      0.009,
+      0.035 2.1%,
+      0.141,
+      0.239 6.5%,
+      0.723 17.9%,
+      0.938,
+      1.017 28.1%,
+      1.036,
+      1.03 32.6%,
+      0.996 39.5%,
+      0.991,
+      0.994 48.6%,
+      1
+    );
+  }
+}
+
+@supports (interpolate-size: allow-keywords) {
+  :root {
+    interpolate-size: allow-keywords;
+  }
 }
 
 body {

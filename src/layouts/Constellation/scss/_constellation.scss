@@ -56,6 +56,7 @@
   height: 150vh;
   z-index: -1;
   pointer-events: none;
+  view-transition-name: none;
 
   &::before,
   &::after {
@@ -78,6 +79,25 @@
     top: 60%;
     right: 15%;
     animation-delay: 1.5s;
+  }
+}
+
+/* Progressive: CSS scroll-driven parallax (JS skipped when .has-scroll-timeline) */
+@supports (animation-timeline: view()) {
+  html.has-scroll-timeline .constellation-starfield {
+    animation: constellation-starfield-parallax linear both;
+    animation-timeline: scroll(root);
+    animation-range: 0% 100%;
+  }
+
+  @keyframes constellation-starfield-parallax {
+    from {
+      transform: translateY(0);
+    }
+
+    to {
+      transform: translateY(50vh);
+    }
   }
 }
 

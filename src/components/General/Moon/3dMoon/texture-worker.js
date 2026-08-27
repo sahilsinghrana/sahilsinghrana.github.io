@@ -207,8 +207,7 @@ self.onmessage = function (e) {
   }
 
   // ===================== TEXTURE GENERATION =====================
-  // Diffuse and bump share the same pixel loop to avoid computing craterH twice
-  // per pixel and to keep both passes in CPU cache at the same time.
+  // Diffuse + bump share one pixel loop (craterH once per pixel).
   for (let j = 0; j < size; j++) {
     for (let i = 0; i < size; i++) {
       const nx = i / size,
@@ -217,26 +216,24 @@ self.onmessage = function (e) {
       const idx = (j * size + i) * 4;
 
       // --- Diffuse (albedo) ---
-      // Low-frequency macro variation gives broad light/dark maria regions.
-      // Crater contribution shifts those regions darker at impact sites.
+      // Original neutral lunar gray [80, 190] — no cream/cool tint.
       const d_macro = fbm(nx * 3, ny * 3, 3, 2.1, 0.5);
       const d_clamped = Math.max(
         0,
         Math.min(1, (d_macro * 0.45 + cr * 0.5) * 0.8 + 0.35),
       );
-      const gray = 80 + d_clamped * 110; // Maps [0,1] to the lunar gray range [80, 190].
+      const gray = 80 + d_clamped * 110;
       diffuseData[idx] = diffuseData[idx + 1] = diffuseData[idx + 2] = gray;
       diffuseData[idx + 3] = 255;
 
-      // --- Bump ---
-      // Higher frequency (6×) and more octaves (4) than diffuse to capture fine surface
-      // detail like micro-ridges and pitting without affecting the broader color regions.
+      // --- Bump — stronger micro-detail + clearer crater rims ---
+      const micro = fbm(nx * 10, ny * 10, 5, 2.15, 0.48);
+      const mid = fbm(nx * 6, ny * 6, 4, 2.1, 0.5);
       const b_val = Math.max(
         0,
         Math.min(
           255,
-          ((fbm(nx * 6, ny * 6, 4, 2.1, 0.5) * 0.5 + cr * 0.6) * 0.6 + 0.45) *
-            255,
+          ((mid * 0.35 + micro * 0.3 + cr * 0.75) * 0.72 + 0.38) * 255,
         ),
       );
       bumpData[idx] = bumpData[idx + 1] = bumpData[idx + 2] = b_val;
@@ -256,8 +253,7 @@ self.onmessage = function (e) {
   }
 
   // Transfer ownership of the underlying ArrayBuffers to the main thread instead of
-  // copying them. After this call, diffuseData/bumpData/roughData are neutered (zero-length)
-  // in the worker - the main thread now owns the memory, with no copy overhead.
+  // copying them. After this call, buffers are neutered in the worker.
   self.postMessage(
     {
       diffuse: diffuseData.buffer,

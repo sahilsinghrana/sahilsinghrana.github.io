@@ -1,80 +1,81 @@
-function injectClass(fileName) {
+function isTargetDate(day, month) {
+  const now = new Date();
+  return day === now.getDate() && month - 1 === now.getMonth();
+}
+
+function injectStylesheet(fileName) {
+  const linkId = `css-injector-${fileName}`;
+  if (document.getElementById(linkId)) return;
+
   const link = document.createElement("link");
+  link.id = linkId;
   link.rel = "stylesheet";
   link.href = `/conditionalCss/${fileName}.css`;
   document.head.appendChild(link);
 }
 
-export default function dateBasedClassInjector(
-  day = 28,
-  month = 11,
-  className = "colorful",
-) {
+function injectScript(fileName) {
+  const scriptId = `js-injector-${fileName}`;
+  if (document.getElementById(scriptId)) {
+    return Promise.resolve(false);
+  }
+
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.id = scriptId;
+    script.type = "module";
+    script.src = `/conditionalJs/${fileName}.js`;
+    script.async = true;
+
+    script.onload = () => resolve(true);
+    script.onerror = () =>
+      reject(new Error(`Failed to load script: ${fileName}.js`));
+
+    document.head.appendChild(script);
+  });
+}
+
+export default function dateBasedClassInjector(day, month, name) {
   try {
-    if (!className) return;
+    if (!name || !isTargetDate(day, month)) return false;
 
-    const body = document.body;
-
-    const currentDate = new Date();
-
-    const isTargetDate =
-      day == currentDate.getDate() && month - 1 == currentDate.getMonth();
-
-    if (isTargetDate && !body.classList.contains(className)) {
-      body.classList.add(className);
-      injectClass(className);
+    if (!document.body.classList.contains(name)) {
+      document.body.classList.add(name);
+      injectStylesheet(name);
     }
 
-    return isTargetDate;
+    return true;
   } catch (err) {
-    console.error(err);
+    console.error("Class injector error:", err);
+    return false;
   }
 }
 
-export async function dateBasedJsInjector(
-  day = 28,
-  month = 11,
-  fileName = "tulips",
-) {
+export function dateBasedCssInjector(day, month, fileName) {
   try {
-    if (!fileName) return false;
+    if (!fileName || !isTargetDate(day, month)) return false;
 
-    const currentDate = new Date();
-    const isTargetDate =
-      day === currentDate.getDate() && month - 1 === currentDate.getMonth();
-
-    // Check if the script is already present to avoid duplicate execution
-    const scriptId = `js-injector-${fileName}`;
-    if (isTargetDate && !document.getElementById(scriptId)) {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.id = scriptId;
-        script.type = "module";
-        script.src = `/conditionalJs/${fileName}.js`;
-        script.async = true;
-
-        script.onload = () => {
-          console.log(`Successfully injected: ${fileName}.js`);
-          resolve(true);
-        };
-
-        script.onerror = () => {
-          console.error(`Failed to load script: ${fileName}.js`);
-          reject(new Error(`Load failure for ${fileName}`));
-        };
-
-        document.head.appendChild(script);
-      });
-    }
-
-    return isTargetDate;
+    injectStylesheet(fileName);
+    return true;
   } catch (err) {
-    console.error("JS Injector Error:", err);
+    console.error("CSS injector error:", err);
+    return false;
+  }
+}
+
+export async function dateBasedJsInjector(day, month, fileName) {
+  try {
+    if (!fileName || !isTargetDate(day, month)) return false;
+
+    await injectScript(fileName);
+    return true;
+  } catch (err) {
+    console.error("JS injector error:", err);
     return false;
   }
 }
 
 export async function dateBasedJsAndCssInjector(day, month, entityName) {
-  dateBasedClassInjector(day, month, entityName);
-  dateBasedJsInjector(day, month, entityName);
+  dateBasedCssInjector(day, month, entityName);
+  return dateBasedJsInjector(day, month, entityName);
 }

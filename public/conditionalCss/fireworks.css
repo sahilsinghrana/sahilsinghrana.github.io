@@ -1,4 +1,4 @@
-#fireworks-container {
+#fireworks-canvas {
   position: fixed;
   top: 0;
   left: 0;
@@ -7,13 +7,8 @@
   pointer-events: none;
   z-index: -996;
   overflow: hidden;
-  will-change: opacity;
-  transform: translate3d(
-    0,
-    0,
-    0
-  ); /* Forces isolation into its own GPU compositing layer */
-
+  transform: translate3d(0, 0, 0);
   backface-visibility: hidden;
-  contain: strict; /* Prevents canvas updates from triggering page layout recalculations */
+  contain: strict;
+  view-transition-name: none;
 }

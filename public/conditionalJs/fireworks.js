@@ -72,6 +72,8 @@ let particles = [];
 // Track visual states to prevent alpha channel rounding freezes
 let canvasAlpha = 1;
 let isCanvasClean = true;
+let rafId = 0;
+let running = false;
 
 // 3. Offscreen Texture Cache Engine
 const textureCache = {};
@@ -131,6 +133,18 @@ class Particle {
   }
 }
 
+function startLoop() {
+  if (running || document.hidden) return;
+  running = true;
+  rafId = requestAnimationFrame(animate);
+}
+
+function stopLoop() {
+  running = false;
+  cancelAnimationFrame(rafId);
+  rafId = 0;
+}
+
 // 5. Spawner Logic
 function createFirework() {
   isCanvasClean = false; // Mark canvas dirty to initiate render loops
@@ -148,6 +162,8 @@ function createFirework() {
   for (let i = 0; i < particleCount; i++) {
     particles.push(new Particle(x, y, color));
   }
+
+  startLoop();
 }
 
 // 6. Render Engine
@@ -181,10 +197,15 @@ function animate() {
         ctx.clearRect(0, 0, width, height); // Hard flush underlying pixels
         canvasAlpha = 1;
         canvas.style.opacity = "1"; // Reset element opacity transparently
-        isCanvasClean = true; // Engine clean, freeze DOM styling
+        isCanvasClean = true; // Engine clean — pause until next spawn
+        stopLoop();
+        return;
       } else {
         canvas.style.opacity = canvasAlpha;
       }
+    } else {
+      stopLoop();
+      return;
     }
   } else {
     // Force absolute visibility while particles are active
@@ -193,7 +214,7 @@ function animate() {
     isCanvasClean = false;
   }
 
-  requestAnimationFrame(animate);
+  rafId = requestAnimationFrame(animate);
 }
 
 // 7. Initialization
@@ -202,13 +223,14 @@ setTimeout(createFirework, 2500);
 setTimeout(createFirework, 1500);
 setTimeout(createFirework, 3800);
 
-// setInterval(() => {
-//   createFirework();
-// }, SPAWN_INTERVAL_MS);
-
 let isTabVisible = true;
 document.addEventListener("visibilitychange", () => {
   isTabVisible = !document.hidden;
+  if (document.hidden) {
+    stopLoop();
+  } else if (particles.length > 0 || !isCanvasClean) {
+    startLoop();
+  }
 });
 
 setInterval(() => {
@@ -221,4 +243,4 @@ setInterval(() => {
   });
 }, SPAWN_INTERVAL_MS);
 
-animate();
+startLoop();

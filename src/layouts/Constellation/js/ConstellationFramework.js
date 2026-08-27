@@ -680,17 +680,39 @@ class ConstellationFramework {
   }
 
   initParallax() {
-    window.addEventListener("scroll", () => {
-      const scrolled = window.pageYOffset;
-      const parallaxElements = document.querySelectorAll(
-        ".constellation-starfield",
-      );
+    // Prefer CSS scroll-driven animations when available (no double transform)
+    if (
+      typeof CSS !== "undefined" &&
+      CSS.supports?.("animation-timeline: view()")
+    ) {
+      document.documentElement.classList.add("has-scroll-timeline");
+      return;
+    }
 
-      parallaxElements.forEach((element) => {
-        const speed = 0.5;
-        element.style.transform = `translateY(${scrolled * speed}px)`;
-      });
-    });
+    const parallaxElements = [
+      ...document.querySelectorAll(".constellation-starfield"),
+    ];
+    if (!parallaxElements.length) return;
+
+    let ticking = false;
+    const update = () => {
+      const scrolled = window.pageYOffset;
+      const offset = scrolled * 0.5;
+      for (const element of parallaxElements) {
+        element.style.transform = `translateY(${offset}px)`;
+      }
+      ticking = false;
+    };
+
+    window.addEventListener(
+      "scroll",
+      () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(update);
+      },
+      { passive: true },
+    );
   }
 
   initTypingEffect() {
