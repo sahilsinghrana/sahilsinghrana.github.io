@@ -48,9 +48,12 @@ section.heading {
   place-items: center;
 
   #moonRoot {
+    view-transition-name: none;
+
     canvas {
       pointer-events: all;
       z-index: 1;
+      view-transition-name: none;
     }
   }
 

@@ -35,6 +35,7 @@ $container-height: 200px;
   height: $container-height;
   isolation: isolate;
   mix-blend-mode: lighten;
+  view-transition-name: none;
 
   // Opacity settle on children only — never put opacity/transform on this
   // node or a wrapper around it, or lighten stops blending with the page
@@ -44,7 +45,7 @@ $container-height: 200px;
   .snow-wrapper,
   .fireflies {
     opacity: 0;
-    transition: opacity 0.95s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: opacity 0.95s var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   &.is-settled {
@@ -54,6 +55,27 @@ $container-height: 200px;
     .fireflies {
       opacity: 1;
     }
+  }
+
+  .tulips {
+    position: absolute;
+    width: auto;
+    mix-blend-mode: lighten;
+    z-index: -2;
+    bottom: -28px;
+    height: 182px;
+    image-rendering: auto;
+
+    /* Static filter — breathe via independent `scale` so parallax transform stays free */
+    filter: saturate(1.35) contrast(1.1) brightness(1.08);
+    animation: tulip-breathe 5s var(--ease-in-out-smooth, ease-in-out) infinite;
+    transform: translate3d(
+      calc(13px + var(--parallax-x) * 9px),
+      calc(var(--parallax-y) * 4px),
+      0
+    );
+    will-change: transform;
+    backface-visibility: hidden;
   }
 }
 
@@ -70,26 +92,6 @@ $container-height: 200px;
     calc(var(--parallax-y) * -5px),
     0
   );
-  will-change: transform;
-}
-
-.tulips {
-  position: absolute;
-  width: auto;
-  mix-blend-mode: lighten;
-  z-index: -2;
-  bottom: -28px;
-  height: 182px;
-  image-rendering: auto;
-  filter: saturate(1.35) contrast(1.1) brightness(1.08);
-  animation: tulip-breathe 5s ease-in-out infinite;
-  transform: translate3d(
-    calc(13px + var(--parallax-x) * 9px),
-    calc(var(--parallax-y) * 4px),
-    0
-  );
-  will-change: transform, filter;
-  backface-visibility: hidden;
 }
 
 .mossPoleWrap {
@@ -99,8 +101,8 @@ $container-height: 200px;
   z-index: -1;
   transform-origin: 50% 100%;
   translate: calc(var(--parallax-x) * 12px) calc(var(--parallax-y) * 5px);
-  animation: moss-breeze 5.2s ease-in-out infinite alternate;
-  will-change: transform;
+  animation: moss-breeze 5.2s var(--ease-in-out-smooth, ease-in-out) infinite
+    alternate;
 }
 
 .mossPole {
@@ -111,14 +113,15 @@ $container-height: 200px;
   filter: brightness(0.95) saturate(1) contrast(1);
 }
 
+/* Uses independent `scale` property so it does not fight parallax `transform` */
 @keyframes tulip-breathe {
   0%,
   100% {
-    filter: saturate(1.3) contrast(1.08) brightness(1.05);
+    scale: 1;
   }
 
   50% {
-    filter: saturate(1.42) contrast(1.12) brightness(1.14);
+    scale: 1.025;
   }
 }
 
@@ -143,7 +146,6 @@ $container-height: 200px;
     calc(var(--parallax-y) * 3px),
     0
   );
-  will-change: transform;
 }
 
 .firefly {
@@ -170,10 +172,10 @@ $container-height: 200px;
     0 0 4px 1px rgb(255 240 180 / 100%),
     0 0 10px 4px rgb(255 200 90 / 70%),
     0 0 18px 8px rgb(255 160 50 / 35%);
-  will-change: transform, opacity, background, box-shadow;
 
   &.is-lit {
     animation: firefly-life var(--dur) ease-in-out forwards;
+    will-change: transform, opacity;
   }
 }
 
@@ -181,17 +183,6 @@ $container-height: 200px;
   0% {
     opacity: 0;
     transform: scale(0.45) translate(0, 0);
-    background: radial-gradient(
-      circle,
-      #fff 0%,
-      #ffe9a0 30%,
-      #ffc45a 55%,
-      transparent 72%
-    );
-    box-shadow:
-      0 0 4px 1px rgb(255 240 180 / 100%),
-      0 0 10px 4px rgb(255 200 90 / 70%),
-      0 0 18px 8px rgb(255 160 50 / 35%);
   }
 
   12% {
@@ -202,65 +193,21 @@ $container-height: 200px;
   40% {
     opacity: 0.95;
     transform: scale(1.15) translate(-2px, -6px);
-    background: radial-gradient(
-      circle,
-      #fff 0%,
-      #ffe9a0 30%,
-      #ffc45a 55%,
-      transparent 72%
-    );
-    box-shadow:
-      0 0 4px 1px rgb(255 240 180 / 100%),
-      0 0 10px 4px rgb(255 200 90 / 70%),
-      0 0 18px 8px rgb(255 160 50 / 35%);
   }
 
   68% {
     opacity: 0.75;
     transform: scale(1) translate(2px, -8px);
-    background: radial-gradient(
-      circle,
-      #fff 0%,
-      #ffe9a0 30%,
-      #ffc45a 55%,
-      transparent 72%
-    );
-    box-shadow:
-      0 0 4px 1px rgb(255 240 180 / 100%),
-      0 0 10px 4px rgb(255 200 90 / 70%),
-      0 0 18px 8px rgb(255 160 50 / 35%);
   }
 
   85% {
     opacity: 0.45;
     transform: scale(1) translate(2px, -8px);
-    background: radial-gradient(
-      circle,
-      #f0e8ff 0%,
-      #a8b8ff 28%,
-      #7b6dff 52%,
-      transparent 72%
-    );
-    box-shadow:
-      0 0 4px 1px rgb(200 210 255 / 95%),
-      0 0 10px 4px rgb(130 120 255 / 65%),
-      0 0 18px 8px rgb(100 80 220 / 35%);
   }
 
   100% {
     opacity: 0;
     transform: scale(0.5) translate(4px, -11px);
-    background: radial-gradient(
-      circle,
-      #e8e0ff 0%,
-      #8ea0ff 30%,
-      #6a5cff 55%,
-      transparent 72%
-    );
-    box-shadow:
-      0 0 4px 1px rgb(180 190 255 / 80%),
-      0 0 10px 4px rgb(110 100 240 / 45%),
-      0 0 16px 6px rgb(90 70 200 / 20%);
   }
 }
 

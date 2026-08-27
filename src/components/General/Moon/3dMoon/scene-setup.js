@@ -36,6 +36,25 @@ const FIXED_CAMERA_DISTANCE_DESKTOP = 3.1;
 const SUN_LIGHT_COLOR = 0xfff8f0; // Warm white.
 const SUN_LIGHT_INTENSITY = 3.1;
 
+const ROSE_GOLD_SUN_DATES = [
+  { day: 28, month: 11 },
+  { day: 20, month: 1 },
+  { day: 19, month: 6 },
+];
+const ROSE_GOLD_SUN_COLOR = 0xffe4d4;
+
+const isRoseGoldSunDay = () => {
+  const now = new Date();
+  const day = now.getDate();
+  const month = now.getMonth() + 1;
+  return ROSE_GOLD_SUN_DATES.some(
+    (entry) => entry.day === day && entry.month === month,
+  );
+};
+
+const getSunLightColor = () =>
+  isRoseGoldSunDay() ? ROSE_GOLD_SUN_COLOR : SUN_LIGHT_COLOR;
+
 // SUN_LIGHT_POSITION (Vector3)
 // Dictates the angle of the light before the phase logic overrides it.
 const SUN_LIGHT_POSITION = { x: 5, y: 3, z: 2 };
@@ -342,7 +361,7 @@ async function initThreeJS() {
     controls.enablePan = false; // Prevents right-click dragging the moon off-center.
 
     // Lighting setup
-    sunLight = new DirectionalLight(SUN_LIGHT_COLOR, SUN_LIGHT_INTENSITY);
+    sunLight = new DirectionalLight(getSunLightColor(), SUN_LIGHT_INTENSITY);
     sunLight.position.set(
       SUN_LIGHT_POSITION.x,
       SUN_LIGHT_POSITION.y,
