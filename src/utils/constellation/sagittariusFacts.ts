@@ -41,7 +41,7 @@ const sagittariusFacts = {
   wowSignal: new Fact(
     "The 'Wow!' Signal Origin: A Cosmic Mystery",
     "https://www.setigear.com/wow-signal-location",
-    "The famous 1977 'Wow!' signal—the strongest candidate for extraterrestrial radio contact—originated from the direction of Sagittarius.",
+    "The famous 1977 'Wow!' signal-the strongest candidate for extraterrestrial radio contact-originated from the direction of Sagittarius.",
     "https://earthsky.org/space/wow-signal-explained-comets-antonio-paris/",
   ),
   steamFromSpout: new Fact(

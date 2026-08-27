@@ -1,4 +1,4 @@
-@use "./variables.scss" as *;
+@use "variables" as *;
 
 .curlContainer {
   .form-group {
@@ -37,7 +37,7 @@
     &:focus {
       outline: none;
       border-color: $primary-color;
-      box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+      box-shadow: 0 0 0 3px rgb(52 152 219 / 10%);
     }
   }
 
@@ -52,6 +52,7 @@
 
   textarea {
     @extend %input-base;
+
     min-height: 80px;
     resize: vertical;
     font-family: $font-mono;
@@ -68,10 +69,12 @@
 
   .generate-btn {
     @extend %button-base;
+
     background: $gray-900;
     color: $gray-200;
     padding: 10px;
     width: 100%;
+
     &:disabled {
       background: $gray-300;
       cursor: not-allowed;
@@ -86,9 +89,11 @@
 
   .reset-btn {
     @extend %button-base;
+
     background: $gray-500;
     color: $gray-200;
     font-size: 0.7rem;
+
     &:hover:not(:disabled) {
       background: $gray-600;
     }
@@ -96,6 +101,7 @@
 
   .add-btn {
     @extend %button-base;
+
     background: $gray-600;
     color: $white;
     padding: 5px 7px;
@@ -104,6 +110,7 @@
     margin: 2px;
     margin-left: 4px;
     font-weight: 400;
+
     &:hover:not(:disabled) {
       background: $gray-900;
     }
@@ -111,10 +118,12 @@
 
   .copy-btn {
     @extend %button-base;
+
     background: $gray-200;
     color: black;
     padding: 5px 10px;
     font-size: 0.7rem;
+
     &:hover:not(:disabled) {
       background: $gray-500;
     }
@@ -126,6 +135,7 @@
 
   .download-btn {
     @extend %button-base;
+
     background: $gray-600;
     color: $white;
     padding: $spacing-2 $spacing-4;
@@ -231,7 +241,7 @@
 
     &:focus {
       border-color: $primary-color;
-      box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+      box-shadow: 0 0 0 2px rgb(52 152 219 / 10%);
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%233498db' d='M6 0L8 4H4L6 0zM6 12L4 8H8L6 12z'/%3E%3C/svg%3E");
     }
   }
@@ -265,6 +275,7 @@
 
   .section-content {
     padding-left: 2px;
+
     &.collapsed {
       display: none;
     }

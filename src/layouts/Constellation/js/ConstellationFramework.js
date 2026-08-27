@@ -218,7 +218,9 @@ class ConstellationFramework {
     if (heroSection) heroSection.appendChild(toggleButton);
 
     let drawState = 2;
-    let animationInterval = null;
+    this._constellationDrawState = drawState;
+    this._constellationAnimationInterval = null;
+    this._startConstellationInfiniteAnimation = null;
 
     const updateButtonText = () => {
       switch (drawState) {
@@ -235,9 +237,9 @@ class ConstellationFramework {
     };
 
     const hideLines = () => {
-      if (animationInterval) {
-        clearInterval(animationInterval);
-        animationInterval = null;
+      if (this._constellationAnimationInterval) {
+        clearInterval(this._constellationAnimationInterval);
+        this._constellationAnimationInterval = null;
       }
       lines.forEach((line) => {
         line.style.strokeDashoffset = line.getTotalLength();
@@ -245,9 +247,9 @@ class ConstellationFramework {
     };
 
     const showLines = () => {
-      if (animationInterval) {
-        clearInterval(animationInterval);
-        animationInterval = null;
+      if (this._constellationAnimationInterval) {
+        clearInterval(this._constellationAnimationInterval);
+        this._constellationAnimationInterval = null;
       }
       lines.forEach((line, index) => {
         setTimeout(() => {
@@ -257,7 +259,9 @@ class ConstellationFramework {
     };
 
     const startInfiniteAnimation = () => {
-      if (animationInterval) clearInterval(animationInterval);
+      if (this._constellationAnimationInterval) {
+        clearInterval(this._constellationAnimationInterval);
+      }
 
       let isDrawing = true;
       const animate = () => {
@@ -278,14 +282,17 @@ class ConstellationFramework {
       };
 
       animate();
-      animationInterval = setInterval(animate, 3000);
+      this._constellationAnimationInterval = setInterval(animate, 3000);
     };
+
+    this._startConstellationInfiniteAnimation = startInfiniteAnimation;
 
     updateButtonText();
     startInfiniteAnimation();
 
     toggleButton.addEventListener("click", () => {
       drawState = (drawState + 1) % 3;
+      this._constellationDrawState = drawState;
       updateButtonText();
 
       switch (drawState) {
@@ -310,6 +317,29 @@ class ConstellationFramework {
       this.style.background = "rgba(74, 158, 255, 0.2)";
       this.style.transform = "scale(1)";
     });
+
+    this._onConstellationPageHide = () => {
+      if (this._constellationAnimationInterval) {
+        clearInterval(this._constellationAnimationInterval);
+        this._constellationAnimationInterval = null;
+      }
+    };
+
+    this._onConstellationPageShow = (event) => {
+      // Initial load already starts the infinite animation above.
+      // Only resume when restoring from bfcache.
+      if (!event.persisted) return;
+      if (
+        this._constellationDrawState === 2 &&
+        typeof this._startConstellationInfiniteAnimation === "function" &&
+        !this._constellationAnimationInterval
+      ) {
+        this._startConstellationInfiniteAnimation();
+      }
+    };
+
+    window.addEventListener("pagehide", this._onConstellationPageHide);
+    window.addEventListener("pageshow", this._onConstellationPageShow);
   }
 
   initNebulaInteractions(root = document.body) {

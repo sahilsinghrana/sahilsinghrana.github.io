@@ -1,34 +1,28 @@
 ---
 import { getCleanCanonicalUrl } from "@utils/getCanonicalUrl";
 
-const currentUrl = getCleanCanonicalUrl(Astro.url.pathname, Astro.site);
+const { robots = "index, follow", canonicalPath } = Astro.props;
+const currentUrl = getCleanCanonicalUrl(
+  canonicalPath ?? Astro.url.pathname,
+  Astro.site,
+);
 ---
 
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-<link
-  rel="preload"
-  href="/fonts/Manrope-Regular.woff2"
-  as="font"
-  type="font/woff2"
-  crossorigin
-/>
-
 <link rel="canonical" href={currentUrl} />
 
 <link rel="sitemap" href="/sitemap-index.xml" />
+<link
+  rel="alternate"
+  type="application/rss+xml"
+  title="Sahil Rana Blog"
+  href="/rss.xml"
+/>
 <meta
   name="google-site-verification"
   content="w4Q8_lhxctc5EB94weOcv_HFvNR7h_gyjZPRJcRuWqQ"
 />
 
-<meta name="robots" content="index, follow" />
-
-<style>
-  @font-face {
-    font-family: "Manrope";
-    src: url("/fonts/Manrope-Regular.woff2") format("woff2");
-    font-display: swap;
-  }
-</style>
+<meta name="robots" content={robots} />

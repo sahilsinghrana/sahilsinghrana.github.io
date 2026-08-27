@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
 import ProjectCard from "@components/Projects/ProjectCard.astro";
@@ -9,13 +10,27 @@ import placeholderImage from "@images/placeholder3.webp";
 import "@assets/styles/projects.scss";
 import { projectsPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { SITE_ORIGIN } from "@utils/site";
 ---
 
 <Layout
-  title="Projects | Sahil Rana | Software Developer"
-  description="Explore the collection of projects by Sahil Rana, offering a glimpse into his journey as a software developer."
+  title="Projects | Sahil Rana"
+  description="Projects by Sahil Rana - Atrij, DiZi Player, JSON tools, ESP8266 builds, and other web and experimental software."
   keywords={projectsPageKeywords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Projects by Sahil Rana",
+        url: `${SITE_ORIGIN}/projects`,
+        description:
+          "A collection of software projects by Sahil Rana spanning web apps, developer tools, and experiments.",
+        about: projects.map((project) => project.title),
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage
     title="Projects"
     Image={placeholderImage}

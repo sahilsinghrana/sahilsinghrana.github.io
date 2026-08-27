@@ -1,11 +1,13 @@
 ---
+import { Schema } from "astro-seo-schema";
 import ConstellationLayout from "@layouts/Constellation/ConstellationLayout.astro";
 import ConstellationHeader from "@layouts/Constellation/ConstellationHeader.astro";
+import { SITE_ORIGIN } from "@utils/site";
 import "./_sagittarius.scss";
 ---
 
 <ConstellationLayout
-  title="Sagittarius - The Archer"
+  title="Sagittarius - The Archer | Sahil Rana"
   description="Explore the Sagittarius constellation, its brightest stars, and the rich mythology behind it. Learn about its location in the night sky and fascinating facts."
   keywords={[
     "Sagittarius constellation",
@@ -25,6 +27,18 @@ import "./_sagittarius.scss";
     "Sagittarius constellation guide",
   ]}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "WebPage",
+        name: "Sagittarius - The Archer",
+        url: `${SITE_ORIGIN}/resources/constellations/sagittarius`,
+        description:
+          "Explore the Sagittarius constellation, its brightest stars, mythology, and location toward the galactic center.",
+      }}
+    />
+  </Fragment>
   <div class="constellation-starfield"></div>
 
   <ConstellationHeader class="constellation-hero">

@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "@layouts/index.astro";
 
@@ -6,6 +7,7 @@ import placeholderImage from "@images/resourcesPlaceholder.webp";
 
 import { resourcesPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { SITE_ORIGIN } from "@utils/site";
 
 import "./_index.scss";
 import RefLink from "@components/Links/RefLink.astro";
@@ -13,10 +15,22 @@ import ElementsInfo from "@components/Resources/ElementsInfo.astro";
 ---
 
 <Layout
-  title="Resources | Sahil Singh Rana | Software Developer | Sahil Rana"
-  description={"Moon Resources and amazing facts about the moon"}
+  title="Resources | Sahil Rana"
+  description="Moon facts, constellation notes, and curated space resources - including Sagittarius and other sky references."
   keywords={resourcesPageKeywords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Resources | Sahil Rana",
+        url: `${SITE_ORIGIN}/resources`,
+        description:
+          "Moon facts and constellation resources collected on Sahil Rana's site.",
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage title="Resources" Image={placeholderImage} />
 
   <ElementsInfo />

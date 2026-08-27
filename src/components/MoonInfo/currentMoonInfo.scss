@@ -1,65 +1,62 @@
-$codeGreen: rgba(0, 189, 0, 0.8);
+$codeGreen: rgb(0 189 0 / 80%);
 $borderRadius: 10px;
+
 .currentMoonInfo {
   font-size: 0.75rem;
   position: relative;
-  outline: 1px solid rgba(255, 255, 255, 0.4);
+  outline: 1px solid rgb(255 255 255 / 40%);
   margin: 1.2rem 0;
   margin-bottom: 0;
   border-radius: 12px;
   min-width: 300px;
-
   background: linear-gradient(
     135deg,
-    rgba(255, 255, 255, 0.05),
-    rgba(255, 255, 255, 0.02)
+    rgb(255 255 255 / 5%),
+    rgb(255 255 255 / 2%)
   );
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-top-color: green;
   border-top-width: 2.5px;
-
   backdrop-filter: blur(10px);
-
   overflow: hidden;
   transition: all 0.3s ease;
 
   & > * {
-    font-family: monospace, "Inter";
+    font-family: monospace, var(--font-inter), sans-serif;
   }
 
   &:hover {
-    border-color: rgba(255, 165, 0, 0.3);
-    border-top-color: rgb(0, 76, 0);
+    border-color: rgb(255 165 0 / 30%);
+    border-top-color: rgb(0 76 0);
     border-top-width: 2.5px;
-    box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 5px 15px -5px rgb(0 0 0 / 30%);
   }
 
   #moonInfo_moonEvent {
     border: 1px solid $codeGreen;
     border-radius: 4px;
-    background: rgba(38, 50, 38, 0.4);
+    background: rgb(38 50 38 / 40%);
     color: $codeGreen;
     padding: 8px;
-    margin-left: 10px;
-    margin-right: 10px;
     margin: 10px;
     font-size: 0.75rem;
   }
 
   summary {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
     font-size: 0.85rem;
     font-weight: bold;
     padding: 10px 15px;
     margin: 0;
     cursor: pointer;
-    background: rgba(255, 255, 255, 0.02);
+    background: rgb(255 255 255 / 2%);
 
     &::marker {
       margin-right: 10px;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgb(255 255 255 / 70%);
     }
   }
+
   .moonInfo {
     justify-content: start;
     align-items: start;
@@ -89,8 +86,9 @@ $borderRadius: 10px;
       b {
         opacity: 0.95;
         font-weight: 800;
-        color: rgba(0, 189, 0, 0.9);
+        color: rgb(0 189 0 / 90%);
         margin-left: 5px;
+
         .noMl {
           margin-left: 0;
         }

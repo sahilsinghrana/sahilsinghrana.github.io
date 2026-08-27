@@ -12,6 +12,13 @@ export default defineConfig({
   compressHTML: true,
   trailingSlash: "never",
   site: "https://www.sahilrana.in",
+  redirects: {
+    "/blog/posts/method-chaining-js": "/blog/posts/chain-javascript-methods",
+    "/blog/posts/howto/linked-list-with-generators":
+      "/blog/posts/linked-list-with-generators",
+    "/blog/posts/howto/convert-string-to-literal":
+      "/blog/posts/convert-string-to-literal",
+  },
   build: {
     format: "file",
     inlineStylesheets: "always",
@@ -56,10 +63,6 @@ export default defineConfig({
             ) {
               return "3dmoon-core";
             }
-
-            if (id.includes("/src/utils/")) {
-              return "app-utils";
-            }
           },
         },
       },
@@ -70,7 +73,9 @@ export default defineConfig({
     defaultStrategy: "viewport",
   },
   integrations: [
-    sitemap(),
+    sitemap({
+      filter: (page) => !page.includes("/404"),
+    }),
     playformInline(),
     // purgecss(),
     playformCompress({
@@ -107,70 +112,16 @@ export default defineConfig({
   },
   fonts: [
     {
-      name: "Manrope",
-      provider: fontProviders.local(),
-      cssVariable: "--font-manrope",
-      options: {
-        display: "swap",
-        variants: [
-          {
-            weight: "200",
-            style: "normal",
-            src: [
-              "./src/assets/fonts/ManropeExtraLight-Regular.woff2",
-              "./src/assets/fonts/ManropeExtraLight-Regular.woff",
-              "./src/assets/fonts/Manrope-Regular.ttf",
-            ],
-          },
-          {
-            weight: "600",
-            style: "normal",
-            src: [
-              "./src/assets/fonts/ManropeExtraLight-SemiBold.woff2",
-              "./src/assets/fonts/ManropeExtraLight-SemiBold.woff",
-            ],
-          },
-          {
-            weight: "800",
-            style: "normal",
-            src: [
-              "./src/assets/fonts/ManropeExtraLight-ExtraBold.woff2",
-              "./src/assets/fonts/ManropeExtraLight-ExtraBold.woff",
-            ],
-          },
-        ],
-      },
-    },
-    {
       name: "Raleway",
       provider: fontProviders.local(),
       cssVariable: "--font-raleway",
       options: {
-        display: "optional",
         variants: [
           {
             weight: "400",
             style: "normal",
-            src: ["./src/assets/fonts/Raleway-Regular.ttf"],
-          },
-        ],
-      },
-    },
-    {
-      name: "Roboto",
-      provider: fontProviders.local(),
-      cssVariable: "--font-roboto",
-      options: {
-        display: "optional",
-        variants: [
-          {
-            weight: "400",
-            style: "normal",
-            src: [
-              "./src/assets/fonts/Roboto-Regular.woff2",
-              "./src/assets/fonts/Roboto-Regular.woff",
-              "./src/assets/fonts/Roboto-Regular.ttf",
-            ],
+            display: "optional",
+            src: ["./src/assets/fonts/Raleway-Regular.woff2"],
           },
         ],
       },
@@ -180,39 +131,24 @@ export default defineConfig({
       provider: fontProviders.local(),
       cssVariable: "--font-inter",
       options: {
-        display: "optional",
         variants: [
-          {
-            weight: "200",
-            style: "normal",
-            src: [
-              "./src/assets/fonts/Inter-ExtraLight.woff2",
-              "./src/assets/fonts/Inter-ExtraLight.woff",
-            ],
-          },
           {
             weight: "400",
             style: "normal",
-            src: [
-              "./src/assets/fonts/Inter-Regular.woff2",
-              "./src/assets/fonts/Inter-Regular.woff",
-            ],
+            display: "optional",
+            src: ["./src/assets/fonts/Inter-Regular.woff2"],
           },
           {
             weight: "600",
             style: "normal",
-            src: [
-              "./src/assets/fonts/Inter-SemiBold.woff2",
-              "./src/assets/fonts/Inter-SemiBold.woff",
-            ],
+            display: "optional",
+            src: ["./src/assets/fonts/Inter-SemiBold.woff2"],
           },
           {
             weight: "800",
             style: "normal",
-            src: [
-              "./src/assets/fonts/Inter-ExtraBold.woff2",
-              "./src/assets/fonts/Inter-ExtraBold.woff",
-            ],
+            display: "optional",
+            src: ["./src/assets/fonts/Inter-ExtraBold.woff2"],
           },
         ],
       },

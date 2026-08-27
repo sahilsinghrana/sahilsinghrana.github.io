@@ -5,6 +5,7 @@ body.colorful {
   --coral: #fc7b53;
   --joyful-yellow: #ffc663;
   --gold: #ffd700;
+
   color: var(--white);
 }
 
@@ -36,10 +37,12 @@ body.colorful .star {
   transform-origin: center;
   animation-duration: 700ms;
 }
+
 body.colorful .meteor {
   background: linear-gradient(90deg, transparent, var(--rb-red));
   transform: rotate(45deg);
 }
+
 body.colorful #profilePicContainer > picture > img {
   box-shadow:
     0 0 50px var(--white),
@@ -50,11 +53,12 @@ body.colorful #profilePicContainer > picture > img {
 @keyframes glowTwinkleAnimation {
   0% {
     transform: scale(1, 1);
-    background-color: rgba(255, 255, 255, 0);
+    background-color: rgb(255 255 255 / 0%);
   }
+
   50% {
     transform: scale(0.7, 0.7);
-    background-color: rgba(255, 255, 255, var);
+    background-color: rgb(255 255 255 / var);
     box-shadow:
       0 0 8px var(--joyful-yellow),
       0 0 calc(8px * 0.5) var(--coral),
@@ -62,8 +66,9 @@ body.colorful #profilePicContainer > picture > img {
     width: 6px;
     height: 6px;
   }
+
   70% {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgb(255 255 255 / 10%);
     transform: scale(1.2, 1.2);
     box-shadow: none;
     height: 15px;
@@ -71,8 +76,9 @@ body.colorful #profilePicContainer > picture > img {
     opacity: 0.75;
     background-image: url("/icons/sunflowerico.jpg");
   }
+
   100% {
-    background-color: rgba(255, 255, 255, 0);
+    background-color: rgb(255 255 255 / 0%);
     box-shadow:
       0 0 8px var(--rb-red),
       0 0 calc(8px * 0.5) var(--gold),

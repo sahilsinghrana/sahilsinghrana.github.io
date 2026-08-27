@@ -1,4 +1,5 @@
 $mobileBreakpoint: 486px;
+
 .spotifyData {
   display: flex;
   justify-content: center;
@@ -11,13 +12,13 @@ $mobileBreakpoint: 486px;
   display: flex;
   align-items: center;
   justify-content: center;
-  outline: 1px solid rgba(245, 245, 245, 0.427);
+  outline: 1px solid rgb(245 245 245 / 42.7%);
   border-radius: 12px;
   margin-top: 40px;
   padding: 0.5rem 2rem;
   padding-left: 1rem;
   position: relative;
-  background: rgba(43, 43, 43, 0.425);
+  background: rgb(43 43 43 / 42.5%);
 
   .spotifyLogoContainer,
   a {
@@ -31,6 +32,7 @@ $mobileBreakpoint: 486px;
       border: none;
     }
   }
+
   .spotifyLogoContainer {
     position: absolute;
     top: 0.4rem;
@@ -44,6 +46,7 @@ $mobileBreakpoint: 486px;
     opacity: 0.7;
     margin-left: 10px;
     padding: 0 1rem;
+
     p {
       margin: 0;
     }
@@ -94,11 +97,11 @@ $mobileBreakpoint: 486px;
     width: 80px;
     height: 80px;
     border-radius: 50%;
-    outline: 3px solid rgb(27, 27, 27);
+    outline: 3px solid rgb(27 27 27);
     background:
-      linear-gradient(30deg, transparent 40%, rgba(42, 41, 40, 0.85) 40%)
+      linear-gradient(30deg, transparent 40%, rgb(42 41 40 / 85%) 40%)
         no-repeat 100% 0,
-      linear-gradient(60deg, rgba(42, 41, 40, 0.85) 60%, transparent 60%)
+      linear-gradient(60deg, rgb(42 41 40 / 85%) 60%, transparent 60%)
         no-repeat 0 100%,
       repeating-radial-gradient(#2a2928, #2a2928 4px, #ada9a0 5px, #2a2928 6px);
     background-size:
@@ -107,13 +110,14 @@ $mobileBreakpoint: 486px;
       100% 100%;
     background-size: cover;
   }
-  .trackVinyl:after {
+
+  .trackVinyl::after {
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 1.5px solid rgb(185, 185, 185);
-    outline: 0.5px solid rgb(0, 0, 0);
+    border: 1.5px solid rgb(185 185 185);
+    outline: 0.5px solid rgb(0 0 0);
     width: 6px;
     height: 6px;
     border-radius: 50%;
@@ -133,6 +137,7 @@ $mobileBreakpoint: 486px;
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -141,10 +146,9 @@ $mobileBreakpoint: 486px;
 .topTrackAndArtistContainer {
   display: flex;
   justify-content: space-between;
-  font-family:
-    var(--font-inter), var(--font-manrope), var(--font-roboto),
-    var(--font-raleway), Arial, sans-serif;
+  font-family: var(--font-inter), var(--font-raleway), Arial, sans-serif;
 }
+
 @media screen and (max-width: $mobileBreakpoint) {
   .topTrackAndArtistContainer {
     flex-direction: column;
@@ -155,27 +159,31 @@ $mobileBreakpoint: 486px;
     }
   }
 }
+
 .topArtistsContainer,
 .topTracksContainer {
-  outline: 1px solid rgba(255, 255, 255, 0.37);
+  outline: 1px solid rgb(255 255 255 / 37%);
   border-radius: 12px;
   margin-top: 1.4rem;
   width: 48%;
   overflow: hidden;
+
   h3 {
     margin: 0;
     font-size: 0.8rem;
     text-align: center;
-    background-color: rgba(128, 128, 128, 0.334);
+    background-color: rgb(128 128 128 / 33.4%);
     padding: 8px;
     backdrop-filter: blur(2.5px) sepia(70%);
   }
+
   .smallInfo {
     font-size: 0.52rem;
     opacity: 0.85;
     padding: 0 0.25rem;
     margin-top: 0.5px;
   }
+
   img {
     height: 55px;
     width: 55px;
@@ -185,9 +193,11 @@ $mobileBreakpoint: 486px;
     &.hasPreview {
       cursor: pointer;
       position: relative;
+
       &:hover {
-        outline: 1px solid rgba(255, 99, 71, 0.519);
+        outline: 1px solid rgb(255 99 71 / 51.9%);
       }
+
       // &.playing {
       //   // TODO
       // }
@@ -199,11 +209,9 @@ $mobileBreakpoint: 486px;
     margin: 0;
     height: 180px;
     min-width: 150px;
-    overflow-y: auto;
+    overflow: hidden auto;
     scroll-snap-type: y mandatory;
-    scroll-snap-points-y: repeat(60px);
     list-style: none;
-    overflow-x: hidden;
   }
 
   .card {
@@ -224,6 +232,7 @@ $mobileBreakpoint: 486px;
       display: flex;
       flex-direction: column;
       justify-content: start;
+
       a {
         margin-left: 0;
       }
@@ -237,7 +246,7 @@ $mobileBreakpoint: 486px;
     a {
       margin-left: 7px;
       font-size: 0.72rem;
-      color: rgba(245, 245, 245, 0.926);
+      color: rgb(245 245 245 / 92.6%);
     }
   }
 }

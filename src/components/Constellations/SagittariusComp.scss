@@ -12,9 +12,8 @@
     width: 3%;
     border-radius: 50%;
     position: absolute;
-    background: rgb(219, 216, 216);
+    background: rgb(219 216 216);
     z-index: 1;
-    opacity: 1;
     opacity: 1;
 
     // animation-name: twinkleAnimation;
@@ -23,7 +22,7 @@
     transition-timing-function: ease-in-out;
 
     &:hover {
-      background-color: rgb(212, 255, 241);
+      background-color: rgb(212 255 241);
     }
 
     &:hover::after {
@@ -36,7 +35,7 @@
       top: -25px;
       left: 15px;
       white-space: nowrap;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgb(255 255 255 / 90%);
       color: black;
       padding: 2px 6px;
       font-size: 12px;
@@ -49,26 +48,32 @@
     bottom: 5%;
     left: 33%;
   }
+
   #ArkabPrior {
     bottom: 8%;
     left: 33%;
   }
+
   #Nunki {
     left: 48%;
     top: 33%;
   }
+
   #Ascella {
     left: 43%;
     top: 44%;
   }
+
   #Albaldah {
     left: 42%;
     top: 19%;
   }
+
   #Alnasl {
     right: 17%;
     top: 49%;
   }
+
   #KausAustralis {
     right: 28%;
     top: 58%;
@@ -77,14 +82,17 @@
     height: 4.3%;
     width: 4.3%;
   }
+
   #KausMedia {
     right: 26%;
     top: 46%;
   }
+
   #KausBorealis {
     right: 30%;
     top: 31%;
   }
+
   #RhoSagittarii {
     right: 31%;
     top: 31%;

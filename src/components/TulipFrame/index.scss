@@ -8,17 +8,18 @@ $container-height: 200px;
 
 @function generate-snow($count, $max-width, $max-height) {
   $shadows: ();
-  @for $i from 1 through $count {
-    $x: math.random($max-width);
-    $y: math.random($max-height);
-    $opacity: math.div(math.random(60) + 40, 100);
 
+  @for $i from 1 through $count {
+    $x: math.random(math.div($max-width, 1px)) * 1px;
+    $y: math.random(math.div($max-height, 1px)) * 1px;
+    $opacity: math.div(math.random(60) + 40, 100);
     $shadows: list.append(
       $shadows,
-      #{$x}px #{$y}px 0 rgba(255, 255, 255, $opacity),
+      #{$x} #{$y} 0 rgba(255, 255, 255, $opacity),
       comma
     );
   }
+
   @return $shadows;
 }
 
@@ -87,9 +88,11 @@ $container-height: 200px;
   0% {
     transform: translate3d(0, 0, 0);
   }
+
   50% {
     transform: translate3d(var(--sway), math.div($container-height, 2), 0);
   }
+
   100% {
     transform: translate3d(0, $container-height, 0);
   }
@@ -102,7 +105,7 @@ $layers: (
     count: 15,
     sway: 10px,
     blur: 0px,
-    zIndex: 0,
+    zindex: 0,
   ),
   2: (
     size: 2px,
@@ -110,7 +113,7 @@ $layers: (
     count: 28,
     sway: -14px,
     blur: 0px,
-    zIndex: -2,
+    zindex: -2,
   ),
   3: (
     size: 1px,
@@ -118,7 +121,7 @@ $layers: (
     count: 35,
     sway: 6px,
     blur: 0.5px,
-    zIndex: -3,
+    zindex: -3,
   ),
   4: (
     size: 4px,
@@ -126,7 +129,7 @@ $layers: (
     count: 10,
     sway: 2px,
     blur: 0.2px,
-    zIndex: 5,
+    zindex: 5,
   ),
 );
 
@@ -137,18 +140,18 @@ $layers: (
   $sway: map.get($config, sway);
   $blur: map.get($config, blur);
   $zIndex: map.get($config, zIndex);
-
   $particles: generate-snow($count, $snow-container-width, $container-height);
 
   .layer-#{$layer} {
     --sway: #{$sway};
+
     width: $size;
     height: $size;
     box-shadow: $particles;
     animation: fall-and-sway $speed linear infinite;
     z-index: $zIndex;
 
-    @if $blur > 0px {
+    @if $blur > 0 {
       filter: blur($blur);
     }
 

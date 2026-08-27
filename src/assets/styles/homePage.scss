@@ -8,6 +8,7 @@
       font-size: 0.9rem;
     }
   }
+
   .saggittariusLink {
     position: relative;
     display: flex;
@@ -15,23 +16,19 @@
     align-items: center;
     justify-content: center;
     gap: 12px;
-
     margin-top: 20px;
     padding: 20px;
-
-    font-family: "Raleway", sans-serif;
+    font-family: var(--font-raleway), sans-serif;
     font-size: 0.9rem;
     text-align: center;
-
     background: radial-gradient(
       circle at 50% 120%,
-      rgba(0, 131, 196, 0.397),
-      rgba(0, 0, 0, 0.4)
+      rgb(0 131 196 / 39.7%),
+      rgb(0 0 0 / 40%)
     );
-    border: 1px solid rgba(1, 84, 125, 0.4);
+    border: 1px solid rgb(1 84 125 / 40%);
     border-radius: 12px;
     overflow: hidden;
-
     opacity: 0.8;
     transition:
       transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
@@ -49,9 +46,9 @@
     background: linear-gradient(
       90deg,
       transparent,
-      rgba(88, 164, 202, 0.4),
-      rgba(255, 255, 255, 0.6),
-      rgba(88, 164, 202, 0.4),
+      rgb(88 164 202 / 40%),
+      rgb(255 255 255 / 60%),
+      rgb(88 164 202 / 40%),
       transparent
     );
     transform: skewX(-25deg);
@@ -61,10 +58,10 @@
   .saggittariusLink:hover {
     opacity: 1;
     transform: translateY(-4px) scale(1.01);
-    border-color: rgba(88, 164, 202, 0.8);
+    border-color: rgb(88 164 202 / 80%);
     box-shadow:
-      0 12px 30px rgba(0, 0, 0, 0.4),
-      0 0 15px rgba(1, 84, 125, 0.2);
+      0 12px 30px rgb(0 0 0 / 40%),
+      0 0 15px rgb(1 84 125 / 20%);
   }
 
   .saggittariusLink:hover::before {
@@ -82,26 +79,26 @@
   .saggittariusLink a {
     position: relative;
     text-decoration: none;
-    color: #ffffff;
+    color: #fff;
     font-size: 0.75rem;
     letter-spacing: 0.5px;
     padding: 10px 24px;
-    background: rgba(1, 84, 125, 0.4);
-    border: 1px solid rgba(88, 164, 202, 0.5);
+    background: rgb(1 84 125 / 40%);
+    border: 1px solid rgb(88 164 202 / 50%);
     border-radius: 6px;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
     z-index: 2;
     transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   .saggittariusLink a:hover {
-    border-color: #ffffff;
-    box-shadow: 0 0 15px rgba(88, 164, 202, 0.6);
+    border-color: #fff;
+    box-shadow: 0 0 15px rgb(88 164 202 / 60%);
     transform: scale(1.05);
   }
 
   #shlokaWrapper {
-    outline: 2px solid rgba(237, 157, 60, 0.4);
+    outline: 2px solid rgb(237 157 60 / 40%);
     border-radius: 12px;
     padding: 8px;
     position: relative;
@@ -115,9 +112,9 @@
     color: white;
     text-align: center;
     font-weight: unset;
-    margin: 7px 0 5px 0;
+    margin: 7px 0 5px;
     padding-bottom: 10px;
-    border-bottom: 2px solid rgba(241, 239, 237, 0.2);
+    border-bottom: 2px solid rgb(241 239 237 / 20%);
   }
 
   #shlokaTranslation {
@@ -134,10 +131,8 @@
     bottom: 0;
     left: 50%;
     transform: translateX(-50%);
-
     width: 70%;
     height: 70%;
-
     z-index: -1;
     opacity: 0.3;
     border-radius: 12px;

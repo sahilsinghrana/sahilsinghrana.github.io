@@ -1,18 +1,14 @@
 ---
-// import { Image } from "astro:assets";
 import ThreeDmoonLoader from "@components/General/Moon/ThreeDmoonLoader..astro";
-import { Picture } from "astro:assets";
+
 const {
   className = "",
   src,
   alt,
   height,
   width,
-  widths,
-  loading,
+  loading = "lazy",
 } = Astro.props;
-
-// import fluteImage from "./flutenobg (3).png";
 ---
 
 <div id="profilePicContainer" class="profilePicContainer">
@@ -21,35 +17,18 @@ const {
     id="moonRoot"
   >
   </div>
-  <Picture
-    formats={["avif", "webp"]}
-    widths={widths || [80, 450]}
+  <img
     class={className}
     src={src}
     alt={alt}
     height={height}
     width={width}
     loading={loading}
-    fetchpriority={"high"}
+    fetchpriority={loading === "eager" ? "high" : undefined}
+    decoding="async"
   />
 
   <ThreeDmoonLoader />
 </div>
-
-<!-- <script>
-  import { getCurrentMoonData } from "@utils/currentMoonData";
-
-  const profilePicContainer = document.getElementById("profilePicContainer");
-  const lunarAgePercent = parseInt(
-    getCurrentMoonData().lunarAgePercent.replace("%", "").trim(),
-  );
-
-  const triangularWavePercent = 100 - Math.abs(2 * lunarAgePercent - 100);
-  if (profilePicContainer)
-    profilePicContainer.style.setProperty(
-      "--percent",
-      String(triangularWavePercent),
-    );
-</script> -->
 
 <script src="../General/Moon/3dMoon/main.js"></script>

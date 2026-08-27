@@ -7,30 +7,57 @@
     style="border: 1px solid hsla(0,0%,100%,.1); border-radius: 12px; overflow: hidden; display: block; height: 86px;"
     allow="clipboard-read; clipboard-write;"
     sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-popups allow-popups-to-escape-sandbox"
-    loading="eager"
+    loading="lazy"
   >
   </iframe>
 </div>
 
 <script type="module">
+  const iframe = document.getElementById("seleneChatIframe");
+  const allowedOrigin = iframe ? new URL(iframe.src).origin : "";
+
   const resizeIframe = (event) => {
-    if (event.data?.type === "seleneHeight") {
-      const iframe = document.getElementById("seleneChatIframe");
-      let receivedHeight = event.data.height;
-      const receivedIsExpanded = event.data.isExpanded;
+    if (!allowedOrigin || event.origin !== allowedOrigin) return;
+    if (event.data?.type !== "seleneHeight") return;
 
-      if (!receivedHeight) {
-        if (receivedIsExpanded) {
-          receivedHeight = 400;
-        } else {
-          receivedHeight = 86;
-        }
-      }
+    const target = document.getElementById("seleneChatIframe");
+    let receivedHeight = event.data.height;
+    const receivedIsExpanded = event.data.isExpanded;
 
-      if (iframe) {
-        iframe.style.height = `${receivedHeight}px`;
+    if (!receivedHeight) {
+      if (receivedIsExpanded) {
+        receivedHeight = 400;
+      } else {
+        receivedHeight = 86;
       }
     }
+
+    const height = Number(receivedHeight);
+    if (!Number.isFinite(height) || height <= 0) return;
+
+    // Clamp extreme iframe resize messages from a compromised/malicious frame.
+    const clampedHeight = Math.min(Math.max(height, 86), 600);
+
+    if (target) {
+      target.style.height = `${clampedHeight}px`;
+    }
   };
-  window.addEventListener("message", resizeIframe, false);
+
+  const attach = () => {
+    // Idempotent so pageshow after attach() does not stack listeners.
+    window.removeEventListener("message", resizeIframe, false);
+    window.addEventListener("message", resizeIframe, false);
+  };
+
+  const detach = () => {
+    window.removeEventListener("message", resizeIframe, false);
+  };
+
+  window.addEventListener("pagehide", detach);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) attach();
+  });
+
+  // Attach immediately (same timing as before) so early iframe messages are not missed.
+  attach();
 </script>

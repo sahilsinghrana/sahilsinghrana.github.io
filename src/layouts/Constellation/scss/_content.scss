@@ -1,4 +1,4 @@
-@use "./_variables.scss" as *;
+@use "variables" as *;
 
 .constellation-content {
   max-width: $constellation-content-max-width;
@@ -10,16 +10,16 @@
 }
 
 .constellation-fact-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgb(255 255 255 / 2%);
+  border: 1px solid rgb(255 255 255 / 10%);
   border-radius: $constellation-border-radius;
   padding: 2rem;
   transition: all $constellation-transition-normal;
   cursor: pointer;
 
   &:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(74, 158, 255, 0.3);
+    background: rgb(255 255 255 / 5%);
+    border-color: rgb(74 158 255 / 30%);
     transform: translateY(-5px);
   }
 
@@ -64,12 +64,13 @@
 
 .constellation-mythology {
   @include constellation-section-full;
+
   background: linear-gradient(
     135deg,
-    rgba(74, 158, 255, 0.05),
-    rgba(255, 255, 255, 0.02)
+    rgb(74 158 255 / 5%),
+    rgb(255 255 255 / 2%)
   );
-  border: 1px solid rgba(74, 158, 255, 0.2);
+  border: 1px solid rgb(74 158 255 / 20%);
 
   p {
     font-size: 1.1rem;

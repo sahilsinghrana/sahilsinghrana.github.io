@@ -10,6 +10,7 @@ const blogCollection = defineCollection({
       author: z.string(),
       pubDate: z.date(),
       description: z.string(),
+      slug: z.string().optional(),
       image: z.object({
         url: image().or(z.string()),
         alt: z.string(),
@@ -30,6 +31,7 @@ const snippetsCollection = defineCollection({
     z.object({
       title: z.string(),
       description: z.string(),
+      slug: z.string().optional(),
       image: z.object({
         url: image().or(z.string()),
         alt: z.string(),

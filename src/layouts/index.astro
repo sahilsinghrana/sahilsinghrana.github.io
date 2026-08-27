@@ -11,27 +11,49 @@ import DefaultMeta from "./Metas/DefaultMeta.astro";
 import GtagHeadScripts from "./Metas/GtagHeadScripts.astro";
 import DescriptionMeta from "./Metas/DescriptionMeta.astro";
 
-const { title, description, keywords, className } = Astro.props;
+const {
+  title,
+  description,
+  keywords,
+  className,
+  robots = "index, follow",
+  ogType = "website",
+  ogImage,
+  publishedTime,
+  tags = [],
+  canonicalPath,
+  ogImageWidth,
+  ogImageHeight,
+  ogImageAlt,
+} = Astro.props;
 
 import "@styles/global.scss";
-
-// import "./test.scss";
 ---
 
 <html lang="en">
   <Head>
-    <Font cssVariable="--font-manrope" />
-    <Font cssVariable="--font-raleway" />
-    <Font cssVariable="--font-roboto" />
+    <Font cssVariable="--font-raleway" preload />
     <Font cssVariable="--font-inter" />
-    <DefaultMeta />
+    <DefaultMeta robots={robots} canonicalPath={canonicalPath} />
     <GtagHeadScripts />
-    <OgMeta title={title} description={description} />
+    <OgMeta
+      title={title}
+      description={description}
+      type={ogType}
+      image={ogImage}
+      publishedTime={publishedTime}
+      tags={tags}
+      canonicalPath={canonicalPath}
+      imageWidth={ogImageWidth}
+      imageHeight={ogImageHeight}
+      imageAlt={ogImageAlt}
+    />
     <DescriptionMeta
       title={title}
       description={description}
       keywords={keywords}
     />
+    <slot name="head" />
 
     <title>{title}</title>
   </Head>

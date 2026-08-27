@@ -1,20 +1,22 @@
 .projectCard:hover {
-  outline: 1px solid rgba(191, 191, 191, 0.892);
+  outline: 1px solid rgb(191 191 191 / 89.2%);
+
   img {
     filter: grayscale(0);
   }
+
   transition: 500ms ease-out;
 }
 
 .projectCard {
   display: flex;
   flex-direction: column;
-
   min-height: 210px;
+
   // height: 230px;
   max-height: 245px;
   width: 310px;
-  outline: 1px solid rgba(128, 128, 128, 0.553);
+  outline: 1px solid rgb(128 128 128 / 55.3%);
   border-radius: 15px;
   overflow: hidden;
 
@@ -35,7 +37,7 @@
   h2,
   p {
     margin: 3px 0;
-    word-wrap: break-word;
+    overflow-wrap: break-word;
     max-width: 100%;
     padding: 0 20px;
   }
@@ -69,6 +71,7 @@
       a:hover {
         color: lightgray;
       }
+
       svg {
         height: 20px;
       }

@@ -5,9 +5,23 @@ import {
   populateTopTracks,
 } from "./helpers/handlers";
 
+let fetchGeneration = 0;
+let abortController = null;
+
+function stopFetch() {
+  abortController?.abort();
+  abortController = null;
+}
+
 async function populateTopTracksAndArtists() {
+  const generation = ++fetchGeneration;
+  stopFetch();
+  abortController = new AbortController();
+  const { signal } = abortController;
+
   try {
-    const res = await fetchTopTracksAndArtists();
+    const res = await fetchTopTracksAndArtists(signal);
+    if (generation !== fetchGeneration || signal.aborted) return;
 
     const { myProfile, artists, tracks } = res;
 
@@ -16,8 +30,23 @@ async function populateTopTracksAndArtists() {
     populateTopArtists(artists);
     populateTopTracks(tracks);
   } catch (err) {
+    if (err?.name === "AbortError") return;
     console.error(err);
   }
 }
+
+function onPageHide() {
+  fetchGeneration += 1;
+  stopFetch();
+}
+
+function onPageShow(event) {
+  if (event.persisted) {
+    populateTopTracksAndArtists();
+  }
+}
+
+window.addEventListener("pagehide", onPageHide);
+window.addEventListener("pageshow", onPageShow);
 
 populateTopTracksAndArtists();

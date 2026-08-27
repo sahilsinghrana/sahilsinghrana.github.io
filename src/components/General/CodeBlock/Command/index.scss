@@ -6,11 +6,8 @@
   justify-content: space-between;
   align-items: center;
   padding: 5px 8px;
-
   border-radius: 12px;
-
   font-size: 0.8rem;
-
   min-width: 180px;
 
   code {
@@ -34,7 +31,7 @@
     }
 
     &[data-copying="true"] {
-      color: rgb(222, 104, 0);
+      color: rgb(222 104 0);
     }
   }
 }
