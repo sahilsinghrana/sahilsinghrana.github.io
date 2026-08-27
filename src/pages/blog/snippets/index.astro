@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import { getCollection } from "astro:content";
 
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
@@ -9,15 +10,29 @@ import placeholderImage from "@images/snippetsPlaceholder.webp";
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 import { snippetsPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { getContentSlug } from "@utils/getContentSlug";
+import { SITE_ORIGIN } from "@utils/site";
 
 const snippetsEntries = await getCollection("snippets");
 ---
 
 <Layout
-  title="Code Snippets | Sahil Singh Rana | Software Developer | Sahil Rana"
-  description="I post code small code snippets here."
+  title="Code Snippets | Sahil Rana"
+  description="Short reusable code snippets - curl downloads, WSL port exposure, git performance tips, and other developer CLI notes."
   keywords={snippetsPageKeywords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Code Snippets | Sahil Rana",
+        url: `${SITE_ORIGIN}/blog/snippets`,
+        description:
+          "Short developer code snippets and CLI tips by Sahil Rana.",
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage
     title="Code Snippets"
     Image={placeholderImage}
@@ -33,7 +48,7 @@ const snippetsEntries = await getCollection("snippets");
             title={title}
             description={description}
             image={image}
-            slug={post.id}
+            slug={getContentSlug(post)}
           />
         );
       })

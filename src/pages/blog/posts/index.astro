@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import { getCollection } from "astro:content";
 
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
@@ -9,15 +10,29 @@ import placeholderImage from "@images/blogPostsPlaceholdercomp.webp";
 import PostCard from "@components/General/Blog/PostCard.astro";
 import { postsPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { getBlogPostPath } from "@utils/getContentSlug";
+import { SITE_ORIGIN } from "@utils/site";
 
 const blogEntries = await getCollection("blog");
 ---
 
 <Layout
-  title="Blog Posts | Sahil Singh Rana | Software Developer | Sahil Rana"
-  description="Hey! here I am writing about random topics which i have learned along the way."
+  title="Blog Posts | Sahil Rana"
+  description="Long-form posts on JavaScript techniques - method chaining, bitwise permissions, generators, strategy pattern, and dynamic dependency injection."
   keywords={postsPageKeywords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Blog Posts | Sahil Rana",
+        url: `${SITE_ORIGIN}/blog/posts`,
+        description:
+          "Long-form JavaScript and web development articles by Sahil Rana.",
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage
     title="Blog Posts"
     Image={placeholderImage}
@@ -37,7 +52,7 @@ const blogEntries = await getCollection("blog");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={"/blog/posts/" + post.id}
+            slug={getBlogPostPath(post)}
           />
         );
       })

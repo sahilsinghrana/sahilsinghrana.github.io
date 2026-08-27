@@ -32,15 +32,7 @@ export const links: Links = {
   mail: "mailto:ranasahil98@gmail.com",
 };
 
-interface ApiUrls {
-  topSpotifySongsAndTracks: string;
-  currentPlayerStatus: string;
-}
-export const API_URLS: ApiUrls = {
-  topSpotifySongsAndTracks: "https://mytopsongs.sahilsinghrana.workers.dev/",
-  currentPlayerStatus:
-    "https://mytopsongs.sahilsinghrana.workers.dev/currentPlaying",
-};
+export { API_URLS } from "./apiUrls";
 
 export const SAGITTARIUS = {
   stars: {
@@ -210,7 +202,7 @@ export const SHIVA_SHLOKAS: Shloka[] = [
   new SHIVA_Shloka(
     177.25,
     "उत्साहाद्यत्र सिद्ध्यन्ति कार्याणि न विपश्चितः। \n न तत्र शास्त्रं न बुद्धिर्न दक्षता न चौषधम्॥",
-    "Where zeal prevails, tasks succeed — not by scriptural learning, intellect, skill, or even medicine.",
+    "Where zeal prevails, tasks succeed - not by scriptural learning, intellect, skill, or even medicine.",
     "Mahābhārata, Śānti Parva",
   ),
   new SHIVA_Shloka(

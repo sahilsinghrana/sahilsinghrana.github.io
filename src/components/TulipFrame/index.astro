@@ -1,8 +1,6 @@
 ---
-// import Tulips from "@assets/images/tulipsongrass.webp";
-import Tulips from "@assets/images/tulips_animated_compressed_trimmed.gif";
+import Tulips from "@assets/images/tulips_animated.webp";
 import MossPole from "@assets/images/moss_pole.webp";
-// import Tulips from "@assets/images/tulips_cartoonsh_upscaled.webp";
 
 import { Image } from "astro:assets";
 
@@ -13,10 +11,11 @@ import "./index.scss";
   <img
     class="tulips"
     decoding="async"
-    height={255}
+    loading="lazy"
+    height={169}
     width={300}
     src={Tulips.src}
-    alt={"Tulips"}
+    alt=""
   />
   <Image class="mossPole" height={220} src={MossPole} alt={"MossPole"} />
 

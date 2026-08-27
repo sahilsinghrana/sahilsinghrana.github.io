@@ -228,8 +228,7 @@ class CurlGeneratorApp {
     // Restore basic form fields
     Object.entries(formData).forEach(([key, value]) => {
       const element = document.getElementById(key) as
-        | HTMLInputElement
-        | HTMLSelectElement;
+        HTMLInputElement | HTMLSelectElement;
       if (element && typeof value === "string") {
         element.value = value;
       } else if (element && typeof value === "boolean") {

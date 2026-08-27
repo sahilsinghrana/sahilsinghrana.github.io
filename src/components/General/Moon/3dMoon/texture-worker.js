@@ -12,7 +12,7 @@ function lerp(a, b, t) {
   return a + t * (b - a);
 }
 
-// Permutation table — a shuffled lookup of 0..255 doubled to 512 entries.
+// Permutation table - a shuffled lookup of 0..255 doubled to 512 entries.
 // Doubling avoids a modulo operation on every lookup: perm[X + 1] is always safe
 // even when X = 255, because the table extends to index 511.
 const perm = new Uint8Array(512);
@@ -59,7 +59,7 @@ function noise2d(x, y) {
   );
 }
 
-// Fractional Brownian Motion — stacks multiple noise octaves at increasing frequencies
+// Fractional Brownian Motion - stacks multiple noise octaves at increasing frequencies
 // and decreasing amplitudes to produce a natural-looking, self-similar surface.
 // lacunarity: how fast frequency grows per octave (typically ~2). HIGHER → finer detail.
 // gain: how fast amplitude shrinks per octave (typically ~0.5). HIGHER → rougher surface.
@@ -88,11 +88,11 @@ self.onmessage = function (e) {
   const roughData = new Uint8ClampedArray(rSize * rSize * 4);
 
   // ===================== CRATER GENERATION =====================
-  // Three tiers of craters by radius — large, medium, and micro.
+  // Three tiers of craters by radius - large, medium, and micro.
   // Each crater stores:
-  //   x, y  — normalized [0,1] center position on the texture.
-  //   r     — influence radius in normalized texture space.
-  //   d     — depth multiplier (controls how deep/prominent the crater is).
+  //   x, y  - normalized [0,1] center position on the texture.
+  //   r     - influence radius in normalized texture space.
+  //   d     - depth multiplier (controls how deep/prominent the crater is).
   const craters = [];
   for (let i = 0; i < 20; i++)
     craters.push({
@@ -121,7 +121,7 @@ self.onmessage = function (e) {
   for (let i = 0; i < craters.length; i++) {
     const c = craters[i];
     c.r12 = c.r * 1.2; // Outer influence boundary (where the crater fades to zero).
-    c.r12sq = c.r12 * c.r12; // Squared outer radius — used for fast pre-sqrt rejection.
+    c.r12sq = c.r12 * c.r12; // Squared outer radius - used for fast pre-sqrt rejection.
     c.r07 = c.r * 0.7; // Inner floor boundary (deepest part of the bowl).
   }
 
@@ -131,7 +131,7 @@ self.onmessage = function (e) {
   //
   // The grid divides [0,1]² into GRID×GRID cells. Each crater registers itself
   // in every cell its bounding box overlaps. Each pixel then only checks the
-  // craters stored in its own cell — typically 3–5 instead of 210.
+  // craters stored in its own cell - typically 3–5 instead of 210.
   //
   // The modulo indexing in both the registration loop and the lookup handles
   // craters whose bounding boxes straddle the 0/1 wrap edge, consistent with
@@ -188,14 +188,14 @@ self.onmessage = function (e) {
       const distSq = dx * dx + dy * dy;
 
       // Squared-distance early rejection avoids Math.sqrt for candidates that are
-      // clearly outside the influence radius — the most common case even with the grid.
+      // clearly outside the influence radius - the most common case even with the grid.
       if (distSq >= c.r12sq) continue;
 
       const dist = Math.sqrt(distSq);
       const t = dist / c.r;
 
       if (t < 0.7) {
-        const t07 = t / 0.7; // Cached — used twice in this branch.
+        const t07 = t / 0.7; // Cached - used twice in this branch.
         h += -c.d * (1 - t07 * t07) * 0.7;
       } else if (t < 1.0) {
         h += ((t - 0.7) / 0.3) * c.d * 0.3;
@@ -257,7 +257,7 @@ self.onmessage = function (e) {
 
   // Transfer ownership of the underlying ArrayBuffers to the main thread instead of
   // copying them. After this call, diffuseData/bumpData/roughData are neutered (zero-length)
-  // in the worker — the main thread now owns the memory, with no copy overhead.
+  // in the worker - the main thread now owns the memory, with no copy overhead.
   self.postMessage(
     {
       diffuse: diffuseData.buffer,

@@ -1,0 +1,5 @@
+User-agent: *
+Allow: /
+Disallow: /uv7o/
+
+Sitemap: https://www.sahilrana.in/sitemap-index.xml

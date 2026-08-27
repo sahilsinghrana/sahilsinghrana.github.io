@@ -14,6 +14,8 @@ import ChessWidget from "@components/ChessWidget/index.astro";
 import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
 import FeaturedTools from "@components/Tools/FeaturedTools.astro";
+import { SITE_ORIGIN } from "@utils/site";
+import { links } from "@utils/constants";
 
 import "@assets/styles/homePage.scss";
 import { Image } from "astro:assets";
@@ -21,47 +23,46 @@ import { Image } from "astro:assets";
 import shivaBG from "../assets/images/shiva.png";
 ---
 
-<head>
-  <Schema
-    item={{
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      name: "Sahil Rana",
-      alternateName: [
-        "Sahil Singh Rana",
-        "Sahil Portfolio",
-        "Sahil Rana Portfolio",
-        "SSR",
-        "Sahil",
-        "Rana",
-      ],
-      url: "https://sahilrana.in",
-      image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-      description:
-        "Official website of Sahil Rana, a MERN stack and JavaScript developer specializing in modern, scalable, and performance-driven web applications.",
-      publisher: {
-        "@type": "Person",
-        name: "Sahil Rana",
-        url: "https://sahilrana.in",
-        image: "https://avatars.githubusercontent.com/u/48375250?v=4",
-        sameAs: [
-          "https://sahilsinghrana.github.io",
-          "https://www.linkedin.com/in/sahilsinghrana",
-          "https://x.com/sahilrana010",
-          "https://github.com/sahilsinghrana",
-          "https://instagram.com/sahilrana0_0",
-        ],
-      },
-    }}
-  />
-</head>
-
 <Layout
   title="Sahil Rana | Software Developer"
   description="Welcome to my portfolio! I am a software engineer specializing in web development, with expertise in cutting-edge technologies like React.js, Node.js, and MongoDB. Explore my projects and skills to see how I can help bring your ideas to life!"
   keywords={homePageKeywords}
   className="homePage"
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "Sahil Rana",
+        alternateName: [
+          "Sahil Singh Rana",
+          "Sahil Portfolio",
+          "Sahil Rana Portfolio",
+          "SSR",
+          "Sahil",
+          "Rana",
+        ],
+        url: SITE_ORIGIN,
+        image: links.profilePic,
+        description:
+          "Official website of Sahil Rana, a MERN stack and JavaScript developer specializing in modern, scalable, and performance-driven web applications.",
+        publisher: {
+          "@type": "Person",
+          name: "Sahil Rana",
+          url: SITE_ORIGIN,
+          image: links.profilePic,
+          sameAs: [
+            links.linkedin,
+            links.twitter,
+            links.github,
+            links.instagram,
+            "https://dev.to/sahilrana",
+          ],
+        },
+      }}
+    />
+  </Fragment>
   <About />
   <TulipFrame />
   <CurrentMoonInfo />

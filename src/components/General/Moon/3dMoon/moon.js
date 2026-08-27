@@ -4,7 +4,7 @@
 const TEX_SIZE = 630; // Resolution of the diffuse and bump textures (square).
 const ROUGH_SIZE = 490; // Resolution of the roughness texture (square, can be lower).
 
-// Named imports instead of `import("three")` namespace — enables Rollup/Vite tree shaking.
+// Named imports instead of `import("three")` namespace - enables Rollup/Vite tree shaking.
 // Only the classes actually used are included in the final bundle.
 import {
   DataTexture,
@@ -20,8 +20,10 @@ export class Moon {
   constructor(scene, onComplete) {
     this.scene = scene;
     this.mesh = null;
+    this._disposed = false;
+    this._worker = null;
 
-    // Private refs kept for dispose() — Three.js requires explicit disposal of GPU
+    // Private refs kept for dispose() - Three.js requires explicit disposal of GPU
     // resources (textures, materials, geometries) because the JS garbage collector
     // cannot free WebGL objects held by the GPU driver.
     this._geometry = null;
@@ -30,9 +32,10 @@ export class Moon {
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
     // construction failure before onerror fires) becomes an unhandled Promise rejection
-    // that is silently swallowed — no console error, no onComplete, no feedback.
+    // that is silently swallowed - no console error, no onComplete, no feedback.
     this.init(onComplete).catch((err) => {
       console.error("Moon init failed:", err);
+      if (onComplete) onComplete();
     });
   }
 
@@ -40,16 +43,27 @@ export class Moon {
     const worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
       type: "module",
     });
+    this._worker = worker;
 
     // If the worker throws (malformed message, JS error inside the worker, etc.),
-    // onmessage never fires and onComplete is never called — the scene silently stays
+    // onmessage never fires and onComplete is never called - the scene silently stays
     // empty with no feedback. onerror surfaces that failure so the caller can react.
     worker.onerror = (err) => {
       console.error("Texture worker failed:", err);
       worker.terminate();
+      if (this._worker === worker) this._worker = null;
+      // Dismiss the loader so the static profile image remains usable.
+      if (onComplete) onComplete();
     };
 
     worker.onmessage = (e) => {
+      // Teardown may have run while the worker was still generating textures.
+      if (this._disposed) {
+        worker.terminate();
+        if (this._worker === worker) this._worker = null;
+        return;
+      }
+
       const diffuseTex = new DataTexture(
         new Uint8Array(e.data.diffuse),
         TEX_SIZE,
@@ -92,6 +106,16 @@ export class Moon {
       roughTex.minFilter = LinearFilter;
       roughTex.needsUpdate = true;
 
+      // Dispose again if teardown raced in while we built CPU-side textures.
+      if (this._disposed) {
+        diffuseTex.dispose();
+        bumpTex.dispose();
+        roughTex.dispose();
+        worker.terminate();
+        if (this._worker === worker) this._worker = null;
+        return;
+      }
+
       this._material = new MeshStandardMaterial({
         map: diffuseTex,
         bumpMap: bumpTex,
@@ -116,8 +140,9 @@ export class Moon {
       this.scene.add(this.mesh);
 
       worker.terminate();
+      if (this._worker === worker) this._worker = null;
 
-      // onComplete signals that the mesh is now part of the scene graph — textures are
+      // onComplete signals that the mesh is now part of the scene graph - textures are
       // uploaded to the GPU and the geometry is registered. The actual loader dismissal
       // is deferred in main.js until after the first renderer.render() call that includes
       // this mesh, confirmed by a requestAnimationFrame callback, so the loader only hides
@@ -132,11 +157,18 @@ export class Moon {
   // Must be called before removing the Moon from the scene to avoid WebGL memory leaks,
   // because Three.js does not garbage-collect GPU objects automatically.
   dispose() {
+    this._disposed = true;
+
+    if (this._worker) {
+      this._worker.terminate();
+      this._worker = null;
+    }
+
     if (!this.mesh) return;
 
     this.scene.remove(this.mesh);
 
-    // Each texture is an independent GPU upload — each must be disposed individually.
+    // Each texture is an independent GPU upload - each must be disposed individually.
     this._material?.map?.dispose();
     this._material?.bumpMap?.dispose();
     this._material?.roughnessMap?.dispose();

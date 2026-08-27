@@ -1,16 +1,12 @@
-@import url("./opt.scss");
+@use "opt";
 
 :root {
   --content-width: 80vw;
   --content-max-width: 700px;
-  --font-main:
-    var(--font-raleway), var(--font-manrope), var(--font-inter),
-    var(--font-roboto), Arial, sans-serif;
+  --font-main: var(--font-raleway), arial, sans-serif;
   --accent1: brown;
-
   --bottom-spacing: 15px;
   --top-spacing: 15px;
-
   --fs-base: 1rem;
   --fs-h1: 1.8rem;
   --fs-h2: 1.55rem;
@@ -35,6 +31,7 @@ main {
   position: relative;
   display: flex;
   justify-content: center;
+
   .content {
     max-width: 700px;
     width: 80vw;
@@ -44,9 +41,10 @@ main {
 a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgb(255 255 255 / 20%);
+
   &:hover {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.43);
+    border-bottom: 1px solid rgb(255 255 255 / 43%);
     cursor: pointer;
     color: white;
   }
@@ -58,30 +56,35 @@ h1 {
   font-weight: var(--fw-heading-strong);
   margin: 0 0 0.5rem;
 }
+
 h2 {
   font-size: var(--fs-h2);
   line-height: var(--line-height-heading);
   font-weight: var(--fw-heading-strong);
   margin: 0 0 0.5rem;
 }
+
 h3 {
   font-size: var(--fs-h3);
   line-height: var(--line-height-heading);
   font-weight: var(--fw-heading-normal);
   margin: 0 0 0.5rem;
 }
+
 h4 {
   font-size: var(--fs-h4);
   line-height: var(--line-height-heading);
   font-weight: var(--fw-heading-normal);
   margin: 0 0 0.5rem;
 }
+
 h5 {
   font-size: var(--fs-h5);
   line-height: var(--line-height-heading);
   font-weight: var(--fw-heading-normal);
   margin: 0 0 0.5rem;
 }
+
 h6 {
   font-size: var(--fs-h6);
   line-height: var(--line-height-heading);
@@ -93,6 +96,7 @@ h6 {
 p {
   font-size: var(--fs-p);
   line-height: var(--line-height-body);
+
   // margin: 0 0 1rem;margin
 }
 

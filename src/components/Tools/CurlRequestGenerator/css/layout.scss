@@ -1,4 +1,4 @@
-@use "./variables.scss" as *;
+@use "variables" as *;
 
 .curl-form {
   background: $gray-700;
@@ -12,6 +12,7 @@
   background-color: $gray-600;
   padding: 6px;
   border-radius: 12px;
+
   &:last-child {
     margin-bottom: 0;
   }
@@ -57,6 +58,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

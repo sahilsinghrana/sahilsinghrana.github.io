@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
 import placeholderImage from "@images/placeholder5comp.webp";
@@ -10,13 +11,38 @@ import { Github, Instagram, Linkedin, Twitter } from "lucide-astro";
 import "@assets/styles/contact.scss";
 import { contactPageKeyWords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { SITE_ORIGIN } from "@utils/site";
 ---
 
 <Layout
-  title="Contact | Sahil Singh Rana | Software Developer | Sahil Rana"
-  description="Wanna talk? Let's connect. Reach out to me through this Contact page."
+  title="Contact | Sahil Rana"
+  description="Contact Sahil Rana - email, LinkedIn, GitHub, and X. Reach out about web development, collaborations, or questions."
   keywords={contactPageKeyWords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "ContactPage",
+        name: "Contact Sahil Rana",
+        url: `${SITE_ORIGIN}/contact`,
+        description:
+          "Contact Sahil Rana via email or social profiles for web development collaborations and questions.",
+        mainEntity: {
+          "@type": "Person",
+          name: "Sahil Rana",
+          email: "ranasahil98@gmail.com",
+          url: SITE_ORIGIN,
+          sameAs: [
+            links.linkedin,
+            links.twitter,
+            links.github,
+            links.instagram,
+          ],
+        },
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage
     title="Contact"
     Image={placeholderImage}

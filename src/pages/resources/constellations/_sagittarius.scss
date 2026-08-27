@@ -2,7 +2,6 @@
   position: relative;
   height: 100%;
   border: 2px solid #444;
-
   display: flex;
   justify-content: center;
   align-items: center;
@@ -11,10 +10,10 @@
 .vedic-characteristics {
   background: linear-gradient(
     135deg,
-    rgba(255, 165, 0, 0.05),
-    rgba(255, 255, 255, 0.02)
+    rgb(255 165 0 / 5%),
+    rgb(255 255 255 / 2%)
   );
-  border: 1px solid rgba(255, 165, 0, 0.2);
+  border: 1px solid rgb(255 165 0 / 20%);
   padding: 2rem;
   border-radius: 12px;
   margin-top: 3rem;
@@ -54,9 +53,9 @@
   .mantra-box {
     margin-top: 3rem;
     padding: 2rem;
-    background: rgba(255, 165, 0, 0.03);
+    background: rgb(255 165 0 / 3%);
     border-radius: 8px;
-    border: 1px solid rgba(255, 165, 0, 0.1);
+    border: 1px solid rgb(255 165 0 / 10%);
 
     h3 {
       color: #ffa500;
@@ -75,7 +74,7 @@
 
     .mantra-desc {
       text-align: center;
-      color: #999999;
+      color: #999;
       line-height: 1.7;
     }
   }

@@ -1,17 +1,19 @@
 .featuredPostCard {
   display: flex;
   align-items: center;
+
   img {
     height: 60px;
     width: 60px;
     object-fit: cover;
     border-radius: 4px;
-    outline: 3px solid rgba(143, 143, 143, 0.2);
+    outline: 3px solid rgb(143 143 143 / 20%);
   }
 
   .content {
     color: lightgray;
     margin-left: 8px;
+
     h3 {
       font-size: 0.8rem;
       margin: 0;
@@ -45,20 +47,20 @@
   ul {
     list-style: none;
     padding-inline-start: 0;
+
     li {
       margin-bottom: 15px;
     }
   }
 
   .headings {
-    background-color: rgba(128, 128, 128, 0.05);
+    background-color: rgb(128 128 128 / 5%);
     border-radius: 12px;
     padding: 10px 0;
     display: flex;
     justify-content: space-between;
     width: 100%;
     align-items: center;
-
     margin-top: 20px;
 
     h2 {
@@ -67,13 +69,15 @@
       font-size: 0.85rem;
       margin: 0;
     }
+
     a {
       text-align: right;
-      color: rgb(155, 165, 174);
+      color: rgb(155 165 174);
       font-size: 0.68rem;
       margin-top: 0;
       padding: 0;
       font-weight: 600;
+
       &:hover {
         color: #eaeaea;
       }
@@ -85,7 +89,6 @@
     gap: 1rem;
     justify-self: center;
     justify-content: center;
-
     flex-wrap: wrap;
   }
 }

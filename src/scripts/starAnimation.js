@@ -1,6 +1,8 @@
 import { getRandom } from "@components/Spotify/helpers/utils";
 
 export function initStarAnimation() {
+  if (document.body.querySelector(".star")) return;
+
   const starsFragment = document.createDocumentFragment();
 
   for (let i = 0; i < 11; i++) {

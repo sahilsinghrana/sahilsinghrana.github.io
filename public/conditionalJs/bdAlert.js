@@ -56,21 +56,10 @@ function createAlert(title, message, extended) {
   dialogEl.showModal();
 }
 
-const mainMessage = `You might not be aware,
-    I don't know either;
-
-    But what if
-    You are a guiding light to someone.
-    what if
-    You are a source of someone's smile.
-    what if
-    You hold the spark to someone's fire.
-
-    In this world with too many unknowns,
-
+const mainMessage = `
     Stay kind,
     Be safe,
-    Celebrate yourself.
+    Celebrate!!.
   `;
 
 const extendedMsg = `
@@ -90,15 +79,17 @@ So stubborn you are,
 corageous, yet so kind.
 
 It's all peace around you,
-although i get numb,
 there's a pleasing calm.
+yet i get numb,
+
+Stop never, 
+You've worked so hard, 
+Victory is your rightful crown,
+you belong among the best.
 
 It's your day,
 It's your night,
-Celebrate with full of heart.
-
-
-Don't Stop, You've worked so hard, Victory is your rightful crown, you belong among the best.
+Celebrate!!
 `;
 
 function createBdAlert() {

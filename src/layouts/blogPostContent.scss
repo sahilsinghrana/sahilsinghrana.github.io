@@ -3,8 +3,8 @@ article.blogContent {
   --text-muted: #9e9b96;
   --text-faint: #6b6864;
   --accent: #f0a05a;
-  --accent-dim: rgba(240, 160, 90, 0.12);
-  --border: rgba(255, 255, 255, 0.08);
+  --accent-dim: rgb(240 160 90 / 12%);
+  --border: rgb(255 255 255 / 8%);
   --code-bg: #1a1917;
   --blockquote-border: #f0a05a;
 
@@ -33,22 +33,27 @@ article.blogContent {
   h1 {
     font-size: 1.4rem;
   }
+
   h2 {
     font-size: 1.2rem;
     padding-bottom: 0.3em;
     border-bottom: 1px solid var(--border);
   }
+
   h3 {
     font-size: 1.05rem;
   }
+
   h4 {
     font-size: 0.95rem;
     color: var(--text-primary);
   }
+
   h5 {
     font-size: 0.875rem;
     color: var(--text-muted);
   }
+
   h6 {
     font-size: 0.8rem;
     color: var(--text-faint);
@@ -63,7 +68,7 @@ article.blogContent {
     margin-bottom: 1.4em;
     text-align: left;
 
-    @media (min-width: 640px) {
+    @media (width >= 640px) {
       text-align: justify;
       hyphens: auto;
     }
@@ -80,6 +85,7 @@ article.blogContent {
 
   li {
     margin-bottom: 0.35em;
+
     & + li {
       margin-top: 0.2em;
     }
@@ -93,16 +99,17 @@ article.blogContent {
     color: var(--accent);
     font-style: normal;
     text-decoration: underline;
-    text-decoration-color: rgba(240, 160, 90, 0.35);
+    text-decoration-color: rgb(240 160 90 / 35%);
     text-underline-offset: 3px;
-    word-break: break-word;
+    word-break: normal;
+    overflow-wrap: anywhere;
     transition:
       color 0.15s ease,
       text-decoration-color 0.15s ease;
 
     &:hover {
       color: #fff;
-      text-decoration-color: rgba(255, 255, 255, 0.6);
+      text-decoration-color: rgb(255 255 255 / 60%);
     }
   }
 
@@ -121,11 +128,11 @@ article.blogContent {
     line-height: 1.7;
     padding: 1.25rem 1.5rem;
     border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
+    border: 1px solid rgb(255 255 255 / 15%);
     overflow-x: auto;
     margin-bottom: 1.75em;
     font-family: "JetBrains Mono", "Fira Code", monospace;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 4%);
 
     code {
       background: none;
@@ -200,8 +207,9 @@ article.blogContent {
     tr:last-child td {
       border-bottom: none;
     }
+
     tr:hover td {
-      background: rgba(255, 255, 255, 0.025);
+      background: rgb(255 255 255 / 2.5%);
     }
   }
 

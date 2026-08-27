@@ -1,4 +1,4 @@
-@use "./_variables.scss" as *;
+@use "variables" as *;
 
 .constellation-hero {
   min-height: 100vh;
@@ -8,6 +8,7 @@
   position: relative;
   padding: $constellation-hero-padding;
   overflow: hidden;
+
   .title {
     position: absolute;
     z-index: 99;
@@ -15,6 +16,7 @@
     left: 0;
     padding: 10px;
     opacity: 0.75;
+
     a {
       color: whitesmoke;
       text-decoration: none;
@@ -39,7 +41,7 @@
   letter-spacing: 0.2em;
   margin-bottom: 1rem;
   color: $constellation-star-white;
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  text-shadow: 0 0 20px rgb(255 255 255 / 30%);
   animation: constellation-fadeInUp 1s ease-out;
 }
 
@@ -61,9 +63,9 @@
 
   span {
     padding: 0.5rem 1rem;
-    border: 1px solid rgba(74, 158, 255, 0.3);
+    border: 1px solid rgb(74 158 255 / 30%);
     border-radius: 4px;
-    background: rgba(74, 158, 255, 0.05);
+    background: rgb(74 158 255 / 5%);
   }
 }
 

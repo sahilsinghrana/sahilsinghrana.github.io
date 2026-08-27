@@ -3,11 +3,12 @@ import BlogPost from "@layouts/BlogPost.astro";
 import BlogPostContent from "@layouts/BlogPostContent.astro";
 import { getCollection } from "astro:content";
 import { render } from "astro:content";
+import { getContentSlug } from "@utils/getContentSlug";
 
 export async function getStaticPaths() {
   const snippetEntries = await getCollection("snippets");
   return snippetEntries.map((entry) => ({
-    params: { slug: entry.id },
+    params: { slug: getContentSlug(entry) },
     props: { entry },
   }));
 }

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Sahil Rana Blog</title>
+    <description>JavaScript articles and code snippets by Sahil Rana - patterns, tooling tips, and web development notes.</description>
+    <link>https://www.sahilrana.in/</link>
+    <language>en-us</language>
+    <item>
+      <title>Injecting dependencies in js.</title>
+      <link>https://www.sahilrana.in/blog/posts/injecting-dependents-dynamically</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/injecting-dependents-dynamically</guid>
+      <description>Be ready for changes.</description>
+      <pubDate>Wed, 01 Apr 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>No More Ifs</title>
+      <link>https://www.sahilrana.in/blog/posts/no-more-ifs</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/no-more-ifs</guid>
+      <description>The strategy Pattern.</description>
+      <pubDate>Wed, 01 Apr 2026 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Squeezing Bytes to store permissions.</title>
+      <link>https://www.sahilrana.in/blog/posts/bitwise-operators-usecase</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/bitwise-operators-usecase</guid>
+      <description>Bitwise operators usecase (Bitmasking)</description>
+      <pubDate>Sat, 16 Aug 2025 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Keep it flowing with Method Chaining</title>
+      <link>https://www.sahilrana.in/blog/posts/chain-javascript-methods</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/chain-javascript-methods</guid>
+      <description>How to chain methods in javascript?</description>
+      <pubDate>Fri, 28 Jun 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Accessing linked list with JS Generators</title>
+      <link>https://www.sahilrana.in/blog/posts/linked-list-with-generators</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/linked-list-with-generators</guid>
+      <description>Linked list with JS generators &amp; iterators</description>
+      <pubDate>Thu, 06 Jun 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Access variables from plain js strings.</title>
+      <link>https://www.sahilrana.in/blog/posts/convert-string-to-literal</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/posts/convert-string-to-literal</guid>
+      <description>Convert plain JS strings to template literals</description>
+      <pubDate>Wed, 29 May 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Download file using curL</title>
+      <link>https://www.sahilrana.in/blog/snippets/download-using-curl</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/snippets/download-using-curl</guid>
+      <description>Command to download file using curl.</description>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Expose WSL Port</title>
+      <link>https://www.sahilrana.in/blog/snippets/expose-wsl-port</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/snippets/expose-wsl-port</guid>
+      <description>Expose WSL Port to other adapter interfaces</description>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+    <item>
+      <title>Improve git command performance.</title>
+      <link>https://www.sahilrana.in/blog/snippets/improve-git-command-performance</link>
+      <guid isPermaLink="true">https://www.sahilrana.in/blog/snippets/improve-git-command-performance</guid>
+      <description>Clear git cache to improve performance</description>
+      <pubDate>Mon, 01 Jan 2024 00:00:00 GMT</pubDate>
+    </item>
+  </channel>
+</rss>

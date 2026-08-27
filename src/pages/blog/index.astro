@@ -1,4 +1,5 @@
 ---
+import { Schema } from "astro-seo-schema";
 import { getCollection } from "astro:content";
 
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
@@ -10,16 +11,30 @@ import PostCard from "@components/General/Blog/PostCard.astro";
 import SnippetCard from "@components/General/Blog/SnippetCard/index.astro";
 import { blogPageKeywords } from "@utils/metaKeywords";
 import moonFacts from "@utils/moonFacts";
+import { getBlogPostPath, getContentSlug } from "@utils/getContentSlug";
+import { SITE_ORIGIN } from "@utils/site";
 
 const blogEntries = await getCollection("blog");
 const snippetsEntries = await getCollection("snippets");
 ---
 
 <Layout
-  title="Blog | Sahil Singh Rana | Software Developer | Sahil Rana"
-  description={"Welcome to my blog homepage. I write random stuff!"}
+  title="Blog | Sahil Rana"
+  description="JavaScript notes, patterns, and code snippets by Sahil Rana - method chaining, bitmasking, generators, dependency injection, and more."
   keywords={blogPageKeywords}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": "CollectionPage",
+        name: "Blog | Sahil Rana",
+        url: `${SITE_ORIGIN}/blog`,
+        description:
+          "Articles and code snippets on JavaScript, web development patterns, and developer tooling.",
+      }}
+    />
+  </Fragment>
   <SectionHeaderImage
     title="Blog"
     Image={placeholderImage}
@@ -44,7 +59,7 @@ const snippetsEntries = await getCollection("snippets");
             image={image}
             pubDate={pubDate}
             author={author}
-            slug={"/blog/posts/" + post.id}
+            slug={getBlogPostPath(post)}
           />
         );
       })
@@ -70,7 +85,7 @@ const snippetsEntries = await getCollection("snippets");
             title={title}
             description={description}
             image={image}
-            slug={post.id}
+            slug={getContentSlug(post)}
           />
         );
       })

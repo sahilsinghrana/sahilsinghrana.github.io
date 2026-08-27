@@ -5,25 +5,25 @@
   margin-bottom: 10px;
   font-size: 0.9rem;
   align-items: center;
-  border-top: 0.2px solid rgba(245, 245, 245, 0.02);
-  border-bottom: 1px solid rgba(211, 211, 211, 0.16);
+  border-top: 0.2px solid rgb(245 245 245 / 2%);
+  border-bottom: 1px solid rgb(211 211 211 / 16%);
   padding-bottom: 5px;
   cursor: pointer;
   color: lightgray;
   border-radius: 8px;
 
   &:hover {
-    border-top: 0.2px solid rgba(245, 245, 245, 0.2);
-    border-bottom: 1px solid rgba(245, 245, 245, 0.34);
+    border-top: 0.2px solid rgb(245 245 245 / 20%);
+    border-bottom: 1px solid rgb(245 245 245 / 34%);
     color: white;
-    background-color: rgba(0, 0, 0, 0.22);
+    background-color: rgb(0 0 0 / 22%);
   }
 
   img {
     height: 45px;
     width: 45px;
     object-fit: cover;
-    outline: 5px solid rgba(128, 128, 128, 0.214);
+    outline: 5px solid rgb(128 128 128 / 21.4%);
     margin-right: 0.8em;
     border-radius: 8px;
   }
@@ -38,7 +38,7 @@
       margin: 0;
       margin-top: 2px;
       font-size: 0.7rem;
-      color: rgb(144, 153, 156);
+      color: rgb(144 153 156);
       font-style: italic;
     }
   }

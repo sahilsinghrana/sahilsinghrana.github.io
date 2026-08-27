@@ -4,12 +4,12 @@
   height: 20em;
   top: 0;
   left: 0;
+
   // opacity: 0.25;opacity
   filter: brightness(0.2);
   -webkit-filter: brightness(0.2);
   -moz-filter: brightness(0.2);
   -ms-filter: brightness(0.2);
-
   z-index: -3;
   offset-path: ellipse(64vw 25vh at center);
   animation: spin 25s infinite linear;
@@ -20,6 +20,7 @@
   0% {
     offset-distance: 0;
   }
+
   100% {
     offset-distance: 100%;
   }
@@ -30,7 +31,7 @@
   top: -30px;
   width: var(--width);
   height: var(--height);
-  background: linear-gradient(90deg, transparent, rgba(184, 209, 216, 0.4));
+  background: linear-gradient(90deg, transparent, rgb(184 209 216 / 40%));
   opacity: 0;
   transform: rotate(45deg);
   animation: meteorFall ease-in infinite;
@@ -45,12 +46,15 @@
     opacity: 0;
     transform: translateX(0) translateY(0) rotate(45deg);
   }
+
   20% {
     opacity: var(--max-opacity, 0.45);
   }
+
   70% {
     opacity: var(--max-opacity, 0.35);
   }
+
   100% {
     transform: translateX(150vh) translateY(150vh) rotate(45deg);
     opacity: 0;

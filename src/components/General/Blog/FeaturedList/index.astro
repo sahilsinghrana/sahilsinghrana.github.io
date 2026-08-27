@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 
 import FeaturedCard from "../../FeaturedCard/index.astro";
+import { getBlogPostPath, getSnippetPath } from "@utils/getContentSlug";
 
 const blogEntries = (
   await getCollection("blog", ({ data }) => !!data.featured)
@@ -38,7 +39,7 @@ const snippetsEntries = await getCollection(
               title={title}
               description={description}
               image={image}
-              slug={"/blog/posts/" + post.id}
+              slug={getBlogPostPath(post)}
             />
           </li>
         );
@@ -53,7 +54,7 @@ const snippetsEntries = await getCollection(
               title={title}
               description={description}
               image={image}
-              slug={"/blog/snippets/" + post.id}
+              slug={getSnippetPath(post)}
             />
           </li>
         );

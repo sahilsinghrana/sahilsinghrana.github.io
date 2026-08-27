@@ -7,34 +7,41 @@
     letter-spacing: 3px;
     font-weight: lighter;
   }
+
   .list {
     list-style: none;
     padding-inline-start: 10px;
+
     .factWrapper {
       margin-bottom: 2.5rem;
+
       .factTitle {
         .factWithIconBullet {
           display: flex;
+
           &::before {
             content: "🌚";
             margin: 0;
             opacity: 0.7;
             margin-right: 0.3ch;
           }
+
           sup {
             display: inline-block;
           }
         }
+
         display: flex;
         margin-left: 0.3ch;
         font-size: 1rem;
         font-weight: 800;
-        color: rgb(216, 216, 216);
+        color: rgb(216 216 216);
         margin-bottom: 0.6rem;
       }
+
       .factDescription {
         font-size: 0.8rem;
-        color: rgba(222, 222, 222, 0.874);
+        color: rgb(222 222 222 / 87.4%);
         margin: 0;
         margin-left: 3ch;
         text-align: justify;

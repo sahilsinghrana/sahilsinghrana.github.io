@@ -2,6 +2,8 @@ import { getRandom } from "@components/Spotify/helpers/utils";
 
 export function initMeteorAnimation() {
   const body = document.body;
+  if (body.querySelector(".meteor")) return;
+
   const meteorsFragment = document.createDocumentFragment();
 
   for (let i = 0; i <= 28; i++) {

@@ -1,66 +1,119 @@
 ---
 import { Breadcrumbs } from "astro-breadcrumbs";
 import { Schema } from "astro-seo-schema";
+import { getImage } from "astro:assets";
 
 import Layout from "./index.astro";
 import "./blogPost.scss";
-import { Image } from "astro:assets";
 import { formatDate } from "@utils/date";
+import { getCleanCanonicalUrl, toAbsoluteUrl } from "@utils/getCanonicalUrl";
+import { SITE_ORIGIN } from "@utils/site";
+import { getContentSlug } from "@utils/getContentSlug";
+import { links } from "@utils/constants";
 
 const { entry } = Astro.props;
 
-const { data } = entry;
-const { title, image, description, tags, pubDate } = data;
----
+const { data, collection } = entry;
+const { title, image, description, tags } = data;
+const pubDate = "pubDate" in data ? data.pubDate : undefined;
+const isSnippet = collection === "snippets";
+const publicSlug = getContentSlug(entry);
+const pathPrefix = isSnippet ? "/blog/snippets/" : "/blog/posts/";
+const pagePath = `${pathPrefix}${publicSlug}`;
+const canonicalUrl = getCleanCanonicalUrl(pagePath, Astro.site ?? SITE_ORIGIN);
 
-<head>
-  <Schema
-    item={{
-      "@context": "https://schema.org",
-      "@type": "BlogPosting",
-      headline: title,
-      description: description,
-      mainEntityOfPage: {
-        "@type": "WebPage",
-      },
-      author: {
-        "@type": "Person",
-        name: "Sahil Rana",
-        url: "https://sahilrana.in",
-      },
-      publisher: {
-        "@type": "Organization",
-        name: "Sahil Rana",
-        logo: {
-          "@type": "ImageObject",
-          url: "https://avatars.githubusercontent.com/u/48375250",
-        },
-      },
-      datePublished: pubDate,
-      dateModified: pubDate,
-      keywords: tags.join(", "),
-      articleSection: "Technology",
-      inLanguage: "en-US",
-    }}
-  />
-</head>
+let imageUrl = toAbsoluteUrl("/appSS.webp", Astro.site ?? SITE_ORIGIN);
+if (typeof image.url === "string") {
+  imageUrl = toAbsoluteUrl(image.url, Astro.site ?? SITE_ORIGIN);
+} else if (image.url) {
+  try {
+    const optimized = await getImage({ src: image.url });
+    imageUrl = toAbsoluteUrl(optimized.src, Astro.site ?? SITE_ORIGIN);
+  } catch {
+    imageUrl = toAbsoluteUrl("/appSS.webp", Astro.site ?? SITE_ORIGIN);
+  }
+}
+
+const publishedIso =
+  pubDate instanceof Date && !Number.isNaN(pubDate.valueOf())
+    ? pubDate.toISOString()
+    : undefined;
+
+const imageWidth =
+  typeof image.url === "object" && image.url && "width" in image.url
+    ? image.url.width || 300
+    : 300;
+// Animated webp/gif metadata can report full strip height; banner CSS is ~200px.
+const rawImageHeight =
+  typeof image.url === "object" && image.url && "height" in image.url
+    ? image.url.height || 200
+    : 200;
+const imageHeight = rawImageHeight > 1000 ? 200 : rawImageHeight;
+
+const schemaType = isSnippet && !publishedIso ? "TechArticle" : "BlogPosting";
+---
 
 <Layout
   title={title + " | Sahil Rana"}
   description={description}
   keywords={tags}
+  ogType="article"
+  ogImage={imageUrl}
+  publishedTime={publishedIso}
+  tags={tags}
+  canonicalPath={pagePath}
+  ogImageWidth={imageWidth}
+  ogImageHeight={imageHeight}
+  ogImageAlt={image.alt}
 >
+  <Fragment slot="head">
+    <Schema
+      item={{
+        "@context": "https://schema.org",
+        "@type": schemaType,
+        headline: title,
+        description: description,
+        image: imageUrl,
+        url: canonicalUrl.href,
+        mainEntityOfPage: {
+          "@type": "WebPage",
+          "@id": canonicalUrl.href,
+        },
+        author: {
+          "@type": "Person",
+          name: "Sahil Rana",
+          url: SITE_ORIGIN,
+        },
+        publisher: {
+          "@type": "Organization",
+          name: "Sahil Rana",
+          logo: {
+            "@type": "ImageObject",
+            url: links.profilePic,
+          },
+        },
+        ...(publishedIso
+          ? { datePublished: publishedIso, dateModified: publishedIso }
+          : {}),
+        keywords: tags.join(", "),
+        articleSection: isSnippet ? "Code Snippets" : "Technology",
+        inLanguage: "en-US",
+      }}
+    />
+  </Fragment>
   <div class="blogPostHeading">
     <div class="bg">
-      <Image
-        src={image.url}
+      <img
+        src={typeof image.url === "object" ? image.url.src : image.url}
         alt={image.alt}
-        height={image.url.height || 100}
-        width={image.url.width || 300}
+        height={imageHeight}
+        width={imageWidth}
         loading="eager"
+        fetchpriority="high"
+        decoding="async"
       />
       <div class="head">
-        <h2><em>{title}</em></h2>
+        <h1><em>{title}</em></h1>
         <Breadcrumbs
           linkTextFormat="capitalized"
           mainBemClass="blog-breadcrumbs"
@@ -70,11 +123,11 @@ const { title, image, description, tags, pubDate } = data;
   </div>
   <slot />
   {
-    pubDate && (
+    publishedIso && pubDate && (
       <div class="blogPostMeta">
         <span class="pubDate">
           Published On:{" "}
-          <time datetime={formatDate(pubDate)}>{formatDate(pubDate)}</time>
+          <time datetime={publishedIso}>{formatDate(pubDate)}</time>
         </span>
       </div>
     )

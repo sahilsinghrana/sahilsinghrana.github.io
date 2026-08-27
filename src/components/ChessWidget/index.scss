@@ -6,7 +6,7 @@
   border-radius: 8px;
   padding: 14px;
   width: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 40%);
   box-sizing: border-box;
   margin-top: 10px;
   margin-bottom: 10px;
@@ -50,8 +50,8 @@
     }
 
     #chessUserName {
-      color: #ffffff;
-      margin: 0 0 4px 0;
+      color: #fff;
+      margin: 0 0 4px;
       font-weight: 700;
       font-size: 1.1rem;
       letter-spacing: -0.3px;
@@ -77,7 +77,7 @@
       }
 
       .chessGameTypeRating {
-        color: #ffffff;
+        color: #fff;
         font-weight: 700;
         font-size: 0.85rem;
       }
@@ -177,7 +177,7 @@
       width: 25px;
       text-align: center;
       text-transform: uppercase;
-      color: #ffffff;
+      color: #fff;
 
       &.win {
         background-color: #568725;

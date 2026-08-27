@@ -36,7 +36,7 @@
     color: #e2e8f0;
     margin-bottom: 0.75rem;
     text-align: center;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+    text-shadow: 0 2px 4px rgb(0 0 0 / 40%);
   }
 
   .designElementBtn {
@@ -52,14 +52,14 @@
     /* Elegant translucent surface styling */
     background: linear-gradient(
       135deg,
-      rgba(255, 255, 255, 0.03) 0%,
-      rgba(255, 255, 255, 0.07) 100%
+      rgb(255 255 255 / 3%) 0%,
+      rgb(255 255 255 / 7%) 100%
     );
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgb(255 255 255 / 8%);
     border-radius: 16px;
     color: #f8fafc;
     outline: none;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 30px rgb(0 0 0 / 30%);
     backdrop-filter: blur(4px);
     -webkit-backdrop-filter: blur(4px);
 
@@ -73,18 +73,18 @@
     &:hover {
       background: linear-gradient(
         135deg,
-        rgba(255, 255, 255, 0.06) 0%,
-        rgba(255, 255, 255, 0.12) 100%
+        rgb(255 255 255 / 6%) 0%,
+        rgb(255 255 255 / 12%) 100%
       );
-      border-color: rgba(255, 255, 255, 0.2);
+      border-color: rgb(255 255 255 / 20%);
       transform: translateY(-6px);
       box-shadow:
-        0 12px 40px rgba(0, 0, 0, 0.6),
-        0 0 15px rgba(255, 255, 255, 0.03);
+        0 12px 40px rgb(0 0 0 / 60%),
+        0 0 15px rgb(255 255 255 / 3%);
 
       .designElementImg {
         transform: scale(1.08);
-        filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.5));
+        filter: drop-shadow(0 8px 16px rgb(0 0 0 / 50%));
       }
     }
 
@@ -97,7 +97,7 @@
     height: 125px;
     width: 125px;
     object-fit: contain;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
+    filter: drop-shadow(0 4px 8px rgb(0 0 0 / 30%));
     transition:
       transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
       filter 0.4s ease;
@@ -120,7 +120,7 @@
   .designElementDialogWrapper {
     box-sizing: border-box;
     padding: 0;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgb(255 255 255 / 8%);
     border-radius: 28px;
     background: radial-gradient(
       circle at top left,
@@ -128,17 +128,18 @@
       #030712f9 100%
     );
     box-shadow:
-      0 30px 70px rgba(0, 0, 0, 0.8),
-      inset 0 1px 1px rgba(255, 255, 255, 0.05);
+      0 30px 70px rgb(0 0 0 / 80%),
+      inset 0 1px 1px rgb(255 255 255 / 5%);
     max-width: 440px;
     width: 85%;
     max-height: 75vh;
     overflow-y: scroll;
+
     /* 1. REMOVE the bare display: flex from here so the browser can hide it natively */
     display: none;
 
     &::backdrop {
-      background: rgba(2, 6, 23, 0.15);
+      background: rgb(2 6 23 / 15%);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -169,14 +170,15 @@
 
   .designElementInfo {
     font-family:
-      "Caveat", "Dancing Script", "Pacifico", "Georgia", cursive; /* Prioritizes readable, premium webcursive choices */
+      Caveat, "Dancing Script", Pacifico, Georgia, cursive; /* Prioritizes readable, premium webcursive choices */
+
     font-size: 1.2rem; /* Cursive scripts scale small, scaled up for legibility context */
     line-height: 1.7;
     letter-spacing: 0.5px;
     white-space: pre-line;
     color: #f1f5f9;
     text-align: center;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+    text-shadow: 0 1px 2px rgb(0 0 0 / 50%);
     padding: 0 10px;
   }
 }
@@ -187,6 +189,7 @@
     opacity: 0;
     transform: translateY(15px) scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);

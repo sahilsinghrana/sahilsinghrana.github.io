@@ -1,5 +1,6 @@
 ---
 import { Head } from "astro-capo";
+import { Font } from "astro:assets";
 
 import OgMeta from "../Metas/OgMeta.astro";
 import GtagHeadScripts from "../Metas/GtagHeadScripts.astro";
@@ -7,7 +8,7 @@ import DefaultMeta from "../Metas/DefaultMeta.astro";
 import DescriptionMeta from "../Metas/DescriptionMeta.astro";
 import Footer from "@components/Footer/index.astro";
 
-const { title, description, keywords } = Astro.props;
+const { title, description, keywords, robots = "index, follow" } = Astro.props;
 
 // import "@styles/global.scss";
 
@@ -24,7 +25,8 @@ import "./scss/_responsive.scss";
 
 <html lang="en">
   <Head>
-    <DefaultMeta />
+    <Font cssVariable="--font-raleway" preload />
+    <DefaultMeta robots={robots} />
     <GtagHeadScripts />
     <OgMeta title={title} description={description} />
     <DescriptionMeta
@@ -32,6 +34,7 @@ import "./scss/_responsive.scss";
       description={description}
       keywords={keywords}
     />
+    <slot name="head" />
 
     <title>{title}</title>
   </Head>
