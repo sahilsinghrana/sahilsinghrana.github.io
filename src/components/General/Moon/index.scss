@@ -14,8 +14,9 @@
   offset-path: ellipse(64vw 25vh at center);
   animation:
     spin 25s linear infinite,
-    moonGlow 7s ease-in-out infinite;
-  will-change: offset-distance, filter;
+    moonGlow 7s ease-in-out infinite,
+    moonScale 25s ease-in-out infinite;
+  will-change: offset-distance, scale, filter;
   view-transition-name: none;
 }
 
@@ -26,6 +27,28 @@
 
   100% {
     offset-distance: 100%;
+  }
+}
+
+@keyframes moonScale {
+  0% {
+    scale: 0.98;
+  }
+
+  25% {
+    scale: 1;
+  }
+
+  50% {
+    scale: 1.025;
+  }
+
+  75% {
+    scale: 1;
+  }
+
+  100% {
+    scale: 0.98;
   }
 }
 
