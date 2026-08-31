@@ -14,7 +14,20 @@ import moonFacts from "@utils/moonFacts";
 import { getBlogPostPath, getContentSlug } from "@utils/getContentSlug";
 import { SITE_ORIGIN } from "@utils/site";
 
-const blogEntries = await getCollection("blog");
+const blogEntries = (await getCollection("blog", ({ data }) => !!data)).sort(
+  (a, b) => {
+    const orderA = a.data.sortOrder ?? 99;
+    const orderB = b.data.sortOrder ?? 99;
+
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+
+    return (
+      new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
+    );
+  },
+);
 const snippetsEntries = await getCollection("snippets");
 ---
 

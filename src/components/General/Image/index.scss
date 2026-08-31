@@ -14,6 +14,8 @@
   height: 100%;
   width: 100%;
   object-fit: cover;
+  image-rendering: auto;
+  image-rendering: -webkit-optimize-contrast;
 
   // filter: grayscale(0.5);filter
   filter: grayscale(0.4) blur(0.2px) brightness(0.8);

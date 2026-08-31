@@ -45,7 +45,8 @@ $container-height: 200px;
   .snow-wrapper,
   .fireflies {
     opacity: 0;
-    transition: opacity 0.95s var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1));
+    transition: opacity 0.95s
+      var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1));
   }
 
   &.is-settled {
