@@ -25,5 +25,10 @@
       },
       "extensions": ["astro-build.astro-vscode", "esbenp.prettier-vscode"]
     }
+  },
+  "portsAttributes": {
+    "4232": {
+      "label": "dev"
+    }
   }
 }

@@ -6,14 +6,17 @@
   left: 0;
 
   // opacity: 0.25;opacity
-  filter: brightness(0.2);
-  -webkit-filter: brightness(0.2);
-  -moz-filter: brightness(0.2);
-  -ms-filter: brightness(0.2);
+  filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
+  -webkit-filter: brightness(0.2)
+    drop-shadow(0 0 28px rgb(180 200 220 / 7%));
+  -moz-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
+  -ms-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 7%));
   z-index: -3;
   offset-path: ellipse(64vw 25vh at center);
-  animation: spin 25s infinite linear;
-  will-change: offset-distance;
+  animation:
+    spin 25s linear infinite,
+    moonGlow 7s ease-in-out infinite;
+  will-change: offset-distance, filter;
   view-transition-name: none;
 }
 
@@ -27,38 +30,65 @@
   }
 }
 
+@keyframes moonGlow {
+  0% {
+    filter: brightness(0.2) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
+  }
+
+  50% {
+    filter: brightness(0.22) drop-shadow(0 0 34px rgb(180 200 220 / 8.5%));
+  }
+
+  100% {
+    filter: brightness(0.2) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
+  }
+}
+
 .meteor {
   position: fixed;
   top: -30px;
   width: var(--width);
   height: var(--height);
-  background: linear-gradient(90deg, transparent, rgb(184 209 216 / 40%));
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(184 209 216 / 18%) 35%,
+    rgb(184 209 216 / 40%) 100%
+  );
   opacity: 0;
   transform: rotate(45deg);
-  animation: meteorFall ease-in infinite;
-  animation-duration: var(--duration);
+  animation: meteorFall var(--duration) cubic-bezier(0.25, 0.1, 0.25, 1)
+    infinite;
   left: var(--left, 50%);
   animation-delay: var(--delay);
   z-index: -50;
+  filter: blur(0.15px);
   view-transition-name: none;
 }
 
 @keyframes meteorFall {
   0% {
     opacity: 0;
-    transform: translateX(0) translateY(0) rotate(45deg);
+    transform: translate3d(0, 0, 0) rotate(45deg) scaleX(0.92);
   }
 
-  20% {
+  12% {
     opacity: var(--max-opacity, 0.45);
+    transform: translate3d(12vw, 12vh, 0) rotate(45deg) scaleX(1);
   }
 
-  70% {
-    opacity: var(--max-opacity, 0.35);
+  55% {
+    opacity: var(--max-opacity, 0.38);
+    transform: translate3d(70vw, 70vh, 0) rotate(45deg) scaleX(1.03);
+  }
+
+  78% {
+    opacity: 0.15;
+    transform: translate3d(105vw, 105vh, 0) rotate(45deg) scaleX(1.04);
   }
 
   100% {
-    transform: translateX(150vh) translateY(150vh) rotate(45deg);
     opacity: 0;
+    transform: translate3d(135vw, 135vh, 0) rotate(45deg) scaleX(1.05);
   }
 }
