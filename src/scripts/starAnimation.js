@@ -5,12 +5,12 @@ export function initStarAnimation() {
 
   const starsFragment = document.createDocumentFragment();
 
-  for (let i = 0; i < 11; i++) {
+  for (let i = 0; i < 13; i++) {
     const star = document.createElement("div");
     star.className = "star";
 
     const animationDuration = getRandom(4, 10, 0.1);
-    const animationDelay = getRandom(1, 14);
+    const animationDelay = getRandom(-5, 14);
 
     star.style.animationDuration = animationDuration + "s";
     star.style.animationDelay = animationDelay + "s";
