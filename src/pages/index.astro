@@ -15,6 +15,7 @@ import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
 import FeaturedTools from "@components/Tools/FeaturedTools.astro";
 import ShlokaCard from "@components/HomePage/ShlokaCard.astro";
+import SagittariusCard from "@components/HomePage/SagittariusCard.astro";
 import { SITE_ORIGIN } from "@utils/site";
 import { links } from "@utils/constants";
 
@@ -64,12 +65,7 @@ import "@assets/styles/homePage.scss";
   <About />
   <TulipFrame />
   <CurrentMoonInfo />
-  <div class="saggittariusLink" style="position: relative;">
-    <p>SAGITTARIUS</p>
-    <a href="/resources/constellations/sagittarius">
-      🏹 To the galactic center!!
-    </a>
-  </div>
+  <SagittariusCard />
   <CurrentlyBuilding />
 
   <ShlokaCard />
