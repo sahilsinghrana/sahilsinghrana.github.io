@@ -1,0 +1,106 @@
+@import "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Tiro+Devanagari+Sanskrit&display=swap";
+
+#shlokaWrapper {
+  position: relative;
+  border-radius: 16px;
+  padding: 28px 24px;
+  margin: 32px 0;
+  background: rgb(15 15 18 / 75%);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgb(237 157 60 / 25%);
+  box-shadow:
+    0 10px 30px -5px rgb(0 0 0 / 50%),
+    inset 0 1px 1px rgb(255 255 255 / 10%);
+  overflow: hidden;
+  transition:
+    border-color 0.4s ease,
+    box-shadow 0.4s ease,
+    transform 0.4s ease;
+}
+
+#shlokaWrapper:hover {
+  border-color: rgb(237 157 60 / 50%);
+  box-shadow:
+    0 14px 40px -5px rgb(0 0 0 / 70%),
+    0 0 20px rgb(237 157 60 / 15%),
+    inset 0 1px 1px rgb(255 255 255 / 15%);
+}
+
+#shlokaDevanagari {
+  font-family: "Tiro Devanagari Sanskrit", serif;
+  font-size: 1.38rem;
+  color: #fffaf3;
+  text-align: center;
+  margin: 0 0 18px;
+  padding-bottom: 16px;
+  line-height: 1.7;
+  letter-spacing: 0.4px;
+  border-bottom: 1px dashed rgb(237 157 60 / 25%);
+  text-shadow:
+    0 2px 10px rgb(0 0 0 / 80%),
+    0 0 12px rgb(237 157 60 / 20%);
+  text-wrap: balance;
+}
+
+#shlokaTranslation {
+  display: block;
+  font-size: 0.92rem;
+  color: rgb(240 240 245 / 92%);
+  text-align: center;
+  font-style: normal;
+  line-height: 1.65;
+  margin: 18px 0 14px;
+  letter-spacing: 0.3px;
+  text-wrap: balance;
+  quotes: "“" "”";
+}
+
+#shlokaChapter {
+  font-family: Cinzel, serif;
+  font-size: 0.78rem;
+  text-align: right;
+  color: #ed9d3c;
+  font-weight: 600;
+  margin: 12px 0 0;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  opacity: 0.9;
+}
+
+#shlokaBG {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  object-fit: cover;
+  opacity: 0.22;
+  mix-blend-mode: luminosity;
+  mask-image: radial-gradient(
+    circle at center,
+    rgb(0 0 0 / 100%) 20%,
+    rgb(0 0 0 / 0%) 80%
+  );
+  -webkit-mask-image: radial-gradient(
+    circle at center,
+    rgb(0 0 0 / 100%) 20%,
+    rgb(0 0 0 / 0%) 80%
+  );
+  animation: bgPulse 10s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+@keyframes bgPulse {
+  0% {
+    opacity: 0.18;
+    transform: translate(-50%, -50%) scale(1);
+  }
+
+  100% {
+    opacity: 0.28;
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+}

@@ -14,13 +14,11 @@ import ChessWidget from "@components/ChessWidget/index.astro";
 import moonFacts from "@utils/moonFacts";
 import { homePageKeywords } from "@utils/metaKeywords";
 import FeaturedTools from "@components/Tools/FeaturedTools.astro";
+import ShlokaCard from "@components/HomePage/ShlokaCard.astro";
 import { SITE_ORIGIN } from "@utils/site";
 import { links } from "@utils/constants";
 
 import "@assets/styles/homePage.scss";
-import { Image } from "astro:assets";
-
-import shivaBG from "../assets/images/shiva.png";
 ---
 
 <Layout
@@ -74,12 +72,7 @@ import shivaBG from "../assets/images/shiva.png";
   </div>
   <CurrentlyBuilding />
 
-  <div id="shlokaWrapper" style="position: relative;">
-    <blockquote id="shlokaDevanagari"></blockquote>
-    <q id="shlokaTranslation"></q>
-    <p id="shlokaChapter"></p>
-    <Image src={shivaBG} id="shlokaBG" alt="shiva" />
-  </div>
+  <ShlokaCard />
 
   <ChessWidget />
 

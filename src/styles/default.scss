@@ -67,11 +67,20 @@
   }
 }
 
-body {
-  // perspective: 1200px;
-  // transform-style: preserve-3d;
-  // inset: 0;
+body,
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizelegibility;
+}
 
+#root,
+main {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+body {
   font-family: var(--font-main);
   font-size: var(--fs-base);
 }

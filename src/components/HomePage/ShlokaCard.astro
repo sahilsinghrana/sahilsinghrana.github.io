@@ -1,0 +1,14 @@
+---
+import { Image } from "astro:assets";
+
+import "./ShlokaCard.scss";
+import shivaBG from "../../assets/images/shiva.png";
+---
+
+<div id="shlokaWrapper" style="position: relative;">
+  <blockquote id="shlokaDevanagari"></blockquote>
+  <q id="shlokaTranslation"></q>
+  <p id="shlokaChapter"></p>
+  <Image src={shivaBG} id="shlokaBG" alt="shiva" />
+</div>
+

@@ -198,7 +198,7 @@
 @keyframes meteorFall {
   0% {
     opacity: 0.3;
-    transform: translate3d(0, 0, 30px) rotate(45deg) scaleX(0.92);
+    transform: translate3d(0, 0, 0) rotate(45deg) scaleX(0.92);
   }
 
   5% {
@@ -211,7 +211,7 @@
 
   100% {
     opacity: 0;
-    transform: translate3d(140vmax, 140vmax, -20px) rotate(45deg) scaleX(1.05);
+    transform: translate3d(140vmax, 140vmax, 0) rotate(45deg) scaleX(1.05);
   }
 }
 
