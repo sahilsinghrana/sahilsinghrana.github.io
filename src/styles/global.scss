@@ -174,6 +174,47 @@
   }
 }
 
+.meteor {
+  position: fixed;
+  top: -25vh;
+  left: calc(var(--left, 50%) - 30vh);
+  width: var(--width);
+  height: var(--height);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgb(184 209 216 / 18%) 35%,
+    rgb(184 209 216 / 40%) 100%
+  );
+  opacity: 1;
+  transform: rotate(45deg);
+  animation: meteorFall var(--duration) linear infinite;
+  animation-delay: var(--delay);
+  z-index: -50;
+  filter: blur(0.15px);
+  view-transition-name: none;
+}
+
+@keyframes meteorFall {
+  0% {
+    opacity: 0.3;
+    transform: translate3d(0, 0, 30px) rotate(45deg) scaleX(0.92);
+  }
+
+  5% {
+    opacity: var(--max-opacity, 0.45);
+  }
+
+  65% {
+    opacity: var(--max-opacity, 0.68);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(140vmax, 140vmax, -20px) rotate(45deg) scaleX(1.05);
+  }
+}
+
 // Utils
 
 .flex {

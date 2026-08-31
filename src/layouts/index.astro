@@ -75,8 +75,10 @@ import "@styles/global.scss";
     dateBasedJsAndCssInjector,
     dateBasedJsInjector,
   } from "src/scripts/dateBasedClassInjector";
+
   import archiveBannerInjector from "src/scripts/archiveBannerInjector";
   import { initStarAnimation } from "src/scripts/starAnimation";
+  import { initMeteorAnimation } from "src/scripts/meteorAnimation";
 
   archiveBannerInjector();
 
@@ -98,5 +100,10 @@ import "@styles/global.scss";
   dateBasedJsAndCssInjector(28, 11, "tulips");
   dateBasedJsAndCssInjector(28, 11, "fireworks");
 
-  initStarAnimation();
+  try {
+    initStarAnimation();
+    initMeteorAnimation();
+  } catch (err) {
+    console.error("Error initializing animations:", err);
+  }
 </script>
