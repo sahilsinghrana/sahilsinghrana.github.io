@@ -1,10 +1,7 @@
-// import purgecss from "astro-purgecss";
 import sitemap from "@astrojs/sitemap";
 import { defineConfig, fontProviders } from "astro/config";
 import { unified } from "@astrojs/markdown-remark";
 import rehypeExternalLinks from "rehype-external-links";
-import playformInline from "@playform/inline";
-
 import playformCompress from "@playform/compress";
 
 // https://astro.build/config
@@ -12,6 +9,7 @@ export default defineConfig({
   compressHTML: true,
   trailingSlash: "never",
   site: "https://www.sahilrana.in",
+
   redirects: {
     "/blog/posts/method-chaining-js": "/blog/posts/chain-javascript-methods",
     "/blog/posts/howto/linked-list-with-generators":
@@ -19,32 +17,35 @@ export default defineConfig({
     "/blog/posts/howto/convert-string-to-literal":
       "/blog/posts/convert-string-to-literal",
   },
+
   build: {
     format: "file",
-    inlineStylesheets: "always",
+    inlineStylesheets: "auto", // Leverages caching for large CSS, inlines small critical CSS
   },
+
   image: {
-    config: {
-      webp: {
-        effort: 6,
-        quality: 50,
-        alphaQuality: 50,
-      },
-      avif: {
-        effort: 6,
-        quality: 40,
-        chromaSubsampling: "4:2:0",
-      },
-      jpeg: {
-        mozjpeg: true,
-        quality: 50,
-      },
-      png: {
-        compressionLevel: 9,
-        // palette: true,
+    service: {
+      config: {
+        webp: {
+          effort: 4,
+          quality: 75,
+        },
+        avif: {
+          effort: 4,
+          quality: 65,
+          chromaSubsampling: "4:2:0",
+        },
+        jpeg: {
+          mozjpeg: true,
+          quality: 75,
+        },
+        png: {
+          compressionLevel: 9,
+        },
       },
     },
   },
+
   vite: {
     build: {
       chunkSizeWarningLimit: 800,
@@ -66,28 +67,24 @@ export default defineConfig({
       },
     },
   },
+
   contentCollectionCache: true,
+
   prefetch: {
-    defaultStrategy: "viewport",
+    defaultStrategy: "hover",
   },
+
   integrations: [
     sitemap({
       filter: (page) => !page.includes("/404"),
     }),
-    playformInline(),
-    // purgecss(),
     playformCompress({
       CSS: true,
       HTML: true,
-      Image: false,
+      Image: false, // Handled by Astro Assets
       JavaScript: true,
       SVG: true,
     }),
-    // compressor({
-    //   gzip: true,
-    //   brotli: true,
-    //   zstd: true,
-    // }),
   ],
   markdown: {
     processor: unified({
@@ -108,6 +105,7 @@ export default defineConfig({
       langs: ["js", "ts", "html", "css", "bash"],
     },
   },
+
   fonts: [
     {
       name: "Raleway",
@@ -118,7 +116,7 @@ export default defineConfig({
           {
             weight: "400",
             style: "normal",
-            display: "optional",
+            display: "swap",
             src: ["./src/assets/fonts/Raleway-Regular.woff2"],
           },
         ],
@@ -133,19 +131,19 @@ export default defineConfig({
           {
             weight: "400",
             style: "normal",
-            display: "optional",
+            display: "swap",
             src: ["./src/assets/fonts/Inter-Regular.woff2"],
           },
           {
             weight: "600",
             style: "normal",
-            display: "optional",
+            display: "swap",
             src: ["./src/assets/fonts/Inter-SemiBold.woff2"],
           },
           {
             weight: "800",
             style: "normal",
-            display: "optional",
+            display: "swap",
             src: ["./src/assets/fonts/Inter-ExtraBold.woff2"],
           },
         ],
