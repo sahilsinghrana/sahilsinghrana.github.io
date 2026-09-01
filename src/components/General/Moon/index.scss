@@ -4,9 +4,6 @@
   height: 20em;
   top: 0;
   left: 0;
-  translate: 0 0 -50px;
-
-  // opacity: 0.25;opacity
   filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 10%));
   -webkit-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 10%));
   -moz-filter: brightness(0.2) drop-shadow(0 0 28px rgb(180 200 220 / 10%));
@@ -55,14 +52,14 @@
 
 @keyframes moonGlow {
   0% {
-    filter: brightness(0.2) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
+    filter: brightness(0.18) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
   }
 
   50% {
-    filter: brightness(0.25) drop-shadow(0 0 34px rgb(180 200 220 / 8.5%));
+    filter: brightness(0.27) drop-shadow(0 0 34px rgb(180 200 220 / 22.5%));
   }
 
   100% {
-    filter: brightness(0.2) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
+    filter: brightness(0.18) drop-shadow(0 0 24px rgb(180 200 220 / 5%));
   }
 }
