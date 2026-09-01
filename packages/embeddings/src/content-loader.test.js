@@ -5,7 +5,12 @@ import os from "node:os";
 import path from "node:path";
 
 import { ContentLoader } from "./content-loader.js";
-import { chunkDocuments, createBlogChunker } from "./chunker.js";
+import {
+  chunkDocuments,
+  createBlogChunker,
+  createHtmlChunker,
+  createTypeAwareChunker,
+} from "./chunker.js";
 import { PineconeIndexer } from "./pinecone-client.js";
 import { EmbeddingsPipeline } from "./service.js";
 
@@ -80,6 +85,63 @@ test("chunkDocuments preserves section headings for better retrieval context", (
       (chunk) =>
         chunk.metadata.sectionHeading &&
         chunk.metadata.sectionHeading.includes("Performance"),
+    ),
+  );
+});
+
+test("chunkDocuments keeps heading plus paragraph together for Astro sections", () => {
+  const docs = [
+    {
+      content:
+        "# Welcome\n\nIntro paragraph that explains the page.\n\n## Performance\n\nFast page loads matter for production sites.\n\n## Notes\n\nThis section is short.",
+      metadata: {
+        collection: "blog",
+        slug: "astro-section",
+        title: "Astro Section",
+        url: "/blog/posts/astro-section",
+      },
+    },
+  ];
+
+  const chunks = chunkDocuments(
+    docs,
+    createBlogChunker({ chunkSize: 180, chunkOverlap: 20 }),
+    { preserveLeadContent: false },
+  );
+
+  const performanceChunk = chunks.find((chunk) =>
+    chunk.content.includes("## Performance"),
+  );
+
+  assert.ok(performanceChunk);
+  assert.match(
+    performanceChunk.content,
+    /## Performance[\s\S]*Fast page loads matter/,
+  );
+});
+
+test("createTypeAwareChunker picks the appropriate strategy for blog and homepage content", () => {
+  const typeAwareChunker = createTypeAwareChunker({
+    blogChunker: createBlogChunker({ chunkSize: 160, chunkOverlap: 20 }),
+    htmlChunker: createHtmlChunker({ chunkSize: 160, chunkOverlap: 20 }),
+  });
+
+  const blogChunks = typeAwareChunker.splitText(
+    "# Intro\n\nPlain language summary.\n\n## Performance\n\nFast pages win.",
+    { collection: "blog", type: "blog", slug: "type-aware" },
+  );
+
+  assert.ok(blogChunks.some((chunk) => chunk.includes("## Performance")));
+
+  const homepageChunks = typeAwareChunker.splitText(
+    "<h1>Home</h1><p>Intro text.</p><h2>Projects</h2><p>We build products.</p>",
+    { isHomepage: true, slug: "index", url: "/" },
+  );
+
+  assert.ok(homepageChunks.length > 0);
+  assert.ok(
+    homepageChunks.some(
+      (chunk) => chunk.includes("Home") || chunk.includes("Projects"),
     ),
   );
 });

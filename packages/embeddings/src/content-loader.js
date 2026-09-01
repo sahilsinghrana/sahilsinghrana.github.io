@@ -5,7 +5,11 @@ import fg from "fast-glob";
 import matter from "gray-matter";
 import removeMarkdown from "remove-markdown";
 import { SITE_ORIGIN } from "../../../scripts/site.mjs";
-import { createBlogChunker, chunkDocuments } from "./chunker.js";
+import {
+  createBlogChunker,
+  createTypeAwareChunker,
+  chunkDocuments,
+} from "./chunker.js";
 
 function normalizeFileId(relativePath) {
   let slug = relativePath.replace(/\\\\/g, "/");
@@ -180,6 +184,11 @@ export class ContentLoader {
     this.rootDir = rootDir;
     this.maxEmbeddingChars = maxEmbeddingChars;
     this.blogChunker = createBlogChunker(blogChunkerConfig);
+    this.typeAwareChunker = createTypeAwareChunker({
+      blogChunker: this.blogChunker,
+      htmlChunker: this.blogChunker,
+      homepageChunker: this.blogChunker,
+    });
     this.siteOrigin = siteOrigin;
   }
 
@@ -267,8 +276,9 @@ export class ContentLoader {
       metadata: doc.metadata,
     }));
 
-    // Apply chunking
-    const chunkedDocs = chunkDocuments(docsForChunking, this.blogChunker, {
+    // Apply chunking with a type-aware strategy so blog content keeps the semantic
+    // structure needed for high-quality retrieval without reducing document fidelity.
+    const chunkedDocs = chunkDocuments(docsForChunking, this.typeAwareChunker, {
       preserveLeadContent: enableTokenOptimization,
     });
 

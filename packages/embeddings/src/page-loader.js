@@ -9,6 +9,7 @@ import { SITE_ORIGIN } from "../../../scripts/site.mjs";
 import {
   createHtmlChunker,
   createHomepageChunker,
+  createTypeAwareChunker,
   chunkDocuments,
   chunkHomepageDocuments,
 } from "./chunker.js";
@@ -223,6 +224,11 @@ export class PageLoader {
     this.sourceIgnore = sourceIgnore;
     this.htmlChunker = createHtmlChunker(htmlChunkerConfig);
     this.homepageChunker = createHomepageChunker(homepageChunkerConfig);
+    this.typeAwareChunker = createTypeAwareChunker({
+      blogChunker: this.htmlChunker,
+      htmlChunker: this.htmlChunker,
+      homepageChunker: this.homepageChunker,
+    });
   }
 
   async distExists() {
@@ -373,7 +379,8 @@ export class PageLoader {
 
     const chunkedDocs = [];
 
-    // Chunk homepage with special chunker (link-aware)
+    // Use a type-aware strategy for the real ingestion path so homepage, page and
+    // sectioned static content all keep semantic context without losing structure.
     if (homepageDocs.length > 0) {
       console.log(
         `Found ${homepageDocs.length} homepage document(s), using link-aware chunking...`,
@@ -381,18 +388,17 @@ export class PageLoader {
 
       const docsForChunking = homepageDocs.map((doc) => ({
         content: doc.text,
-        metadata: doc.metadata,
+        metadata: { ...doc.metadata, isHomepage: true },
       }));
 
-      const homepageChunked = chunkHomepageDocuments(
+      const homepageChunked = chunkDocuments(
         docsForChunking,
-        this.homepageChunker,
+        this.typeAwareChunker,
         {
           preserveLeadContent: enableTokenOptimization,
         },
       );
 
-      // Reformat with homepage-specific metadata
       for (const chunk of homepageChunked) {
         chunkedDocs.push({
           id: `${chunk.metadata.parentId}:chunk${chunk.metadata.chunkIndex}`,
@@ -405,18 +411,20 @@ export class PageLoader {
       }
     }
 
-    // Chunk other pages with standard HTML chunker
     if (otherDocs.length > 0) {
       const docsForChunking = otherDocs.map((doc) => ({
         content: doc.text,
         metadata: doc.metadata,
       }));
 
-      const otherChunked = chunkDocuments(docsForChunking, this.htmlChunker, {
-        preserveLeadContent: enableTokenOptimization,
-      });
+      const otherChunked = chunkDocuments(
+        docsForChunking,
+        this.typeAwareChunker,
+        {
+          preserveLeadContent: enableTokenOptimization,
+        },
+      );
 
-      // Reformat to match expected output structure
       for (const chunk of otherChunked) {
         chunkedDocs.push({
           id: `${chunk.metadata.parentId}:chunk${chunk.metadata.chunkIndex}`,

@@ -159,6 +159,33 @@ export class RecursiveTextSplitter {
     return /^\s*#{1,6}\s+.+/m.test(text || "");
   }
 
+  _isHeadingOnly(text) {
+    const trimmed = String(text || "").trim();
+    if (!trimmed) return false;
+
+    const lines = trimmed
+      .split(/\n+/)
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    return lines.length > 0 && lines.every((line) => /^#{1,6}\s+.+/.test(line));
+  }
+
+  _shouldMergeSemanticSection(current, next) {
+    if (!current || !next) return false;
+
+    const currentTrimmed = current.trim();
+    const nextTrimmed = next.trim();
+    if (!currentTrimmed || !nextTrimmed) return false;
+
+    const currentHeadingOnly = this._isHeadingOnly(currentTrimmed);
+    const nextStartsWithHeading = this._startsWithHeading(nextTrimmed);
+    const nextIsParagraphLike =
+      !nextStartsWithHeading && nextTrimmed.length > 12;
+
+    return currentHeadingOnly && nextIsParagraphLike;
+  }
+
   _mergeChunks(chunks) {
     if (chunks.length === 0) return [];
     if (chunks.length === 1) return chunks;
@@ -172,27 +199,37 @@ export class RecursiveTextSplitter {
       const shouldBreakOnHeading = nextStartsWithHeading && current.length > 0;
 
       if (shouldBreakOnHeading) {
-        merged.push(current);
+        merged.push(current.trim());
         current = next;
         continue;
       }
 
-      // If adding next chunk would exceed limit, push current and start new
+      const currentIsTiny = current.trim().length < 80;
+      const nextIsTiny = next.trim().length < 80;
+      const shouldMergeTiny = currentIsTiny || nextIsTiny;
+      const shouldMergeSemanticSection = this._shouldMergeSemanticSection(
+        current,
+        next,
+      );
+
+      if (shouldMergeSemanticSection || shouldMergeTiny) {
+        current = `${current.trim()}\n\n${next.trim()}`.trim();
+        continue;
+      }
+
       if (current.length + next.length > this.chunkSize && current.length > 0) {
-        merged.push(current);
+        merged.push(current.trim());
         current = next;
       } else {
-        // Merge with overlap
-        current = current + next;
+        current = `${current.trim()}\n\n${next.trim()}`.trim();
       }
     }
 
-    // Don't forget the last chunk
-    if (current.length > 0) {
-      merged.push(current);
+    if (current.trim().length > 0) {
+      merged.push(current.trim());
     }
 
-    return merged;
+    return merged.filter((chunk) => chunk && chunk.trim().length > 0);
   }
 }
 
@@ -268,6 +305,68 @@ export class TokenOptimizer {
 }
 
 /**
+ * Detect the content type for a document so chunking can choose the correct strategy.
+ * @param {Object} metadata - Document metadata
+ * @returns {string} Content kind: homepage, blog, page, or generic
+ */
+export function detectDocumentType(metadata = {}) {
+  const collection = String(
+    metadata.collection || metadata.type || "",
+  ).toLowerCase();
+  const slug = String(metadata.slug || "").toLowerCase();
+  const url = String(metadata.url || "").toLowerCase();
+
+  if (metadata.isHomepage || slug === "index" || url === "/" || url === "") {
+    return "homepage";
+  }
+
+  if (collection === "blog" || metadata.type === "blog") {
+    return "blog";
+  }
+
+  if (
+    collection === "pages" ||
+    metadata.type === "page" ||
+    metadata.contentType === "html"
+  ) {
+    return "page";
+  }
+
+  return "generic";
+}
+
+/**
+ * Create a chunker that automatically chooses a semantic strategy based on document type.
+ * This helps Astro static content stay structured without mixing blog and page logic.
+ */
+export function createTypeAwareChunker({
+  blogChunker = createBlogChunker(),
+  htmlChunker = createHtmlChunker(),
+  homepageChunker = createHomepageChunker(),
+} = {}) {
+  return {
+    splitText(text, metadata = {}) {
+      const kind = detectDocumentType(metadata);
+
+      if (kind === "homepage") {
+        const homepageChunks = homepageChunker.splitHomepageContent(text);
+        return homepageChunks.map((chunk) => chunk.content);
+      }
+
+      if (kind === "blog") {
+        return blogChunker.splitText(text);
+      }
+
+      if (kind === "page") {
+        return htmlChunker.splitText(text);
+      }
+
+      return blogChunker.splitText(text) || htmlChunker.splitText(text);
+    },
+  };
+}
+
+/**
  * Create HTML page chunker
  * @param {Object} options - Chunking options
  * @returns {RecursiveTextSplitter} Configured chunker
@@ -331,10 +430,21 @@ export function chunkDocuments(documents, chunker, options = {}) {
       content = tokenOptimizer.optimizeText(content);
     }
 
-    const chunks = chunker.splitText(content);
+    const chunks =
+      typeof chunker.splitText === "function"
+        ? chunker.splitText(content, doc.metadata)
+        : typeof chunker.splitHomepageContent === "function"
+          ? chunker.splitHomepageContent(content)
+          : [];
 
-    for (let i = 0; i < chunks.length; i++) {
-      const chunkText = chunks[i];
+    const normalizedChunks = Array.isArray(chunks)
+      ? chunks.map((chunk) =>
+          typeof chunk === "string" ? chunk : chunk.content,
+        )
+      : [];
+
+    for (let i = 0; i < normalizedChunks.length; i++) {
+      const chunkText = normalizedChunks[i];
       const sectionHeading = extractSectionHeading(chunkText);
 
       chunkedDocs.push({
