@@ -24,6 +24,7 @@ const HTML_SEPARATORS = [
 const MARKDOWN_SEPARATORS = [
   "\n\n",
   "\n",
+  "# ",
   "## ",
   "### ",
   "#### ",
@@ -154,6 +155,10 @@ export class RecursiveTextSplitter {
     return chunks;
   }
 
+  _startsWithHeading(text) {
+    return /^\s*#{1,6}\s+.+/m.test(text || "");
+  }
+
   _mergeChunks(chunks) {
     if (chunks.length === 0) return [];
     if (chunks.length === 1) return chunks;
@@ -163,6 +168,14 @@ export class RecursiveTextSplitter {
 
     for (let i = 1; i < chunks.length; i++) {
       const next = chunks[i];
+      const nextStartsWithHeading = this._startsWithHeading(next);
+      const shouldBreakOnHeading = nextStartsWithHeading && current.length > 0;
+
+      if (shouldBreakOnHeading) {
+        merged.push(current);
+        current = next;
+        continue;
+      }
 
       // If adding next chunk would exceed limit, push current and start new
       if (current.length + next.length > this.chunkSize && current.length > 0) {
@@ -297,6 +310,15 @@ export function stripKeywords(metadata) {
  * @param {Object} options - Additional options
  * @returns {Array} Array of chunked documents with metadata
  */
+function extractSectionHeading(content) {
+  if (!content) return "";
+
+  const headingMatch = content.match(/^#{1,6}\s+(.+)$/m);
+  if (!headingMatch) return "";
+
+  return headingMatch[1].trim();
+}
+
 export function chunkDocuments(documents, chunker, options = {}) {
   const { preserveLeadContent = false, tokenOptimizer = null } = options;
 
@@ -305,24 +327,25 @@ export function chunkDocuments(documents, chunker, options = {}) {
   for (const doc of documents) {
     let content = doc.content;
 
-    // Apply token optimization if enabled
     if (preserveLeadContent && tokenOptimizer) {
       content = tokenOptimizer.optimizeText(content);
     }
 
-    // Split content into chunks
     const chunks = chunker.splitText(content);
 
-    // Create chunked documents with parent metadata
     for (let i = 0; i < chunks.length; i++) {
+      const chunkText = chunks[i];
+      const sectionHeading = extractSectionHeading(chunkText);
+
       chunkedDocs.push({
-        content: chunks[i],
+        content: chunkText,
         metadata: {
           ...doc.metadata,
           chunkIndex: i,
           totalChunks: chunks.length,
           parentId: `${doc.metadata.collection}:${doc.metadata.slug}`,
           contentType: doc.metadata.collection === "pages" ? "html" : "blog",
+          sectionHeading: sectionHeading || doc.metadata.title || "",
           leadContent: preserveLeadContent && tokenOptimizer ? i === 0 : false,
         },
       });

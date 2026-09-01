@@ -43,6 +43,7 @@ export function createEmbeddingsPipeline(config) {
     baseUrl: config.pineconeBaseUrl,
     indexName: config.pineconeIndexName,
     namespace: config.pineconeNamespace,
+    embeddingDimension: config.embeddingDimension,
   });
 
   // Determine chunking options from config

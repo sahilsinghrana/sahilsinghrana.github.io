@@ -103,6 +103,12 @@ export class EmbeddingsPipeline {
       const texts = batch.map((document) => document.text);
       const embeddings = await this.embedder.embedTexts(texts);
 
+      if (!Array.isArray(embeddings) || embeddings.length !== texts.length) {
+        throw new Error(
+          `Embedding generation failed for batch ${batchIndex + 1}: expected ${texts.length} embedding vectors, got ${Array.isArray(embeddings) ? embeddings.length : "non-array"}.`,
+        );
+      }
+
       embedded.push(
         ...batch.map((document, index) => ({
           ...document,

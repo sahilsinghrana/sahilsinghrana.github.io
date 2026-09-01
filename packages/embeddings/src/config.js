@@ -1,5 +1,6 @@
 import path from "path";
 import dotenv from "dotenv";
+import { SITE_ORIGIN } from "../../../scripts/site.mjs";
 
 const DEFAULT_CONTENT_SECTIONS = [
   { collection: "blog", baseDir: "src/content/blog" },
@@ -76,7 +77,7 @@ const DEFAULT_TOKEN_OPTIMIZATION = {
 };
 
 const DEFAULT_CHUNKING_CONFIG = {
-  enabled: true, // Disabled by default, set to true to enable chunking
+  enabled: true,
 };
 
 function buildPineconeBaseUrl(indexName, environment) {
@@ -133,17 +134,27 @@ export function loadConfig(options = {}) {
     process.env.OPENROUTER_URL;
   const openRouterModel =
     process.env.OPENROUTER_MODEL ?? "nvidia/llama-nemotron-embed-vl-1b-v2:free";
+  const embeddingDimension =
+    Number(
+      process.env.OPENROUTER_EMBEDDING_DIMENSION ??
+        process.env.PINECONE_EMBEDDING_DIMENSION ??
+        2048,
+    ) || 2048;
 
   const pineconeApiKey =
     process.env.PINECONE_API_KEY ?? process.env.PINECONE_KEY;
   const pineconeEnvironment = process.env.PINECONE_ENVIRONMENT;
   const pineconeControllerHost = process.env.PINECONE_CONTROLLER_HOST;
   const pineconeIndexName = process.env.PINECONE_INDEX_NAME;
-  const pineconeNamespace = process.env.PINECONE_NAMESPACE;
+  const pineconeNamespace =
+    process.env.PINECONE_NAMESPACE ??
+    `${process.env.PINECONE_INDEX_NAME ?? "site"}-v1`;
   const pineconeBaseUrl =
     process.env.PINECONE_BASE_URL ??
     process.env.PINECONE_URL ??
     buildPineconeBaseUrl(pineconeIndexName, pineconeEnvironment);
+  const siteOrigin =
+    process.env.SITE_ORIGIN ?? process.env.PUBLIC_SITE_URL ?? SITE_ORIGIN;
 
   requireVariable("OPENROUTER_API_KEY", openRouterApiKey);
   requireVariable("PINECONE_API_KEY", pineconeApiKey);
@@ -159,12 +170,14 @@ export function loadConfig(options = {}) {
     openRouterApiKey,
     openRouterApiUrl: normalizeOpenRouterServerURL(openRouterApiUrl),
     openRouterModel,
+    embeddingDimension,
     pineconeApiKey,
     pineconeEnvironment,
     pineconeControllerHost,
     pineconeIndexName,
     pineconeNamespace,
     pineconeBaseUrl,
+    siteOrigin,
     contentSections: options.contentSections ?? DEFAULT_CONTENT_SECTIONS,
     pageDistDir: options.pageDistDir ?? process.env.PAGE_DIST_DIR ?? "dist",
     pageSourceDir:
