@@ -33,9 +33,9 @@
       expandedKeyboardRatio: 0.98,
       keyboardOpenThreshold: 80,
       visibleHeightOffset: 12,
-      keyboardVisibleHeightOffset: 2,
+      keyboardVisibleHeightOffset: 0,
       widgetViewportPadding: 8,
-      keyboardWidgetPadding: 2,
+      keyboardWidgetPadding: 0,
       max: 600,
       min: 62,
     };
@@ -71,11 +71,43 @@
       return Math.max(IFRAME_HEIGHT.collapsed, Math.floor(spaceBelowTop));
     };
 
+    const computeIframeHeight = (expanded) => {
+      if (!expanded) {
+        return IFRAME_HEIGHT.collapsed;
+      }
+
+      const visibleHeight = getParentViewportHeight();
+      if (!Number.isFinite(visibleHeight) || visibleHeight <= 0) {
+        return IFRAME_HEIGHT.defaultExpanded;
+      }
+
+      const keyboardOpen = isKeyboardOpen();
+
+      // With keyboard open, fill exactly from iframe top to visible bottom.
+      // Ratio-based height ignores iframe position and causes a gap above the keyboard.
+      if (keyboardOpen && iframe) {
+        return getMaxFitHeight(iframe);
+      }
+
+      const ratioHeight = Math.floor(
+        visibleHeight * IFRAME_HEIGHT.expandedViewportRatio,
+      );
+      const maxFit = getMaxFitHeight(iframe);
+
+      return Math.min(
+        Math.max(ratioHeight, IFRAME_HEIGHT.expandedMin),
+        maxFit,
+        visibleHeight - IFRAME_HEIGHT.visibleHeightOffset,
+        IFRAME_HEIGHT.max,
+      );
+    };
+
     const ensureWidgetInViewport = (target, behavior = "instant") => {
       const viewport = window.visualViewport;
       if (!viewport || !target) return;
 
-      const padding = isKeyboardOpen()
+      const keyboardOpen = isKeyboardOpen();
+      const padding = keyboardOpen
         ? IFRAME_HEIGHT.keyboardWidgetPadding
         : IFRAME_HEIGHT.widgetViewportPadding;
       const visibleTop = viewport.offsetTop;
@@ -89,43 +121,17 @@
         });
       }
 
+      // When keyboard is open, bottom alignment is handled by iframe height — scrolling
+      // for bottom overflow creates a gap between the composer and the keyboard.
+      if (keyboardOpen) {
+        return;
+      }
+
       const updatedRect = target.getBoundingClientRect();
       if (updatedRect.bottom > visibleBottom - padding) {
         const overflow = updatedRect.bottom - (visibleBottom - padding);
         window.scrollBy({ top: overflow, behavior });
       }
-    };
-
-    const computeIframeHeight = (expanded) => {
-      if (!expanded) {
-        return IFRAME_HEIGHT.collapsed;
-      }
-
-      const visibleHeight = getParentViewportHeight();
-      if (!Number.isFinite(visibleHeight) || visibleHeight <= 0) {
-        return IFRAME_HEIGHT.defaultExpanded;
-      }
-
-      const keyboardOpen = isKeyboardOpen();
-      const ratio = keyboardOpen
-        ? IFRAME_HEIGHT.expandedKeyboardRatio
-        : IFRAME_HEIGHT.expandedViewportRatio;
-      const minH = keyboardOpen
-        ? IFRAME_HEIGHT.expandedMinKeyboard
-        : IFRAME_HEIGHT.expandedMin;
-
-      const ratioHeight = Math.floor(visibleHeight * ratio);
-      const maxFit = iframe ? getMaxFitHeight(iframe) : visibleHeight;
-      const heightOffset = keyboardOpen
-        ? IFRAME_HEIGHT.keyboardVisibleHeightOffset
-        : IFRAME_HEIGHT.visibleHeightOffset;
-
-      return Math.min(
-        Math.max(ratioHeight, minH),
-        maxFit,
-        visibleHeight - heightOffset,
-        IFRAME_HEIGHT.max,
-      );
     };
 
     const setInstantResize = (enabled) => {
@@ -155,10 +161,19 @@
       const scrollBehavior = smoothScroll ? "smooth" : "instant";
       ensureWidgetInViewport(target, scrollBehavior);
 
-      const height = computeIframeHeight(true);
+      let height = computeIframeHeight(true);
       target.style.height = `${height}px`;
 
+      if (isKeyboardOpen()) {
+        // Header scroll above may have changed maxFit — recompute once.
+        height = computeIframeHeight(true);
+        target.style.height = `${height}px`;
+        return;
+      }
+
       ensureWidgetInViewport(target, scrollBehavior);
+      height = computeIframeHeight(true);
+      target.style.height = `${height}px`;
     };
 
     const handleChildMessage = (event) => {
