@@ -1,239 +1,65 @@
-  <div class="chat-container" style="width: 100%; margin: 30px 0;">
-    <iframe
-      src="https://selene.sahilrana.in/"
-      title="Selene | Sahil Rana portfolio assistant"
-      width="100%"
-      id="seleneChatIframe"
-      style="border: none; border-radius: 12px; overflow: hidden; display: block; height: 62px;"
-      allow="clipboard-read; clipboard-write;"
-      sandbox="allow-scripts allow-same-origin allow-forms"
-      loading="lazy"
-    >
-    </iframe>
-  </div>
+<div class="chat-container">
+  <iframe
+    src="http://localhost:3000"
+    title="Selene | Sahil Rana portfolio assistant"
+    width="100%"
+    id="seleneChatIframe"
+    style="border: none; border-radius: 12px; overflow: hidden; display: block; height: 62px;"
+    allow="clipboard-read; clipboard-write;"
+    sandbox="allow-scripts allow-same-origin allow-forms"
+    loading="lazy"
+  >
+  </iframe>
+</div>
 
-  <style>
-    #seleneChatIframe {
-      transition: height 280ms cubic-bezier(0.4, 0, 0.2, 1);
-      will-change: height;
+<style>
+  .chat-container {
+    width: 100%;
+    margin: 16px 0;
+  }
+
+  @media (min-width: 640px) {
+    .chat-container {
+      margin: 30px 0;
     }
+  }
 
-    #seleneChatIframe.selene-resize-instant {
-      transition: none;
-    }
-  </style>
+  .chat-container.selene-embed-active {
+    isolation: isolate;
+    box-shadow: 0 0 0 1px rgba(217, 201, 167, 0.08);
+  }
 
-  <script type="module">
-    const IFRAME_HEIGHT = {
-      collapsed: 62,
-      defaultExpanded: 450,
-      expandedMin: 300,
-      expandedMinKeyboard: 160,
-      expandedViewportRatio: 0.65,
-      expandedKeyboardRatio: 0.98,
-      keyboardOpenThreshold: 80,
-      visibleHeightOffset: 12,
-      keyboardVisibleHeightOffset: 0,
-      widgetViewportPadding: 8,
-      keyboardWidgetPadding: 0,
-      max: 600,
-      min: 62,
-    };
+  #seleneChatIframe {
+    transition: height 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: height;
+  }
 
-    const INSTANT_RESIZE_DEBOUNCE_MS = 50;
+  #seleneChatIframe.selene-resize-instant {
+    transition: none;
+  }
+</style>
 
-    const iframe = document.getElementById("seleneChatIframe");
-    const allowedOrigin = iframe ? new URL(iframe.src).origin : "";
+<script type="module">
+  import { createEmbedLayoutController } from "./embedLayoutController.js";
 
-    let isExpanded = false;
-    let instantResizeTimer;
+  const iframe = document.getElementById("seleneChatIframe");
+  const container = document.querySelector(".chat-container");
+  const controller = createEmbedLayoutController(iframe, container);
 
-    const getParentViewportHeight = () => {
-      const viewport = window.visualViewport;
-      return viewport?.height ?? window.innerHeight;
-    };
+  iframe?.addEventListener("load", () => {
+    controller.applyLayout();
+  });
 
-    const isKeyboardOpen = () => {
-      const visibleHeight = getParentViewportHeight();
-      return window.innerHeight - visibleHeight > IFRAME_HEIGHT.keyboardOpenThreshold;
-    };
+  window.addEventListener("pagehide", () => {
+    controller.detach();
+  });
 
-    const getMaxFitHeight = (target) => {
-      const viewport = window.visualViewport;
-      const visibleTop = viewport?.offsetTop ?? 0;
-      const visibleBottom = visibleTop + (viewport?.height ?? window.innerHeight);
-      const iframeTop = target.getBoundingClientRect().top;
-      const padding = isKeyboardOpen()
-        ? IFRAME_HEIGHT.keyboardWidgetPadding
-        : IFRAME_HEIGHT.widgetViewportPadding;
-      const spaceBelowTop = visibleBottom - iframeTop - padding;
+  window.addEventListener("pageshow", (event) => {
+    if (!event.persisted) return;
+    controller.attach();
+    controller.applyLayout();
+  });
 
-      return Math.max(IFRAME_HEIGHT.collapsed, Math.floor(spaceBelowTop));
-    };
-
-    const computeIframeHeight = (expanded) => {
-      if (!expanded) {
-        return IFRAME_HEIGHT.collapsed;
-      }
-
-      const visibleHeight = getParentViewportHeight();
-      if (!Number.isFinite(visibleHeight) || visibleHeight <= 0) {
-        return IFRAME_HEIGHT.defaultExpanded;
-      }
-
-      const keyboardOpen = isKeyboardOpen();
-
-      // With keyboard open, fill exactly from iframe top to visible bottom.
-      // Ratio-based height ignores iframe position and causes a gap above the keyboard.
-      if (keyboardOpen && iframe) {
-        return getMaxFitHeight(iframe);
-      }
-
-      const ratioHeight = Math.floor(
-        visibleHeight * IFRAME_HEIGHT.expandedViewportRatio,
-      );
-      const maxFit = getMaxFitHeight(iframe);
-
-      return Math.min(
-        Math.max(ratioHeight, IFRAME_HEIGHT.expandedMin),
-        maxFit,
-        visibleHeight - IFRAME_HEIGHT.visibleHeightOffset,
-        IFRAME_HEIGHT.max,
-      );
-    };
-
-    const ensureWidgetInViewport = (target, behavior = "instant") => {
-      const viewport = window.visualViewport;
-      if (!viewport || !target) return;
-
-      const keyboardOpen = isKeyboardOpen();
-      const padding = keyboardOpen
-        ? IFRAME_HEIGHT.keyboardWidgetPadding
-        : IFRAME_HEIGHT.widgetViewportPadding;
-      const visibleTop = viewport.offsetTop;
-      const visibleBottom = viewport.offsetTop + viewport.height;
-      const rect = target.getBoundingClientRect();
-
-      if (rect.top < visibleTop + padding) {
-        window.scrollBy({
-          top: rect.top - visibleTop - padding,
-          behavior,
-        });
-      }
-
-      // When keyboard is open, bottom alignment is handled by iframe height — scrolling
-      // for bottom overflow creates a gap between the composer and the keyboard.
-      if (keyboardOpen) {
-        return;
-      }
-
-      const updatedRect = target.getBoundingClientRect();
-      if (updatedRect.bottom > visibleBottom - padding) {
-        const overflow = updatedRect.bottom - (visibleBottom - padding);
-        window.scrollBy({ top: overflow, behavior });
-      }
-    };
-
-    const setInstantResize = (enabled) => {
-      if (!iframe) return;
-
-      if (enabled) {
-        iframe.classList.add("selene-resize-instant");
-        window.clearTimeout(instantResizeTimer);
-        instantResizeTimer = window.setTimeout(() => {
-          iframe?.classList.remove("selene-resize-instant");
-        }, INSTANT_RESIZE_DEBOUNCE_MS);
-        return;
-      }
-
-      iframe.classList.remove("selene-resize-instant");
-    };
-
-    const applyIframeHeight = ({ smoothScroll = false } = {}) => {
-      const target = document.getElementById("seleneChatIframe");
-      if (!target) return;
-
-      if (!isExpanded) {
-        target.style.height = `${IFRAME_HEIGHT.collapsed}px`;
-        return;
-      }
-
-      const scrollBehavior = smoothScroll ? "smooth" : "instant";
-      ensureWidgetInViewport(target, scrollBehavior);
-
-      let height = computeIframeHeight(true);
-      target.style.height = `${height}px`;
-
-      if (isKeyboardOpen()) {
-        // Header scroll above may have changed maxFit — recompute once.
-        height = computeIframeHeight(true);
-        target.style.height = `${height}px`;
-        return;
-      }
-
-      ensureWidgetInViewport(target, scrollBehavior);
-      height = computeIframeHeight(true);
-      target.style.height = `${height}px`;
-    };
-
-    const handleChildMessage = (event) => {
-      if (!allowedOrigin || event.origin !== allowedOrigin) return;
-      if (event.source !== iframe?.contentWindow) return;
-
-      const { type, isExpanded: nextExpanded } = event.data ?? {};
-
-      if (type === "seleneFocus") {
-        applyIframeHeight({ smoothScroll: true });
-        return;
-      }
-
-      const isStateMessage =
-        type === "seleneState" ||
-        (type === "seleneHeight" && typeof nextExpanded === "boolean");
-
-      if (!isStateMessage) return;
-
-      isExpanded = Boolean(nextExpanded);
-      applyIframeHeight({ smoothScroll: isExpanded });
-    };
-
-    const onParentViewportChange = () => {
-      if (!isExpanded) return;
-
-      setInstantResize(true);
-      applyIframeHeight();
-    };
-
-    const attach = () => {
-      window.removeEventListener("message", handleChildMessage, false);
-      window.addEventListener("message", handleChildMessage, false);
-
-      window.visualViewport?.removeEventListener("resize", onParentViewportChange);
-      window.visualViewport?.removeEventListener("scroll", onParentViewportChange);
-      window.removeEventListener("resize", onParentViewportChange);
-
-      window.visualViewport?.addEventListener("resize", onParentViewportChange);
-      window.visualViewport?.addEventListener("scroll", onParentViewportChange);
-      window.addEventListener("resize", onParentViewportChange);
-    };
-
-    const detach = () => {
-      window.removeEventListener("message", handleChildMessage, false);
-      window.visualViewport?.removeEventListener("resize", onParentViewportChange);
-      window.visualViewport?.removeEventListener("scroll", onParentViewportChange);
-      window.removeEventListener("resize", onParentViewportChange);
-      window.clearTimeout(instantResizeTimer);
-    };
-
-    iframe?.addEventListener("load", () => {
-      applyIframeHeight();
-    });
-
-    window.addEventListener("pagehide", detach);
-    window.addEventListener("pageshow", (event) => {
-      if (event.persisted) attach();
-    });
-
-    attach();
-    applyIframeHeight();
-  </script>
+  controller.attach();
+  controller.applyLayout();
+</script>
