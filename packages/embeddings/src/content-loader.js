@@ -58,7 +58,7 @@ function buildCanonicalSource(collection, slug) {
   if (!normalizedSlug) return "/";
 
   if (collection === "blog") return `/blog/posts/${normalizedSlug}`;
-  if (collection === "snippets") return `/snippets/${normalizedSlug}`;
+  if (collection === "snippets") return `/blog/snippets/${normalizedSlug}`;
   return `/${normalizedSlug}`;
 }
 

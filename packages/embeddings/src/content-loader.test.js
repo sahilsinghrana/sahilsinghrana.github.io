@@ -181,6 +181,40 @@ This page covers retrieval quality and metadata filtering.
   assert.ok(metadata.hash && metadata.hash.length >= 16);
 });
 
+test("ContentLoader maps snippet slugs to /blog/snippets URLs", async () => {
+  const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "embeddings-"));
+  const snippetsDir = path.join(rootDir, "src/content/snippets");
+
+  await fs.mkdir(snippetsDir, { recursive: true });
+  await fs.writeFile(
+    path.join(snippetsDir, "quick-tip.md"),
+    `---
+title: "Quick Tip"
+description: "A short snippet"
+---
+
+# Tip
+
+Useful snippet content.
+`,
+  );
+
+  const loader = new ContentLoader({
+    contentSections: [
+      { collection: "snippets", baseDir: "src/content/snippets" },
+    ],
+    rootDir,
+    maxEmbeddingChars: 4000,
+  });
+
+  const docs = await loader.loadDocuments();
+  assert.equal(docs[0].metadata.source, "/blog/snippets/quick-tip");
+  assert.equal(
+    docs[0].metadata.url,
+    "https://www.sahilrana.in/blog/snippets/quick-tip",
+  );
+});
+
 test("PineconeIndexer queries with metadata filters and score thresholding", async () => {
   const indexer = new PineconeIndexer({
     apiKey: "test-key",

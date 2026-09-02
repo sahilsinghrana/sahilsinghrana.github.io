@@ -1,42 +1,54 @@
 <div class="chat-container" style="width: 100%; margin: 30px 0;">
   <iframe
     src="https://selene.sahilrana.in/"
-    title="Selene"
+    title="Selene | Sahil Rana portfolio assistant"
     width="100%"
     id="seleneChatIframe"
     style="border: 1px solid hsla(0,0%,100%,.1); border-radius: 12px; overflow: hidden; display: block; height: 86px;"
     allow="clipboard-read; clipboard-write;"
-    sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-popups allow-popups-to-escape-sandbox"
+    sandbox="allow-scripts allow-same-origin allow-forms"
     loading="lazy"
   >
   </iframe>
 </div>
 
+<style>
+  #seleneChatIframe {
+    transition: height 280ms cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: height;
+  }
+</style>
+
 <script type="module">
+  const IFRAME_HEIGHT = {
+    collapsed: 86,
+    defaultExpanded: 450,
+    max: 600,
+    min: 86,
+  };
+
   const iframe = document.getElementById("seleneChatIframe");
   const allowedOrigin = iframe ? new URL(iframe.src).origin : "";
 
   const resizeIframe = (event) => {
     if (!allowedOrigin || event.origin !== allowedOrigin) return;
+    if (event.source !== iframe?.contentWindow) return;
     if (event.data?.type !== "seleneHeight") return;
 
     const target = document.getElementById("seleneChatIframe");
-    let receivedHeight = event.data.height;
-    const receivedIsExpanded = event.data.isExpanded;
+    const receivedIsExpanded = Boolean(event.data.isExpanded);
+    const rawHeight = Number(event.data.height);
 
-    if (!receivedHeight) {
-      if (receivedIsExpanded) {
-        receivedHeight = 400;
-      } else {
-        receivedHeight = 86;
-      }
-    }
+    const fallbackHeight = receivedIsExpanded
+      ? IFRAME_HEIGHT.defaultExpanded
+      : IFRAME_HEIGHT.collapsed;
 
-    const height = Number(receivedHeight);
-    if (!Number.isFinite(height) || height <= 0) return;
-
-    // Clamp extreme iframe resize messages from a compromised/malicious frame.
-    const clampedHeight = Math.min(Math.max(height, 86), 600);
+    const height =
+      Number.isFinite(rawHeight) && rawHeight > 0 ? rawHeight : fallbackHeight;
+    const clampedHeight = Math.min(
+      Math.max(height, IFRAME_HEIGHT.min),
+      IFRAME_HEIGHT.max,
+    );
 
     if (target) {
       target.style.height = `${clampedHeight}px`;
@@ -44,7 +56,6 @@
   };
 
   const attach = () => {
-    // Idempotent so pageshow after attach() does not stack listeners.
     window.removeEventListener("message", resizeIframe, false);
     window.addEventListener("message", resizeIframe, false);
   };
@@ -58,6 +69,5 @@
     if (event.persisted) attach();
   });
 
-  // Attach immediately (same timing as before) so early iframe messages are not missed.
   attach();
 </script>
