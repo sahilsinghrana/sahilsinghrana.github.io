@@ -1,4 +1,45 @@
-<div class="topArtistsContainer">
+<div class="topArtistsContainer isLoading" id="topArtistsContainer">
   <h3>Current Top Artists</h3>
-  <ul class="cardContainer"></ul>
+
+  <div class="spotifyPanelBody">
+    <div class="spotifyPanelLoading" id="topArtistsLoading" aria-live="polite">
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spotifyPanelMessage displayNone" id="topArtistsError">
+      <p>Couldn't load.</p>
+      <button type="button" class="linkBtn spotifyRetryBtn">Retry</button>
+    </div>
+
+    <ul id="topArtistsListContainer" class="cardContainer displayNone"></ul>
+  </div>
 </div>

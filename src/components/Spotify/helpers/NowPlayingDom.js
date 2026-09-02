@@ -86,6 +86,20 @@ export class NowPlayingDom {
     return document.getElementById("nowPlayingInfo");
   }
 
+  static getLoadingEl() {
+    return document.getElementById("nowPlayingLoading");
+  }
+
+  static showLoading() {
+    showElement(this.getLoadingEl());
+    hideElement(this.getNotPlayingMessageWrapperEl());
+    hideElement(this.getNowPlayingWrapper());
+  }
+
+  static hideLoading() {
+    hideElement(this.getLoadingEl());
+  }
+
   static hideNowPlayingWrapper() {
     hideElement(this.getNowPlayingWrapper());
   }
@@ -95,10 +109,14 @@ export class NowPlayingDom {
   }
 
   static showNowPlayingWrapper() {
+    this.hideLoading();
     showElement(this.getNowPlayingWrapper());
+    hideElement(this.getNotPlayingMessageWrapperEl());
   }
 
   static showNotPlayingWrapper() {
+    this.hideLoading();
     showElement(this.getNotPlayingMessageWrapperEl());
+    hideElement(this.getNowPlayingWrapper());
   }
 }

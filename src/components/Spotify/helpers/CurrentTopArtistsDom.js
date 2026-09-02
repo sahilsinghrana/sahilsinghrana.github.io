@@ -30,15 +30,11 @@ class ArtistCard {
 
 class CurrentTopArtistsDom {
   static getWrapperEl() {
-    return document.querySelector(
-      ".spotifyData > div > div.topArtistsContainer > ul",
-    );
+    return document.getElementById("topArtistsListContainer");
   }
 
   static getContainerEl() {
-    return document.querySelector(
-      ".spotifyData > div > div.topArtistsContainer",
-    );
+    return document.getElementById("topArtistsContainer");
   }
 
   static clear() {
@@ -50,7 +46,7 @@ class CurrentTopArtistsDom {
   }
 
   static show() {
-    this.getWrapperEl().style = "";
+    this.getContainerEl().style = "";
   }
 
   static addArtist(artist) {

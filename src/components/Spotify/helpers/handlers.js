@@ -1,6 +1,7 @@
 import CurrentTopArtistsDom from "./CurrentTopArtistsDom";
 import TopTracksDom from "./CurrentTopTracksDom";
 import { NowPlayingDom } from "./NowPlayingDom";
+import { topArtistsPanelState, topTracksPanelState } from "./SpotifyPanelState";
 
 export function populateNowPlaying(currentPlayerStatus = {}) {
   const { is_playing, item = {} } = currentPlayerStatus;
@@ -30,22 +31,26 @@ export function populateNowPlaying(currentPlayerStatus = {}) {
 
 export function populateTopArtists(topArtists = []) {
   if (!topArtists.length) {
+    topArtistsPanelState.hideAll();
     CurrentTopArtistsDom.hide();
     return;
   }
   CurrentTopArtistsDom.clear();
   CurrentTopArtistsDom.show();
   topArtists.forEach((artist = {}) => CurrentTopArtistsDom.addArtist(artist));
+  topArtistsPanelState.showContent();
 }
 
 export function populateTopTracks(topTracks = []) {
   TopTracksDom.clear();
   if (!topTracks.length) {
+    topTracksPanelState.hideAll();
     TopTracksDom.hide();
     return;
   }
   TopTracksDom.show();
   topTracks.forEach((track = {}) => TopTracksDom.addTrack(track));
+  topTracksPanelState.showContent();
 }
 
 export function addProfileLinkToSpotifyLogo(url) {

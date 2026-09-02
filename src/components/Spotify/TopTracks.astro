@@ -1,5 +1,47 @@
-<div class="topTracksContainer" id="topTracksContainer">
+<div class="topTracksContainer isLoading" id="topTracksContainer">
   <h3>Current Top Tracks</h3>
-  <ul id="topTracksListContainer" class="cardContainer"></ul>
+
+  <div class="spotifyPanelBody">
+    <div class="spotifyPanelLoading" id="topTracksLoading" aria-live="polite">
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+      <div class="spotifySkeletonRow">
+        <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
+        <div class="spotifySkeletonText">
+          <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+          <div
+            class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+          >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="spotifyPanelMessage displayNone" id="topTracksError">
+      <p>Couldn't load.</p>
+      <button type="button" class="linkBtn spotifyRetryBtn">Retry</button>
+    </div>
+
+    <ul id="topTracksListContainer" class="cardContainer displayNone"></ul>
+  </div>
+
   <span class="smallInfo">* Click on cover art for song preview.</span>
 </div>

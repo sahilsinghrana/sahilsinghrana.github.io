@@ -15,7 +15,15 @@ import { Image } from "astro:assets";
     />
   </a>
 
-  <div class="notPlaying" id="notPlayingWrap">
+  <div class="nowPlayingLoading" id="nowPlayingLoading" aria-live="polite">
+    <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
+    <div
+      class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
+    >
+    </div>
+  </div>
+
+  <div class="notPlaying displayNone" id="notPlayingWrap">
     <p>Ears at rest....</p>
   </div>
 

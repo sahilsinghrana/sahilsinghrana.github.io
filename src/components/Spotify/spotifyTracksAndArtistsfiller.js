@@ -4,6 +4,11 @@ import {
   populateTopArtists,
   populateTopTracks,
 } from "./helpers/handlers";
+import {
+  showTopPanelsError,
+  showTopPanelsLoading,
+  wireTopPanelRetryButtons,
+} from "./helpers/SpotifyPanelState";
 
 let fetchGeneration = 0;
 let abortController = null;
@@ -19,6 +24,8 @@ async function populateTopTracksAndArtists() {
   abortController = new AbortController();
   const { signal } = abortController;
 
+  showTopPanelsLoading();
+
   try {
     const res = await fetchTopTracksAndArtists(signal);
     if (generation !== fetchGeneration || signal.aborted) return;
@@ -32,6 +39,8 @@ async function populateTopTracksAndArtists() {
   } catch (err) {
     if (err?.name === "AbortError") return;
     console.error(err);
+    if (generation !== fetchGeneration || signal.aborted) return;
+    showTopPanelsError();
   }
 }
 
@@ -49,4 +58,5 @@ function onPageShow(event) {
 window.addEventListener("pagehide", onPageHide);
 window.addEventListener("pageshow", onPageShow);
 
+wireTopPanelRetryButtons(populateTopTracksAndArtists);
 populateTopTracksAndArtists();
