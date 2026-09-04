@@ -10,11 +10,14 @@ export const IFRAME_HEIGHT = {
   widgetViewportPadding: 8,
   max: 600,
   min: 62,
-  anchorStabilizePasses: 3,
-  anchorHeightEpsilon: 2,
 };
 
 const INSTANT_RESIZE_DEBOUNCE_MS = 50;
+
+// How long to suppress visualViewport "scroll" events caused by our own
+// window.scrollBy() calls inside pinHeaderToViewport / fitBottomIfSafe,
+// preventing a re-entrant applyLayout() triggered by self-scroll.
+const SELF_SCROLL_SUPPRESS_MS = 220;
 
 /**
  * @param {HTMLIFrameElement | null} iframe
@@ -27,8 +30,14 @@ export function createEmbedLayoutController(iframe, container) {
   let inputFocused = false;
   let layoutGeneration = 0;
   let instantResizeTimer;
-  let anchorFrameId = 0;
-  let viewportLayoutTimer = 0;
+  let viewportResizeTimer = 0;
+
+  let suppressScrollEventsUntil = 0;
+
+  // Baseline viewport height corresponding to "no keyboard visible."
+  // Initialized on attach and only ever grown while !inputFocused, so it
+  // self-corrects for Safari URL bar show/hide as well.
+  let keyboardClosedBaseline = 0;
 
   const getViewport = () => window.visualViewport;
 
@@ -90,6 +99,23 @@ export function createEmbedLayoutController(iframe, container) {
     return computeExpandedHeight();
   };
 
+  // Grow the baseline whenever we're confident there's no keyboard up.
+  // Never shrinks here — shrinking only happens via a fresh attach(), so a
+  // real keyboard-open sequence never corrupts it.
+  const maybeGrowBaseline = () => {
+    if (inputFocused) return;
+    const visible = getVisibleHeight();
+    if (visible > keyboardClosedBaseline) {
+      keyboardClosedBaseline = visible;
+    }
+  };
+
+  const markSelfScroll = () => {
+    suppressScrollEventsUntil = Date.now() + SELF_SCROLL_SUPPRESS_MS;
+  };
+
+  const isSuppressingScrollEvents = () => Date.now() < suppressScrollEventsUntil;
+
   const pinHeaderToViewport = (behavior = "instant") => {
     if (!iframe) return;
 
@@ -100,12 +126,14 @@ export function createEmbedLayoutController(iframe, container) {
     const delta = rect.top - bounds.top;
 
     if (Math.abs(delta) >= 1) {
+      markSelfScroll();
       window.scrollBy({ top: delta, behavior });
       return;
     }
 
     const afterScroll = iframe.getBoundingClientRect();
     if (Math.abs(afterScroll.top - bounds.top) >= 1) {
+      markSelfScroll();
       container?.scrollIntoView({ block: "start", behavior });
     }
   };
@@ -123,6 +151,7 @@ export function createEmbedLayoutController(iframe, container) {
     const headerTopAfterScroll = rect.top - overflow;
     if (headerTopAfterScroll < bounds.top) return;
 
+    markSelfScroll();
     window.scrollBy({ top: overflow, behavior });
     pinHeaderToViewport(behavior);
   };
@@ -151,61 +180,49 @@ export function createEmbedLayoutController(iframe, container) {
     iframe.style.height = `${height}px`;
   };
 
-  const cancelAnchorStabilization = () => {
-    if (anchorFrameId) {
-      cancelAnimationFrame(anchorFrameId);
-      anchorFrameId = 0;
-    }
+  const cancelStabilization = () => {
+    // No-op: convergence loop removed. Kept as a safety call site in case
+    // any in-flight rAF was scheduled before this call path was reached.
   };
 
   const applyCollapsedLayout = () => {
-    cancelAnchorStabilization();
+    cancelStabilization();
     setEmbedActive(false);
     setInstantResize(true);
     applyHeight(IFRAME_HEIGHT.collapsed);
-  };
-
-  const applyExpandedLayout = (scrollBehavior = "instant") => {
-    setEmbedActive(false);
-    pinHeaderToViewport(scrollBehavior);
-    applyHeight(computeHeight());
-    fitBottomIfSafe(scrollBehavior);
-    pinHeaderToViewport(scrollBehavior);
-    applyHeight(computeHeight());
+    maybeGrowBaseline();
   };
 
   const applyAnchoredLayout = (scrollBehavior = "instant") => {
-    const generation = layoutGeneration;
+    cancelStabilization();
     setEmbedActive(true);
     setInstantResize(true);
-    cancelAnchorStabilization();
+    pinHeaderToViewport(scrollBehavior);
+    applyHeight(computeHeight());
+    maybeGrowBaseline();
+  };
 
-    let lastHeight = -1;
-
-    const stabilize = (pass = 0) => {
-      if (generation !== layoutGeneration || getMode() !== "anchored") {
-        return;
-      }
-
-      pinHeaderToViewport(scrollBehavior);
-      const height = computeHeight();
-
-      if (
-        pass > 0 &&
-        Math.abs(height - lastHeight) < IFRAME_HEIGHT.anchorHeightEpsilon
-      ) {
-        return;
-      }
-
-      lastHeight = height;
-      applyHeight(height);
-
-      if (pass + 1 < IFRAME_HEIGHT.anchorStabilizePasses) {
-        anchorFrameId = requestAnimationFrame(() => stabilize(pass + 1));
-      }
-    };
-
-    stabilize(0);
+  /**
+   * @param {"instant"|"smooth"} scrollBehavior
+   * @param {{ disableTransition?: boolean }} [opts]
+   */
+  const applyExpandedLayout = (scrollBehavior = "instant", opts = {}) => {
+    const { disableTransition = false } = opts;
+    cancelStabilization();
+    setEmbedActive(false);
+    if (disableTransition) setInstantResize(true);
+    // Scroll the iframe header into view BEFORE measuring available space.
+    // Without this, getMaxFitHeight() measures only the space currently below
+    // the iframe top — which can be tiny (e.g. 100px) when the iframe is near
+    // the bottom of the viewport at collapsed height (62px). pinHeaderToViewport
+    // corrects the scroll position first so computeHeight() sees the full
+    // available space.
+    pinHeaderToViewport(scrollBehavior);
+    applyHeight(computeHeight());
+    // fitBottomIfSafe after height is set: if the expanded iframe now overflows
+    // the bottom, scroll it back up (only if the header still fits in view).
+    fitBottomIfSafe(scrollBehavior);
+    maybeGrowBaseline();
   };
 
   const applyLayout = ({ smoothScroll = false } = {}) => {
@@ -255,14 +272,17 @@ export function createEmbedLayoutController(iframe, container) {
     if (type === "seleneFocus") {
       if (!isExpanded) return;
       inputFocused = true;
-      applyLayout({ smoothScroll: true });
+      applyAnchoredLayout("instant");
       return;
     }
 
     if (type === "seleneBlur") {
       if (!isExpanded) return;
       inputFocused = false;
-      applyLayout();
+      // Disable the CSS height transition so the iframe snaps directly to
+      // the keyboard-closed height rather than animating through a
+      // possibly-stale intermediate value.
+      applyExpandedLayout("instant", { disableTransition: true });
       return;
     }
 
@@ -283,37 +303,40 @@ export function createEmbedLayoutController(iframe, container) {
     });
   };
 
-  const onViewportChange = () => {
+  // Resize is the real keyboard-open/close signal on iOS
+  // (visualViewport.height changes). The 350ms debounce coalesces all of
+  // the rapid resize events that iOS fires during the ~300-400ms keyboard
+  // animation into a single applyLayout() call after the animation settles.
+  const onViewportResize = () => {
     if (!isExpanded) return;
 
-    window.clearTimeout(viewportLayoutTimer);
-    viewportLayoutTimer = window.setTimeout(() => {
+    window.clearTimeout(viewportResizeTimer);
+    viewportResizeTimer = window.setTimeout(() => {
       if (!isExpanded) return;
       applyLayout();
-    }, 16);
+    }, 350);
   };
 
   const attach = () => {
+    keyboardClosedBaseline = getVisibleHeight();
+
     window.removeEventListener("message", handleChildMessage, false);
     window.addEventListener("message", handleChildMessage, false);
 
-    getViewport()?.removeEventListener("resize", onViewportChange);
-    getViewport()?.removeEventListener("scroll", onViewportChange);
-    window.removeEventListener("resize", onViewportChange);
+    getViewport()?.removeEventListener("resize", onViewportResize);
+    window.removeEventListener("resize", onViewportResize);
 
-    getViewport()?.addEventListener("resize", onViewportChange);
-    getViewport()?.addEventListener("scroll", onViewportChange);
-    window.addEventListener("resize", onViewportChange);
+    getViewport()?.addEventListener("resize", onViewportResize);
+    window.addEventListener("resize", onViewportResize);
   };
 
   const detach = () => {
     layoutGeneration += 1;
-    cancelAnchorStabilization();
-    window.clearTimeout(viewportLayoutTimer);
+    cancelStabilization();
+    window.clearTimeout(viewportResizeTimer);
     window.removeEventListener("message", handleChildMessage, false);
-    getViewport()?.removeEventListener("resize", onViewportChange);
-    getViewport()?.removeEventListener("scroll", onViewportChange);
-    window.removeEventListener("resize", onViewportChange);
+    getViewport()?.removeEventListener("resize", onViewportResize);
+    window.removeEventListener("resize", onViewportResize);
     window.clearTimeout(instantResizeTimer);
   };
 
