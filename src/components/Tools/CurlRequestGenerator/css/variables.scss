@@ -18,7 +18,7 @@ $gray-700: #2d3748;
 $gray-800: #1a202c;
 
 // Typography used only in components
-$font-mono: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", monospace;
+$font-mono: monospace;
 $font-size-xs: 0.6875rem;
 $font-size-sm: 0.75rem;
 $font-size-lg: 0.9375rem;
@@ -43,7 +43,7 @@ $gray-900: #171923;
 
 // Typography used only in layout
 $font-size-lg: 0.9375rem;
-$font-mono: "Monaco", "Menlo", "Ubuntu Mono", "Consolas", monospace;
+$font-mono: monospace;
 $font-size-sm: 0.75rem;
 
 // Spacing used only in layout
