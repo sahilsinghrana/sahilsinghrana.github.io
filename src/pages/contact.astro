@@ -1,5 +1,6 @@
 ---
 import { Schema } from "astro-seo-schema";
+import { Font } from "astro:assets";
 import SectionHeaderImage from "@components/General/Image/SectionHeaderImage.astro";
 import Layout from "../layouts/index.astro";
 import placeholderImage from "@images/placeholder5comp.webp";
@@ -20,6 +21,7 @@ import { SITE_ORIGIN } from "@utils/site";
   keywords={contactPageKeyWords}
 >
   <Fragment slot="head">
+    <Font cssVariable="--font-libre-baskerville" />
     <Schema
       item={{
         "@context": "https://schema.org",
