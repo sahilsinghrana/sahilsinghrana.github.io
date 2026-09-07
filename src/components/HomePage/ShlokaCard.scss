@@ -26,7 +26,7 @@
 }
 
 #shlokaDevanagari {
-  font-family: "Tiro Devanagari Sanskrit", serif;
+  font-family: var(--font-tiro-devanagari-sanskrit);
   font-size: 1.38rem;
   color: #fffaf3;
   text-align: center;
@@ -55,7 +55,7 @@
 }
 
 #shlokaChapter {
-  font-family: Cinzel, serif;
+  font-family: var(--font-cinzel);
   font-size: 0.78rem;
   text-align: right;
   color: #ed9d3c;
