@@ -49,8 +49,9 @@ async function fetchAndFillNowPlaying() {
     );
   } finally {
     // Aborted/superseded runs must not keep the 5s loop alive.
-    if (generation !== pollGeneration || signal.aborted) return;
-    window.topSongsTimeout = setTimeout(fetchAndFillNowPlaying, 5000);
+    if (generation === pollGeneration && !signal.aborted) {
+      window.topSongsTimeout = setTimeout(fetchAndFillNowPlaying, 5000);
+    }
   }
 }
 

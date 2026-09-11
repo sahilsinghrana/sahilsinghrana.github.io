@@ -77,7 +77,7 @@ class ConstellationFramework {
       star.style.cssText = `
         position: absolute;
         width: ${width}px;
-        height: ${width}px;
+        height: ${height}px;
         background: white;
         border-radius: 50%;
         top: ${Math.random() * 100}%;
@@ -741,18 +741,6 @@ class ConstellationFramework {
 
   initMouseTrail() {
     return;
-    const trail = [];
-    const trailLength = 10;
-
-    document.addEventListener("mousemove", (e) => {
-      trail.push({ x: e.clientX, y: e.clientY, time: Date.now() });
-
-      if (trail.length > trailLength) {
-        trail.shift();
-      }
-
-      this.updateTrail(trail);
-    });
   }
 
   updateTrail(trail) {

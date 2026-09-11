@@ -4,6 +4,7 @@ footer {
   position: relative;
   min-height: 150px;
   padding-top: 10px;
+  padding-bottom: env(safe-area-inset-bottom, 0);
   font-size: 0.9rem;
   display: flex;
   flex-direction: column;

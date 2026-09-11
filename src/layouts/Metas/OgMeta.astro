@@ -44,7 +44,7 @@ const absoluteImage = toAbsoluteUrl(image, Astro.site ?? SITE_ORIGIN);
 }
 {
   type === "article" &&
-    tags.map((tag: string) => <meta property="article:tag" content={tag} />)
+    tags.map((tag) => <meta property="article:tag" content={tag} />)
 }
 
 <!-- Twitter -->

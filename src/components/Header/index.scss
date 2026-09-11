@@ -7,7 +7,7 @@ $mobileBreakpoint: 486px;
 }
 
 header .headerContainer {
-  padding: 0.8em 0.9em;
+  padding: calc(0.8em + env(safe-area-inset-top, 0)) 0.9em 0.8em;
   display: grid;
   grid-template-columns: 1fr 2fr;
   place-items: center stretch;
@@ -52,12 +52,6 @@ header .headerContainer {
       object-fit: cover;
     }
 
-    &:hover {
-      .homeTitle {
-        color: white;
-      }
-    }
-
     .homeTitle {
       font-size: 0.8rem;
       margin: 0;
@@ -74,19 +68,32 @@ header .headerContainer {
     gap: 0.8em;
 
     a {
+      display: inline-flex;
+      align-items: center;
       font-size: 0.8em;
       color: rgb(255 255 255 / 85.6%);
       text-decoration: none;
+      -webkit-tap-highlight-color: transparent;
       z-index: 1;
 
       &:first-child {
         margin-left: 0;
       }
+    }
+  }
+}
 
-      &:hover {
+@media (hover: hover) and (pointer: fine) {
+  header .headerContainer {
+    .title:hover {
+      .homeTitle {
         color: white;
-        font-weight: 800;
       }
+    }
+
+    nav a:hover {
+      color: white;
+      font-weight: 800;
     }
   }
 }
