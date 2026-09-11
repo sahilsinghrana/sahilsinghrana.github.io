@@ -109,6 +109,11 @@
         color: #dee3ea;
       }
 
+      &:focus-visible {
+        outline: 2px solid currentcolor;
+        outline-offset: 3px;
+      }
+
       .chessToggleArrow {
         transition: transform 0.2s ease-in-out;
         color: #737373;

@@ -9,6 +9,7 @@ export function populateNowPlaying(currentPlayerStatus = {}) {
   const { images } = album;
 
   if (!is_playing) {
+    NowPlayingDom.setStatus("Nothing currently playing");
     NowPlayingDom.hideNowPlayingWrapper();
     NowPlayingDom.showNotPlayingWrapper();
 
@@ -32,6 +33,7 @@ export function populateNowPlaying(currentPlayerStatus = {}) {
 export function populateTopArtists(topArtists = []) {
   if (!topArtists.length) {
     topArtistsPanelState.hideAll();
+    topArtistsPanelState.setStatus("No top artists available");
     CurrentTopArtistsDom.hide();
     return;
   }
@@ -45,6 +47,7 @@ export function populateTopTracks(topTracks = []) {
   TopTracksDom.clear();
   if (!topTracks.length) {
     topTracksPanelState.hideAll();
+    topTracksPanelState.setStatus("No top tracks available");
     TopTracksDom.hide();
     return;
   }

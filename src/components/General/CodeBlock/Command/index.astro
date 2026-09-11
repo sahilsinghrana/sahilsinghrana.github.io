@@ -6,24 +6,41 @@ const { text } = Astro.props;
 ---
 
 <script>
-  const copyBtn = document.getElementById("copyBtn");
-  let copyTimeout;
-  copyBtn.addEventListener("click", () => {
-    const text = String(copyBtn.dataset.value || "");
-    if (text) {
+  document.querySelectorAll(".codeblock-command").forEach((command) => {
+    const copyBtn = command.querySelector(".copyBtn");
+    const copyStatus = command.querySelector(".copyStatus");
+    let copyTimeout;
+
+    copyBtn?.addEventListener("click", async () => {
+      const text = String(copyBtn.dataset.value || "");
+      if (!text) return;
+
       copyBtn.dataset.copying = "true";
-      navigator.clipboard.writeText(text);
       clearTimeout(copyTimeout);
       copyTimeout = setTimeout(() => {
         copyBtn.dataset.copying = "false";
       }, 600);
-    }
+
+      try {
+        await navigator.clipboard.writeText(text);
+        if (copyStatus) copyStatus.textContent = "Command copied";
+      } catch {
+        if (copyStatus) copyStatus.textContent = "Unable to copy command";
+      }
+    });
   });
 </script>
 
 <p class={"codeblock-command"}>
   <code>{text}</code>
-  <button id="copyBtn" data-value={text} data-copying="false" type="button">
+  <button
+    class="copyBtn"
+    data-value={text}
+    data-copying="false"
+    type="button"
+    aria-label="Copy command"
+  >
     <Copy height={20} width={20} />
   </button>
+  <span class="a11yStatus copyStatus" aria-live="polite"></span>
 </p>

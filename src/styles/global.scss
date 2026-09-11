@@ -12,6 +12,23 @@
   display: none !important;
 }
 
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 3px;
+}
+
+.a11yStatus {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .blog-breadcrumbs {
   ol {
     display: flex;

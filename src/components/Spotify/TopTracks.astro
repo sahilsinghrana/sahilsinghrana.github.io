@@ -2,6 +2,7 @@
   <h3>Current Top Tracks</h3>
 
   <div class="spotifyPanelBody">
+    <span class="a11yStatus" id="topTracksStatus" aria-live="polite"></span>
     <div class="spotifyPanelLoading" id="topTracksLoading" aria-live="polite">
       <div class="spotifySkeletonRow">
         <div class="spotifySkeletonBlock spotifySkeletonCircle"></div>
@@ -35,7 +36,11 @@
       </div>
     </div>
 
-    <div class="spotifyPanelMessage displayNone" id="topTracksError">
+    <div
+      class="spotifyPanelMessage displayNone"
+      id="topTracksError"
+      role="alert"
+    >
       <p>Couldn't load.</p>
       <button type="button" class="linkBtn spotifyRetryBtn">Retry</button>
     </div>

@@ -44,6 +44,9 @@ async function fetchAndFillNowPlaying() {
       hasReceivedFirstResponse = true;
       NowPlayingDom.showNotPlayingWrapper();
     }
+    NowPlayingDom.setStatus(
+      "Spotify currently unavailable; displayed track may be outdated",
+    );
   } finally {
     // Aborted/superseded runs must not keep the 5s loop alive.
     if (generation !== pollGeneration || signal.aborted) return;

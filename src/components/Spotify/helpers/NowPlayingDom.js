@@ -16,8 +16,11 @@ class NowPlayingVinyl {
 
   static updateImage(images = [], alt) {
     const smallestImage = getSmallestImageFromSpotifyImagesArray(images);
-    this.getVinylEl().style.backgroundImage = `url('${smallestImage?.url}')`;
-    this.getVinylEl().alt = alt;
+    const vinylEl = this.getVinylEl();
+    if (!vinylEl) return;
+    vinylEl.style.backgroundImage = `url('${smallestImage?.url}')`;
+    vinylEl.setAttribute("aria-label", `Album artwork for ${alt}`);
+    vinylEl.removeAttribute("aria-hidden");
   }
 }
 
@@ -90,7 +93,14 @@ export class NowPlayingDom {
     return document.getElementById("nowPlayingLoading");
   }
 
+  static setStatus(message) {
+    const statusEl = document.getElementById("nowPlayingStatus");
+    if (statusEl) statusEl.textContent = message;
+  }
+
   static showLoading() {
+    this.setStatus("Loading current track");
+    this.vinyl.getVinylEl()?.setAttribute("aria-hidden", "true");
     showElement(this.getLoadingEl());
     hideElement(this.getNotPlayingMessageWrapperEl());
     hideElement(this.getNowPlayingWrapper());
@@ -109,12 +119,14 @@ export class NowPlayingDom {
   }
 
   static showNowPlayingWrapper() {
+    this.setStatus("");
     this.hideLoading();
     showElement(this.getNowPlayingWrapper());
     hideElement(this.getNotPlayingMessageWrapperEl());
   }
 
   static showNotPlayingWrapper() {
+    this.vinyl.getVinylEl()?.setAttribute("aria-hidden", "true");
     this.hideLoading();
     showElement(this.getNotPlayingMessageWrapperEl());
     hideElement(this.getNowPlayingWrapper());
