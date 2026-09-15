@@ -16,6 +16,7 @@ import {
   SphereGeometry,
   Mesh,
 } from "three";
+import { createFlag } from "./flag.js";
 
 function makeDataTex(buffer, size, { srgb = false } = {}) {
   const tex = new DataTexture(new Uint8Array(buffer), size, size, RGBAFormat);
@@ -38,6 +39,7 @@ export class Moon {
     // cannot free WebGL objects held by the GPU driver.
     this._geometry = null;
     this._material = null;
+    this._flag = null;
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
@@ -109,6 +111,16 @@ export class Moon {
       this.mesh.castShadow = true;
       this.mesh.receiveShadow = true;
 
+      try {
+        this._flag = createFlag();
+        this.mesh.add(this._flag);
+      } catch (err) {
+        // The flag is optional artwork; it must not prevent the moon from rendering
+        // or leave the loading overlay waiting forever if browser canvas support fails.
+        console.error("Flag initialization failed:", err);
+        this._flag = null;
+      }
+
       this.scene.add(this.mesh);
 
       worker.terminate();
@@ -140,6 +152,9 @@ export class Moon {
 
     this.scene.remove(this.mesh);
 
+    this._flag?.dispose?.();
+    this._flag = null;
+
     // Each texture is an independent GPU upload - each must be disposed individually.
     this._material?.map?.dispose();
     this._material?.bumpMap?.dispose();
@@ -154,5 +169,9 @@ export class Moon {
 
   setVisibility(visible) {
     if (this.mesh) this.mesh.visible = visible;
+  }
+
+  updateFlag(timeMs) {
+    this._flag?.update?.(timeMs);
   }
 }

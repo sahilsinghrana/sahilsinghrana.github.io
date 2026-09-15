@@ -477,6 +477,7 @@ function animate() {
     moon.mesh.rotation.y =
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
+    moon.updateFlag(performance.now());
 
     // Loader handoff intro + quiet idle breath (heartbeat cadence).
     const now = performance.now();
