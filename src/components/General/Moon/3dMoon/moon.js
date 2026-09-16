@@ -52,9 +52,17 @@ export class Moon {
   }
 
   async init(onComplete) {
-    const worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
-      type: "module",
-    });
+    let worker;
+    try {
+      worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
+        type: "module",
+      });
+    } catch (err) {
+      console.error("Failed to create Moon texture worker:", err);
+      if (onComplete) onComplete();
+      return;
+    }
+
     this._worker = worker;
 
     // If the worker throws (malformed message, JS error inside the worker, etc.),
@@ -69,6 +77,14 @@ export class Moon {
     };
 
     worker.onmessage = (e) => {
+      if (e.data?.error) {
+        console.error("Moon texture worker reported an error:", e.data.error);
+        worker.terminate();
+        if (this._worker === worker) this._worker = null;
+        if (onComplete) onComplete();
+        return;
+      }
+
       // Teardown may have run while the worker was still generating textures.
       if (this._disposed) {
         worker.terminate();

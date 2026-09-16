@@ -10,6 +10,9 @@ import {
   SRGBColorSpace,
   LinearFilter,
   LinearMipmapLinearFilter,
+  Quaternion,
+  Vector3,
+  MathUtils,
 } from "three";
 
 // Moon integration contract:
@@ -30,12 +33,12 @@ const EMBED_DEPTH = 0.015; // sinks pole base under the moon surface to avoid z-
 // Anchor on the moon (r ≈ 0.4), slightly below the original upper position.
 // Keep this point on the sphere surface when trying alternate placements.
 const ANCHOR_POSITION = { x: 0, y: 0.1, z: 0.385 };
-// Rotate local +Y onto the moon surface normal at the anchor.
-const ANCHOR_ROTATION = { x: Math.atan2(0.385, 0.1), y: 0, z: 0 };
-
 // Set false for a consistent camera-facing flag. When true, each flag instance
 // gets one random face direction around its pole while staying planted.
 const RANDOMIZE_FLAG_FACE = true;
+const FLAG_FACE_YAW_OFFSET = -Math.PI / 5.5; // tilt the cloth toward the default viewer
+const FLAG_FACE_PITCH = -Math.PI / 14; // subtle depth cue so the emblem reads instead of lying flat
+const FLAG_TILT_DEG = 8; // small off-axis lean keeps mounts from feeling rigidly computer-generated
 
 // Waving animation tuning.
 const WAVE_AMPLITUDE = 0.01;
@@ -150,7 +153,10 @@ export function createFlag() {
     color: new Color("#d7bd8b"),
   });
   const pole = new Mesh(poleGeometry, poleMaterial);
-  // Sink base slightly into the surface to prevent gaps / z-fighting.
+  pole.castShadow = true;
+  pole.receiveShadow = true;
+  // Sink base slightly into the surface to prevent gaps / z-fighting while keeping
+  // the flag visibly planted in the terrain.
   pole.position.y = POLE_HEIGHT / 2 - EMBED_DEPTH;
   group.add(pole);
 
@@ -165,20 +171,40 @@ export function createFlag() {
     color: texture ? 0xffffff : 0xe9c6a8,
     map: texture,
     side: DoubleSide,
+    roughness: 0.96,
+    metalness: 0,
   });
   const cloth = new Mesh(clothGeometry, clothMaterial);
+  cloth.castShadow = true;
+  cloth.receiveShadow = true;
   const clothPivot = new Group();
   clothPivot.position.y = POLE_HEIGHT - EMBED_DEPTH;
   // Keep the cloth in the pole's local frame so its vertical hoist edge is
   // always collinear with the pole after the moon-surface rotation is applied.
-  // Any optional random facing rotates around that same local pole axis.
-  clothPivot.rotation.y = RANDOMIZE_FLAG_FACE ? Math.random() * Math.PI * 2 : 0;
+  // Bias the face toward the default viewer so the emblem is readable from the main page angle.
+  clothPivot.rotation.x = FLAG_FACE_PITCH;
+  clothPivot.rotation.y =
+    FLAG_FACE_YAW_OFFSET +
+    (RANDOMIZE_FLAG_FACE ? (Math.random() - 0.5) * Math.PI * 0.45 : 0);
   cloth.position.set(FLAG_WIDTH / 2, -FLAG_HEIGHT / 2, 0);
   clothPivot.add(cloth);
   group.add(clothPivot);
 
-  group.position.set(ANCHOR_POSITION.x, ANCHOR_POSITION.y, ANCHOR_POSITION.z);
-  group.rotation.set(ANCHOR_ROTATION.x, ANCHOR_ROTATION.y, ANCHOR_ROTATION.z);
+  const anchorPoint = new Vector3(
+    ANCHOR_POSITION.x,
+    ANCHOR_POSITION.y,
+    ANCHOR_POSITION.z,
+  );
+  const anchorNormal = anchorPoint.clone().normalize();
+  const poleUp = new Vector3(0, 1, 0);
+  const poleBasis = new Quaternion().setFromUnitVectors(poleUp, anchorNormal);
+  const tiltAxis = new Vector3(1, 0, 0).cross(anchorNormal).normalize();
+  const tilt = new Quaternion().setFromAxisAngle(
+    tiltAxis,
+    MathUtils.degToRad(FLAG_TILT_DEG),
+  );
+  group.quaternion.copy(poleBasis).multiply(tilt);
+  group.position.copy(anchorPoint).addScaledVector(anchorNormal, -EMBED_DEPTH);
 
   // Cache rest pose for the wave deformation.
   const positionAttr = clothGeometry.getAttribute("position");
