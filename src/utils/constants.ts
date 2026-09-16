@@ -1,4 +1,7 @@
-import { getRandom } from "@components/Spotify/helpers/utils";
+import {
+  getRandomContentIndex,
+  RANDOM_CONTENT_STORAGE_KEYS,
+} from "./randomContentStorage";
 
 import krishnaAndFluteImage from "@assets/images/shlokas/krishnaandflute.jpg";
 import type { ImageMetadata } from "astro";
@@ -142,32 +145,9 @@ export const SHIVA_SHLOKAS: Shloka[] = [
 const ALL_SHLOKAS: Shloka[] = [...SHIVA_SHLOKAS, ...BHAGAVAD_GITA_SHLOKAS];
 
 export const getRandomShloka = (): Shloka => {
-  const cnt = Number(sessionStorage.getItem("sh0DnCt") || 0);
-  if (cnt > 8) {
-    sessionStorage.setItem("sh0DnCt", "0");
-    sessionStorage.removeItem("sh0Dn");
-  } else {
-    sessionStorage.setItem("sh0DnCt", (cnt + 1).toString());
-  }
-
-  let idx = 0;
-  const zDone = sessionStorage.getItem("sh0Dn");
-  if (zDone) {
-    idx = getRandomShlokaIndex();
-  } else {
-    sessionStorage.setItem("sh0Dn", "true");
-  }
-
-  sessionStorage.setItem("lsShlIx", idx.toString());
+  const idx = getRandomContentIndex(
+    RANDOM_CONTENT_STORAGE_KEYS.shloka,
+    ALL_SHLOKAS.length,
+  );
   return ALL_SHLOKAS[idx];
-};
-
-const getRandomShlokaIndex = (): number => {
-  const lastIdx = sessionStorage.getItem("lsShlIx");
-  let idx = getRandom(0, ALL_SHLOKAS.length - 1, 1);
-
-  while (lastIdx && String(idx) === lastIdx) {
-    idx = getRandom(0, ALL_SHLOKAS.length - 1, 1);
-  }
-  return idx;
 };

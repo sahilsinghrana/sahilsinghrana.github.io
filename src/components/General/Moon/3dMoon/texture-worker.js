@@ -80,186 +80,206 @@ function fbm(x, y, octaves, lacunarity, gain) {
 
 // ===================== MAIN WORKER MESSAGE HANDLER =====================
 
+self.onerror = function (error) {
+  console.error("Moon texture worker runtime error:", error);
+  self.postMessage({
+    error: error?.message || "Moon texture worker runtime error",
+  });
+};
+
 self.onmessage = function (e) {
-  const size = e.data.size;
-  const rSize = e.data.roughSize;
-  const diffuseData = new Uint8ClampedArray(size * size * 4);
-  const bumpData = new Uint8ClampedArray(size * size * 4);
-  const roughData = new Uint8ClampedArray(rSize * rSize * 4);
+  try {
+    const size = e.data.size;
+    const rSize = e.data.roughSize;
+    if (!Number.isFinite(size) || !Number.isFinite(rSize)) {
+      throw new Error(
+        "Invalid Moon texture worker payload: missing size values.",
+      );
+    }
+    const diffuseData = new Uint8ClampedArray(size * size * 4);
+    const bumpData = new Uint8ClampedArray(size * size * 4);
+    const roughData = new Uint8ClampedArray(rSize * rSize * 4);
 
-  // ===================== CRATER GENERATION =====================
-  // Three tiers of craters by radius - large, medium, and micro.
-  // Each crater stores:
-  //   x, y  - normalized [0,1] center position on the texture.
-  //   r     - influence radius in normalized texture space.
-  //   d     - depth multiplier (controls how deep/prominent the crater is).
-  const craters = [];
-  for (let i = 0; i < 20; i++)
-    craters.push({
-      x: Math.random(),
-      y: Math.random(),
-      r: 0.03 + Math.random() * 0.08,
-      d: 0.8,
-    });
-  for (let i = 0; i < 50; i++)
-    craters.push({
-      x: Math.random(),
-      y: Math.random(),
-      r: 0.01 + Math.random() * 0.03,
-      d: 0.6,
-    });
-  for (let i = 0; i < 140; i++)
-    craters.push({
-      x: Math.random(),
-      y: Math.random(),
-      r: 0.002 + Math.random() * 0.01,
-      d: 0.5,
-    });
+    // ===================== CRATER GENERATION =====================
+    // Three tiers of craters by radius - large, medium, and micro.
+    // Each crater stores:
+    //   x, y  - normalized [0,1] center position on the texture.
+    //   r     - influence radius in normalized texture space.
+    //   d     - depth multiplier (controls how deep/prominent the crater is).
+    const craters = [];
+    for (let i = 0; i < 20; i++)
+      craters.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.03 + Math.random() * 0.08,
+        d: 0.8,
+      });
+    for (let i = 0; i < 50; i++)
+      craters.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.01 + Math.random() * 0.03,
+        d: 0.6,
+      });
+    for (let i = 0; i < 140; i++)
+      craters.push({
+        x: Math.random(),
+        y: Math.random(),
+        r: 0.002 + Math.random() * 0.01,
+        d: 0.5,
+      });
 
-  // Pre-compute derived radius thresholds on each crater so they are not
-  // recalculated inside the per-pixel inner loop (called millions of times).
-  for (let i = 0; i < craters.length; i++) {
-    const c = craters[i];
-    c.r12 = c.r * 1.2; // Outer influence boundary (where the crater fades to zero).
-    c.r12sq = c.r12 * c.r12; // Squared outer radius - used for fast pre-sqrt rejection.
-    c.r07 = c.r * 0.7; // Inner floor boundary (deepest part of the bowl).
-  }
+    // Pre-compute derived radius thresholds on each crater so they are not
+    // recalculated inside the per-pixel inner loop (called millions of times).
+    for (let i = 0; i < craters.length; i++) {
+      const c = craters[i];
+      c.r12 = c.r * 1.2; // Outer influence boundary (where the crater fades to zero).
+      c.r12sq = c.r12 * c.r12; // Squared outer radius - used for fast pre-sqrt rejection.
+      c.r07 = c.r * 0.7; // Inner floor boundary (deepest part of the bowl).
+    }
 
-  // ===================== SPATIAL GRID =====================
-  // Without a grid, craterH iterates all 210 craters for every pixel:
-  //   630 × 630 × 210 ≈ 83 million distance tests.
-  //
-  // The grid divides [0,1]² into GRID×GRID cells. Each crater registers itself
-  // in every cell its bounding box overlaps. Each pixel then only checks the
-  // craters stored in its own cell - typically 3–5 instead of 210.
-  //
-  // The modulo indexing in both the registration loop and the lookup handles
-  // craters whose bounding boxes straddle the 0/1 wrap edge, consistent with
-  // the toroidal distance correction (dx > 0.5, etc.) inside craterH.
-  const GRID = 16; // 16×16 = 256 cells; each cell covers 1/16 ≈ 6.25% of texture space.
-  const grid = Array.from({ length: GRID * GRID }, () => []);
+    // ===================== SPATIAL GRID =====================
+    // Without a grid, craterH iterates all 210 craters for every pixel:
+    //   630 × 630 × 210 ≈ 83 million distance tests.
+    //
+    // The grid divides [0,1]² into GRID×GRID cells. Each crater registers itself
+    // in every cell its bounding box overlaps. Each pixel then only checks the
+    // craters stored in its own cell - typically 3–5 instead of 210.
+    //
+    // The modulo indexing in both the registration loop and the lookup handles
+    // craters whose bounding boxes straddle the 0/1 wrap edge, consistent with
+    // the toroidal distance correction (dx > 0.5, etc.) inside craterH.
+    const GRID = 16; // 16×16 = 256 cells; each cell covers 1/16 ≈ 6.25% of texture space.
+    const grid = Array.from({ length: GRID * GRID }, () => []);
 
-  for (let i = 0; i < craters.length; i++) {
-    const c = craters[i];
-    // Convert the crater's [0,1] bounding box to grid cell indices.
-    // Using floor on both ends ensures partially covered cells are included.
-    const x0 = Math.floor((c.x - c.r12) * GRID);
-    const x1 = Math.floor((c.x + c.r12) * GRID);
-    const y0 = Math.floor((c.y - c.r12) * GRID);
-    const y1 = Math.floor((c.y + c.r12) * GRID);
-    for (let gy = y0; gy <= y1; gy++) {
-      for (let gx = x0; gx <= x1; gx++) {
-        // ((n % GRID) + GRID) % GRID safely wraps negative indices.
-        const cell =
-          (((gy % GRID) + GRID) % GRID) * GRID + (((gx % GRID) + GRID) % GRID);
-        grid[cell].push(i);
+    for (let i = 0; i < craters.length; i++) {
+      const c = craters[i];
+      // Convert the crater's [0,1] bounding box to grid cell indices.
+      // Using floor on both ends ensures partially covered cells are included.
+      const x0 = Math.floor((c.x - c.r12) * GRID);
+      const x1 = Math.floor((c.x + c.r12) * GRID);
+      const y0 = Math.floor((c.y - c.r12) * GRID);
+      const y1 = Math.floor((c.y + c.r12) * GRID);
+      for (let gy = y0; gy <= y1; gy++) {
+        for (let gx = x0; gx <= x1; gx++) {
+          // ((n % GRID) + GRID) % GRID safely wraps negative indices.
+          const cell =
+            (((gy % GRID) + GRID) % GRID) * GRID +
+            (((gx % GRID) + GRID) % GRID);
+          grid[cell].push(i);
+        }
       }
     }
-  }
 
-  // ===================== CRATER HEIGHT FUNCTION =====================
-  // Returns the combined height displacement [typically negative in bowl, positive on rim]
-  // contributed by all craters that influence the point (nx, ny) in [0,1]² space.
-  //
-  // The profile per crater has three zones:
-  //   t < 0.7   → parabolic bowl (depression)
-  //   0.7–1.0   → linear rim rise (ejecta wall)
-  //   1.0–1.2   → linear fade back to zero (outer falloff)
-  function craterH(nx, ny) {
-    // Look up only the craters registered to this pixel's grid cell.
-    const cell =
-      (Math.floor(ny * GRID) % GRID) * GRID + (Math.floor(nx * GRID) % GRID);
-    const candidates = grid[cell];
+    // ===================== CRATER HEIGHT FUNCTION =====================
+    // Returns the combined height displacement [typically negative in bowl, positive on rim]
+    // contributed by all craters that influence the point (nx, ny) in [0,1]² space.
+    //
+    // The profile per crater has three zones:
+    //   t < 0.7   → parabolic bowl (depression)
+    //   0.7–1.0   → linear rim rise (ejecta wall)
+    //   1.0–1.2   → linear fade back to zero (outer falloff)
+    function craterH(nx, ny) {
+      // Look up only the craters registered to this pixel's grid cell.
+      const cell =
+        (Math.floor(ny * GRID) % GRID) * GRID + (Math.floor(nx * GRID) % GRID);
+      const candidates = grid[cell];
 
-    let h = 0;
-    for (let k = 0; k < candidates.length; k++) {
-      const c = craters[candidates[k]];
-      let dx = nx - c.x;
-      let dy = ny - c.y;
+      let h = 0;
+      for (let k = 0; k < candidates.length; k++) {
+        const c = craters[candidates[k]];
+        let dx = nx - c.x;
+        let dy = ny - c.y;
 
-      // Toroidal (wrap-around) distance correction.
-      // Ensures craters near the 0/1 texture edge correctly influence pixels on the
-      // opposite edge, matching the tiled nature of the UV-mapped sphere texture.
-      if (dx > 0.5) dx -= 1;
-      else if (dx < -0.5) dx += 1;
-      if (dy > 0.5) dy -= 1;
-      else if (dy < -0.5) dy += 1;
+        // Toroidal (wrap-around) distance correction.
+        // Ensures craters near the 0/1 texture edge correctly influence pixels on the
+        // opposite edge, matching the tiled nature of the UV-mapped sphere texture.
+        if (dx > 0.5) dx -= 1;
+        else if (dx < -0.5) dx += 1;
+        if (dy > 0.5) dy -= 1;
+        else if (dy < -0.5) dy += 1;
 
-      const distSq = dx * dx + dy * dy;
+        const distSq = dx * dx + dy * dy;
 
-      // Squared-distance early rejection avoids Math.sqrt for candidates that are
-      // clearly outside the influence radius - the most common case even with the grid.
-      if (distSq >= c.r12sq) continue;
+        // Squared-distance early rejection avoids Math.sqrt for candidates that are
+        // clearly outside the influence radius - the most common case even with the grid.
+        if (distSq >= c.r12sq) continue;
 
-      const dist = Math.sqrt(distSq);
-      const t = dist / c.r;
+        const dist = Math.sqrt(distSq);
+        const t = dist / c.r;
 
-      if (t < 0.7) {
-        const t07 = t / 0.7; // Cached - used twice in this branch.
-        h += -c.d * (1 - t07 * t07) * 0.7;
-      } else if (t < 1.0) {
-        h += ((t - 0.7) / 0.3) * c.d * 0.3;
-      } else {
-        h += ((1.2 - t) / 0.2) * c.d * 0.1;
+        if (t < 0.7) {
+          const t07 = t / 0.7; // Cached - used twice in this branch.
+          h += -c.d * (1 - t07 * t07) * 0.7;
+        } else if (t < 1.0) {
+          h += ((t - 0.7) / 0.3) * c.d * 0.3;
+        } else {
+          h += ((1.2 - t) / 0.2) * c.d * 0.1;
+        }
+      }
+      return h;
+    }
+
+    // ===================== TEXTURE GENERATION =====================
+    // Diffuse + bump share one pixel loop (craterH once per pixel).
+    for (let j = 0; j < size; j++) {
+      for (let i = 0; i < size; i++) {
+        const nx = i / size,
+          ny = j / size;
+        const cr = craterH(nx, ny);
+        const idx = (j * size + i) * 4;
+
+        // --- Diffuse (albedo) ---
+        // Original neutral lunar gray [80, 190] — no cream/cool tint.
+        const d_macro = fbm(nx * 3, ny * 3, 3, 2.1, 0.5);
+        const d_clamped = Math.max(
+          0,
+          Math.min(1, (d_macro * 0.45 + cr * 0.5) * 0.8 + 0.35),
+        );
+        const gray = 80 + d_clamped * 110;
+        diffuseData[idx] = diffuseData[idx + 1] = diffuseData[idx + 2] = gray;
+        diffuseData[idx + 3] = 255;
+
+        // --- Bump — stronger micro-detail + clearer crater rims ---
+        const micro = fbm(nx * 10, ny * 10, 5, 2.15, 0.48);
+        const mid = fbm(nx * 6, ny * 6, 4, 2.1, 0.5);
+        const b_val = Math.max(
+          0,
+          Math.min(
+            255,
+            ((mid * 0.35 + micro * 0.3 + cr * 0.75) * 0.72 + 0.38) * 255,
+          ),
+        );
+        bumpData[idx] = bumpData[idx + 1] = bumpData[idx + 2] = b_val;
+        bumpData[idx + 3] = 255;
       }
     }
-    return h;
-  }
 
-  // ===================== TEXTURE GENERATION =====================
-  // Diffuse + bump share one pixel loop (craterH once per pixel).
-  for (let j = 0; j < size; j++) {
-    for (let i = 0; i < size; i++) {
-      const nx = i / size,
-        ny = j / size;
-      const cr = craterH(nx, ny);
-      const idx = (j * size + i) * 4;
-
-      // --- Diffuse (albedo) ---
-      // Original neutral lunar gray [80, 190] — no cream/cool tint.
-      const d_macro = fbm(nx * 3, ny * 3, 3, 2.1, 0.5);
-      const d_clamped = Math.max(
-        0,
-        Math.min(1, (d_macro * 0.45 + cr * 0.5) * 0.8 + 0.35),
-      );
-      const gray = 80 + d_clamped * 110;
-      diffuseData[idx] = diffuseData[idx + 1] = diffuseData[idx + 2] = gray;
-      diffuseData[idx + 3] = 255;
-
-      // --- Bump — stronger micro-detail + clearer crater rims ---
-      const micro = fbm(nx * 10, ny * 10, 5, 2.15, 0.48);
-      const mid = fbm(nx * 6, ny * 6, 4, 2.1, 0.5);
-      const b_val = Math.max(
-        0,
-        Math.min(
-          255,
-          ((mid * 0.35 + micro * 0.3 + cr * 0.75) * 0.72 + 0.38) * 255,
-        ),
-      );
-      bumpData[idx] = bumpData[idx + 1] = bumpData[idx + 2] = b_val;
-      bumpData[idx + 3] = 255;
+    // --- Roughness ---
+    // Pure random noise: the moon surface has no large-scale specular variation,
+    // just micro-scale texture. A uniform random field achieves this without any
+    // noise function overhead. The range 180–229 keeps roughness high (non-shiny)
+    // while introducing just enough micro-variation to break up specular uniformity.
+    for (let i = 0; i < roughData.length; i += 4) {
+      const v = 180 + Math.floor(Math.random() * 50);
+      roughData[i] = roughData[i + 1] = roughData[i + 2] = v;
+      roughData[i + 3] = 255;
     }
-  }
 
-  // --- Roughness ---
-  // Pure random noise: the moon surface has no large-scale specular variation,
-  // just micro-scale texture. A uniform random field achieves this without any
-  // noise function overhead. The range 180–229 keeps roughness high (non-shiny)
-  // while introducing just enough micro-variation to break up specular uniformity.
-  for (let i = 0; i < roughData.length; i += 4) {
-    const v = 180 + Math.floor(Math.random() * 50);
-    roughData[i] = roughData[i + 1] = roughData[i + 2] = v;
-    roughData[i + 3] = 255;
+    // Transfer ownership of the underlying ArrayBuffers to the main thread instead of
+    // copying them. After this call, buffers are neutered in the worker.
+    self.postMessage(
+      {
+        diffuse: diffuseData.buffer,
+        bump: bumpData.buffer,
+        rough: roughData.buffer,
+      },
+      [diffuseData.buffer, bumpData.buffer, roughData.buffer],
+    );
+  } catch (error) {
+    console.error("Moon texture worker generation failed:", error);
+    self.postMessage({
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
-
-  // Transfer ownership of the underlying ArrayBuffers to the main thread instead of
-  // copying them. After this call, buffers are neutered in the worker.
-  self.postMessage(
-    {
-      diffuse: diffuseData.buffer,
-      bump: bumpData.buffer,
-      rough: roughData.buffer,
-    },
-    [diffuseData.buffer, bumpData.buffer, roughData.buffer],
-  );
 };

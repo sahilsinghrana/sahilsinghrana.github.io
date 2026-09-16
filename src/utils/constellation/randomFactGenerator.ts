@@ -1,4 +1,7 @@
-import { getRandom } from "@components/Spotify/helpers/utils";
+import {
+  getRandomContentIndex,
+  RANDOM_CONTENT_STORAGE_KEYS,
+} from "@utils/randomContentStorage";
 
 import sagittariusFacts from "./sagittariusFacts";
 import miscFacts from "./miscFacts";
@@ -10,6 +13,9 @@ export default function getRandomFact(): string {
     allFacts.push(fact.fact);
   });
 
-  const randomIndex = getRandom(0, Object.keys(allFacts).length - 1);
+  const randomIndex = getRandomContentIndex(
+    RANDOM_CONTENT_STORAGE_KEYS.moonFact,
+    allFacts.length,
+  );
   return allFacts[randomIndex];
 }

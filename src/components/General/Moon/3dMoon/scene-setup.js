@@ -283,6 +283,7 @@ const disposeGpuResources = () => {
 async function initThreeJS() {
   if (isInitialized || isInitializing || disposeRequested) return;
   isInitializing = true;
+  console.info("Starting 3D moon initialization.");
 
   try {
     // Three.js core, OrbitControls, and Moon are loaded only after the visibility gate
@@ -296,6 +297,7 @@ async function initThreeJS() {
         HemisphereLight,
         WebGLRenderer,
         ACESFilmicToneMapping,
+        PCFSoftShadowMap,
       },
       { OrbitControls },
       { Moon },
@@ -306,10 +308,19 @@ async function initThreeJS() {
     ]);
 
     if (disposeRequested) {
+      console.info(
+        "Moon init aborted because teardown was requested before scene creation.",
+      );
       return;
     }
 
     fixedHorizontalFov = computeFixedHorizontalFov();
+    console.info(
+      "Moon camera FOV configured:",
+      INITIAL_FOV,
+      "fixedHorizontalFov:",
+      fixedHorizontalFov,
+    );
 
     // Setup Scene
     // Creates the main 3D environment where everything will live.
@@ -336,6 +347,8 @@ async function initThreeJS() {
       depth: true,
       powerPreference: "high-performance", // ASTRO OPTIMIZATION: Requests dedicated GPU
     });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
 
     // Set initial size and canvas quality.
     // min(devicePixelRatio, 2) prevents high-density screens (like 3x iPhones) from rendering too many pixels and tanking frame rates.
@@ -367,6 +380,9 @@ async function initThreeJS() {
       SUN_LIGHT_POSITION.y,
       SUN_LIGHT_POSITION.z,
     );
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.set(1024, 1024);
+    sunLight.shadow.bias = -0.0003;
     scene.add(sunLight);
 
     // A DirectionalLight always points from its position toward its target object.
@@ -412,6 +428,12 @@ async function initThreeJS() {
     dismissLoader();
   } finally {
     isInitializing = false;
+    console.info(
+      "3D moon initialization finished. isInitialized:",
+      isInitialized,
+      "isInitializing:",
+      isInitializing,
+    );
   }
 }
 
@@ -477,6 +499,7 @@ function animate() {
     moon.mesh.rotation.y =
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
+    moon.updateFlag(performance.now());
 
     // Loader handoff intro + quiet idle breath (heartbeat cadence).
     const now = performance.now();
@@ -518,9 +541,14 @@ const onVisibilityChange = (entries) => {
       clearTimeout(initTimeoutId);
       initTimeoutId = setTimeout(() => {
         initTimeoutId = null;
-        initThreeJS().then(() => {
-          if (!disposeRequested && isVisible) animate();
-        });
+        console.info("Moon visibility triggered; beginning Three.js init.");
+        initThreeJS()
+          .then(() => {
+            if (!disposeRequested && isVisible) animate();
+          })
+          .catch((err) => {
+            console.error("Moon initialization promise rejected:", err);
+          });
       }, 10);
     } else if (isInitialized) {
       animate(); // Re-ignite loop when visible.
@@ -617,7 +645,18 @@ const setupMoonLifecycle = () => {
   moonRoot = document.getElementById("moonRoot");
   profileImg = document.querySelector(".profileImage");
 
-  if (!moonRoot) return;
+  if (!moonRoot) {
+    console.error(
+      "Moon lifecycle setup failed: #moonRoot was not found in the DOM.",
+    );
+    return;
+  }
+
+  if (!profileImg) {
+    console.error(
+      "Moon lifecycle setup failed: .profileImage was not found in the DOM.",
+    );
+  }
 
   disposeRequested = false;
   isVisible = false;
