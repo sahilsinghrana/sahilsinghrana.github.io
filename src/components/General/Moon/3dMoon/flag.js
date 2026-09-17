@@ -21,12 +21,12 @@ import {
 //   flag.update?.(performance.now());         // call every render frame
 //   flag.dispose?.();                         // call before removing the moon
 
-const FLAG_WIDTH = 0.16;
-const FLAG_HEIGHT = 0.1;
-const FLAG_SEGMENTS_X = 14; // needed so the wave has vertices to deform
-const FLAG_SEGMENTS_Y = 6;
+const FLAG_WIDTH = 0.1;
+const FLAG_HEIGHT = 0.065;
+const FLAG_SEGMENTS_X = 16; // minimum practical density for readable cloth displacement
+const FLAG_SEGMENTS_Y = 12;
 
-const POLE_HEIGHT = 0.21;
+const POLE_HEIGHT = 0.18;
 const POLE_RADIUS = 0.006;
 const EMBED_DEPTH = 0.015; // sinks pole base under the moon surface to avoid z-fighting
 
@@ -44,6 +44,12 @@ const FLAG_TILT_DEG = 8; // small off-axis lean keeps mounts from feeling rigidl
 const WAVE_AMPLITUDE = 0.01;
 const WAVE_SPATIAL_FREQ = 2.2;
 const WAVE_SPEED = 0.0026; // per millisecond
+
+const TEMP_ANCHOR_POINT = new Vector3();
+const TEMP_ANCHOR_NORMAL = new Vector3();
+const TEMP_POLE_UP = new Vector3(0, 1, 0);
+const TEMP_TILT_AXIS = new Vector3(1, 0, 0);
+const TEMP_QUAT = new Quaternion();
 
 const supportsEmojiGlyphs = () => {
   try {
@@ -190,15 +196,14 @@ export function createFlag() {
   clothPivot.add(cloth);
   group.add(clothPivot);
 
-  const anchorPoint = new Vector3(
+  const anchorPoint = TEMP_ANCHOR_POINT.set(
     ANCHOR_POSITION.x,
     ANCHOR_POSITION.y,
     ANCHOR_POSITION.z,
   );
-  const anchorNormal = anchorPoint.clone().normalize();
-  const poleUp = new Vector3(0, 1, 0);
-  const poleBasis = new Quaternion().setFromUnitVectors(poleUp, anchorNormal);
-  const tiltAxis = new Vector3(1, 0, 0).cross(anchorNormal).normalize();
+  const anchorNormal = TEMP_ANCHOR_NORMAL.copy(anchorPoint).normalize();
+  const poleBasis = TEMP_QUAT.setFromUnitVectors(TEMP_POLE_UP, anchorNormal);
+  const tiltAxis = TEMP_TILT_AXIS.set(1, 0, 0).cross(anchorNormal).normalize();
   const tilt = new Quaternion().setFromAxisAngle(
     tiltAxis,
     MathUtils.degToRad(FLAG_TILT_DEG),

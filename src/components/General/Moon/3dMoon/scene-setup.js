@@ -349,11 +349,12 @@ async function initThreeJS() {
     });
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = true;
 
     // Set initial size and canvas quality.
-    // min(devicePixelRatio, 2) prevents high-density screens (like 3x iPhones) from rendering too many pixels and tanking frame rates.
+    // Keep pixel ratio capped for mobile to avoid expensive overdraw while preserving clarity.
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     // toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
     // ACESFilmicToneMapping is the industry standard for realistic cinematic lighting.
@@ -382,7 +383,16 @@ async function initThreeJS() {
     );
     sunLight.castShadow = true;
     sunLight.shadow.mapSize.set(1024, 1024);
-    sunLight.shadow.bias = -0.0003;
+    sunLight.shadow.camera.left = -1.25;
+    sunLight.shadow.camera.right = 1.25;
+    sunLight.shadow.camera.top = 1.25;
+    sunLight.shadow.camera.bottom = -1.25;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 8;
+    sunLight.shadow.camera.updateProjectionMatrix();
+    sunLight.shadow.bias = -0.0004;
+    sunLight.shadow.normalBias = 0.02;
+    sunLight.shadow.autoUpdate = true;
     scene.add(sunLight);
 
     // A DirectionalLight always points from its position toward its target object.
@@ -460,6 +470,7 @@ const setMoonPhase = (input) => {
     sunLight.position.z = Math.sin(angle) * radius;
     sunLight.position.y = 0;
     sunLight.target.position.set(0, 0, 0); // Forces the light to always point directly at the moon center.
+    sunLight.shadow.needsUpdate = true;
   }
 
   // Earthshine sits opposite the sun so the dark limb stays faintly lit.
@@ -468,6 +479,10 @@ const setMoonPhase = (input) => {
     earthshineLight.position.z = Math.sin(angle + Math.PI) * radius;
     earthshineLight.position.y = 0.15;
     earthshineLight.target.position.set(0, 0, 0);
+  }
+
+  if (renderer) {
+    renderer.shadowMap.needsUpdate = true;
   }
 };
 
@@ -500,6 +515,7 @@ function animate() {
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
     moon.updateFlag(performance.now());
+    moon.updateGarden(performance.now());
 
     // Loader handoff intro + quiet idle breath (heartbeat cadence).
     const now = performance.now();
