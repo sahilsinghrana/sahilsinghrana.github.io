@@ -346,7 +346,7 @@ export function createFlag() {
     roughness: 0.5,
     metalness: 0,
     emissive: new Color("#ffdf9e"),
-    emissiveIntensity: 1.4, // reads clearly as a small glowing lamp
+    emissiveIntensity: 1.3, // reads clearly as a small glowing lamp
   });
   createdMaterials.push(lampMetalMaterial, lampBulbMaterial);
 
@@ -372,7 +372,7 @@ export function createFlag() {
 
   const groundLamp = new SpotLight(
     0xffe0b0, // warm/neutral
-    1.88, // boosted so it actually reads next to the moon's global light
+    1.87, // boosted so it actually reads next to the moon's global light
     0.3, // short practical range
     Math.PI / 4.6, // wide-ish soft cone
     0.7, // soft penumbra
