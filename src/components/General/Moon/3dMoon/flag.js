@@ -372,7 +372,7 @@ export function createFlag() {
 
   const groundLamp = new SpotLight(
     0xffe0b0, // warm/neutral
-    1.87, // boosted so it actually reads next to the moon's global light
+    1.82, // boosted so it actually reads next to the moon's global light
     0.3, // short practical range
     Math.PI / 4.6, // wide-ish soft cone
     0.7, // soft penumbra

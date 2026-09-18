@@ -108,6 +108,13 @@ const MOON_INITIAL_SCALE = 1.0;
 // LOWER (e.g., 50): A tiny swipe will blow the moon up instantly.
 const TOUCH_SENSITIVITY = 180;
 
+// Two-finger pinch sensitivity (Used as a Divisor)
+// Same divisor logic as TOUCH_SENSITIVITY, but applied to the change in distance
+// between the two touch points instead of a single-finger vertical swipe.
+// HIGHER: Requires a bigger pinch gesture to scale the moon.
+// LOWER: A small pinch will scale the moon quickly.
+const PINCH_SENSITIVITY = 220;
+
 // Wheel scroll sensitivity
 // HIGHER: One mouse wheel click scales the moon drastically.
 // LOWER: Requires aggressive scrolling to see size changes.
@@ -298,6 +305,7 @@ async function initThreeJS() {
         WebGLRenderer,
         ACESFilmicToneMapping,
         PCFSoftShadowMap,
+        TOUCH,
       },
       { OrbitControls },
       { Moon },
@@ -368,11 +376,24 @@ async function initThreeJS() {
     moonRoot.appendChild(renderer.domElement);
 
     // OrbitControls setup
-    // Allows mouse drag to orbit around the moon without affecting camera position directly.
+    // Allows mouse drag / single-finger touch drag to orbit around the moon without
+    // affecting camera position directly.
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // Adds physical inertia/glide to the rotation.
-    controls.enableZoom = false; // Disabled because you built custom wheel/touch scaling.
-    controls.enablePan = false; // Prevents right-click dragging the moon off-center.
+    controls.enableRotate = true; // Explicit: single-finger touch drag / mouse drag orbits the camera.
+    controls.enableZoom = true; // Disabled because you built custom wheel/pinch scaling below.
+    controls.enablePan = true; // Prevents right-click dragging (or two-finger pan) from moving the moon off-center.
+
+    // Touch gesture mapping:
+    // ONE finger  -> orbit rotate (native OrbitControls behavior).
+    // TWO fingers -> NONE here on purpose. The two-finger pinch gesture is handled
+    // manually in attachProfileInteraction() below so it drives the custom
+    // moonBaseScale system instead of OrbitControls' own camera-dolly zoom, which would
+    // fight with the fixed camera distance logic in onContainerResize().
+    controls.touches = {
+      ONE: TOUCH.ROTATE,
+      TWO: TOUCH.NONE,
+    };
 
     // Lighting setup
     sunLight = new DirectionalLight(getSunLightColor(), SUN_LIGHT_INTENSITY);
@@ -613,6 +634,14 @@ const attachProfileInteraction = () => {
   if (!profileImg || profileImg._moonHandlers) return;
 
   let touchStartY = 0;
+  let pinchStartDistance = 0;
+
+  // Distance in pixels between two touch points (Pythagorean theorem).
+  const getPinchDistance = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
 
   // Named handler references are required for removable cleanup.
   const onWheel = (event) => {
@@ -624,33 +653,65 @@ const attachProfileInteraction = () => {
     updateMoonScale(delta);
   };
 
-  // Mobile: Record initial touch point
+  // Mobile: Record the starting reference point(s) for whichever gesture is beginning.
+  // Fires on every new finger contact (e.g. going from 1 finger to 2), so the baseline
+  // is always re-captured for the gesture that is actually happening right now.
   const onTouchStart = (e) => {
-    touchStartY = e.touches[0].clientY;
+    if (e.touches.length === 2) {
+      pinchStartDistance = getPinchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+    }
   };
 
-  // Mobile: Calculate drag distance
+  // Mobile: Two-finger pinch scales the moon (real pinch-to-zoom). Single-finger
+  // vertical drag also scales it, kept as a one-thumb fallback alongside the pinch.
   const onTouchMove = (e) => {
     if (!isInitialized) return;
     e.preventDefault(); // Prevents the browser from pulling the whole page down (refresh behavior) or scrolling.
-    const currentY = e.touches[0].clientY;
 
-    // Calculate pixel distance moved, then divide by sensitivity factor.
-    const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
+    if (e.touches.length === 2) {
+      // True two-finger pinch: compare the current finger spread to the last-known spread.
+      const currentDistance = getPinchDistance(e.touches);
+      const delta = (currentDistance - pinchStartDistance) / PINCH_SENSITIVITY;
 
-    updateMoonScale(delta);
+      updateMoonScale(delta);
 
-    // Reset origin to current point so the next frame calculates from here.
-    touchStartY = currentY;
+      // Reset origin to current spread so the next frame calculates incrementally.
+      pinchStartDistance = currentDistance;
+    } else if (e.touches.length === 1) {
+      const currentY = e.touches[0].clientY;
+
+      // Calculate pixel distance moved, then divide by sensitivity factor.
+      const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
+
+      updateMoonScale(delta);
+
+      // Reset origin to current point so the next frame calculates from here.
+      touchStartY = currentY;
+    }
+  };
+
+  // Re-baseline whenever the finger count changes mid-gesture (e.g. lifting one finger
+  // out of a pinch), so the next move event doesn't read as a sudden jump in distance
+  // or Y position.
+  const onTouchEnd = (e) => {
+    if (e.touches.length === 2) {
+      pinchStartDistance = getPinchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+    }
   };
 
   // Desktop: Intercept the physical mouse wheel
   profileImg.addEventListener("wheel", onWheel, { passive: false }); // Required to allow preventDefault().
   profileImg.addEventListener("touchstart", onTouchStart, { passive: true });
   profileImg.addEventListener("touchmove", onTouchMove, { passive: false });
+  profileImg.addEventListener("touchend", onTouchEnd, { passive: true });
+  profileImg.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
   // Attach handler refs to the element so cleanupThreeJS can find and remove them.
-  profileImg._moonHandlers = { onWheel, onTouchStart, onTouchMove };
+  profileImg._moonHandlers = { onWheel, onTouchStart, onTouchMove, onTouchEnd };
 };
 
 /**
@@ -733,10 +794,13 @@ const cleanupThreeJS = () => {
   // to the canvas DOM element; controls.dispose() is the only way to remove those -
   // they are not accessible through any public API.
   if (profileImg?._moonHandlers) {
-    const { onWheel, onTouchStart, onTouchMove } = profileImg._moonHandlers;
+    const { onWheel, onTouchStart, onTouchMove, onTouchEnd } =
+      profileImg._moonHandlers;
     profileImg.removeEventListener("wheel", onWheel);
     profileImg.removeEventListener("touchstart", onTouchStart);
     profileImg.removeEventListener("touchmove", onTouchMove);
+    profileImg.removeEventListener("touchend", onTouchEnd);
+    profileImg.removeEventListener("touchcancel", onTouchEnd);
     delete profileImg._moonHandlers;
   }
 
