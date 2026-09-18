@@ -6,50 +6,94 @@ import {
   MeshStandardMaterial,
   PlaneGeometry,
   CylinderGeometry,
+  ConeGeometry,
+  SphereGeometry,
+  SpotLight,
   DoubleSide,
   SRGBColorSpace,
   LinearFilter,
   LinearMipmapLinearFilter,
+  Matrix4,
   Quaternion,
   Vector3,
   MathUtils,
 } from "three";
 
-// Moon integration contract:
+// Moon integration contract (unchanged):
 //   const flag = createFlag();
 //   moonMesh.add(flag);                       // local space, inherits rotation/scale/lighting
 //   flag.update?.(performance.now());         // call every render frame
 //   flag.dispose?.();                         // call before removing the moon
 
+// ---------------------------------------------------------------------------
+// Tuning constants
+// ---------------------------------------------------------------------------
+
 const FLAG_WIDTH = 0.1;
-const FLAG_HEIGHT = 0.065;
-const FLAG_SEGMENTS_X = 16; // minimum practical density for readable cloth displacement
-const FLAG_SEGMENTS_Y = 12;
+const FLAG_HEIGHT = 0.062; // slightly more flag-like aspect ratio than 1:1-ish
+const FLAG_SEGMENTS_X = 20; // 16-24 range: enough resolution for soft cloth waves
+const FLAG_SEGMENTS_Y = 10; // 8-14 range
 
-const POLE_HEIGHT = 0.18;
-const POLE_RADIUS = 0.006;
-const EMBED_DEPTH = 0.015; // sinks pole base under the moon surface to avoid z-fighting
+const POLE_HEIGHT = 0.19;
+const POLE_RADIUS = 0.0018; // substantially thinner than the cloth height
+const POLE_RADIAL_SEGMENTS = 10;
+const EMBED_DEPTH = 0.014; // sinks the pole base under the moon surface
 
-// Anchor on the moon (r ≈ 0.4), slightly below the original upper position.
-// Keep this point on the sphere surface when trying alternate placements.
-const ANCHOR_POSITION = { x: 0, y: 0.1, z: 0.385 };
-// Set false for a consistent camera-facing flag. When true, each flag instance
-// gets one random face direction around its pole while staying planted.
+// The cloth's hoist (pinned) edge sits flush against the pole's outer surface
+// so there is never a visible seam, even while the free edge is waving.
+const HOIST_GAP = POLE_RADIUS * 0.6; // tiny negative-ish overlap, not a visible gap
+
+// Anchor on the moon surface (r = 0.4), matches the flag's planted position.
+const ANCHOR_POSITION = { x: 0, y: 0.16, z: 0.35 };
+
+// Orientation of the cloth around the pole axis (local Y after the surface
+// frame is applied) and a small static lean so the pole doesn't look glued
+// perfectly perpendicular to the ground.
 const RANDOMIZE_FLAG_FACE = true;
-const FLAG_FACE_YAW_OFFSET = -Math.PI / 5.5; // tilt the cloth toward the default viewer
-const FLAG_FACE_PITCH = -Math.PI / 14; // subtle depth cue so the emblem reads instead of lying flat
-const FLAG_TILT_DEG = 8; // small off-axis lean keeps mounts from feeling rigidly computer-generated
+const FLAG_FACE_YAW_OFFSET = -Math.PI / 5.5;
+const FLAG_TILT_DEG = 6; // subtle physical lean, not a cartoon angle
 
-// Waving animation tuning.
-const WAVE_AMPLITUDE = 0.01;
-const WAVE_SPATIAL_FREQ = 2.2;
-const WAVE_SPEED = 0.0026; // per millisecond
+// A gentle *static* outward billow baked into the per-frame deformation
+// (see update()) instead of a rigid pitch on the whole cloth pivot. A rigid
+// pitch rotates the hoist edge away from the pole's straight vertical
+// surface as |y| grows, which is what caused the visible gap - this instead
+// stays exactly zero at the hoist for every height and only bows the free
+// edge outward, so the pole/cloth seam can never separate.
+const STATIC_BILLOW = 0.006;
 
-const TEMP_ANCHOR_POINT = new Vector3();
-const TEMP_ANCHOR_NORMAL = new Vector3();
-const TEMP_POLE_UP = new Vector3(0, 1, 0);
-const TEMP_TILT_AXIS = new Vector3(1, 0, 0);
-const TEMP_QUAT = new Quaternion();
+// Cloth deformation tuning - several small, cheap effects layered together.
+const TWO_PI = Math.PI * 2;
+const WAVE1_FREQ = 1.6;
+const WAVE1_SPEED = 0.0026; // per millisecond
+const WAVE1_AMP = 0.0042;
+
+const WAVE2_FREQ = 3.1;
+const WAVE2_SPEED = 0.0041;
+const WAVE2_AMP = 0.0016;
+
+const VERTICAL_WAVE_FREQ = 1.3;
+const VERTICAL_WAVE_SPEED = 0.0019;
+const VERTICAL_WAVE_AMP = 0.001;
+
+const IRREGULARITY_AMP = 0.0006;
+const IRREGULARITY_SPEED = 0.00058;
+
+const SAG_AMOUNT = 0.0032; // gentle gravity droop toward the free edge/bottom
+
+// Reused scratch objects so update()/createFlag() never allocate per frame.
+const TMP_ANCHOR = new Vector3();
+const TMP_NORMAL = new Vector3();
+const TMP_WORLD_REF = new Vector3();
+const TMP_TANGENT = new Vector3();
+const TMP_BITANGENT = new Vector3();
+const TMP_MATRIX = new Matrix4();
+const TMP_FRAME_QUAT = new Quaternion();
+const TMP_TILT_QUAT = new Quaternion();
+
+// ---------------------------------------------------------------------------
+// Flag artwork texture (restored: emoji-glyph tulip/sunflower with a
+// deterministic vector fallback when the platform can't render emoji)
+// ---------------------------------------------------------------------------
 
 const supportsEmojiGlyphs = () => {
   try {
@@ -145,76 +189,207 @@ const createEmojiTexture = () => {
   return texture;
 };
 
+// ---------------------------------------------------------------------------
+// Surface frame helper
+// ---------------------------------------------------------------------------
+
+// Builds a proper local orthonormal frame from a surface normal: normal is
+// the "up" (pole) axis, tangent/bitangent span the cloth plane. Avoids
+// fragile chained Euler rotations - this is a single basis construction.
+function computeSurfaceFrameQuaternion(normal, outQuat) {
+  // Pick a reference axis that's never parallel to the normal.
+  if (Math.abs(normal.y) > 0.999) {
+    TMP_WORLD_REF.set(1, 0, 0);
+  } else {
+    TMP_WORLD_REF.set(0, 1, 0);
+  }
+  TMP_TANGENT.crossVectors(TMP_WORLD_REF, normal).normalize();
+  TMP_BITANGENT.crossVectors(normal, TMP_TANGENT).normalize();
+  TMP_MATRIX.makeBasis(TMP_TANGENT, normal, TMP_BITANGENT);
+  outQuat.setFromRotationMatrix(TMP_MATRIX);
+  return TMP_TANGENT; // returned for the tilt axis below
+}
+
+// ---------------------------------------------------------------------------
+// Main factory
+// ---------------------------------------------------------------------------
+
 export function createFlag() {
   const group = new Group();
   group.name = "LunarFlag";
 
+  const createdGeometries = [];
+  const createdMaterials = [];
+  const createdTextures = [];
+
+  // --- Pole -----------------------------------------------------------
   const poleGeometry = new CylinderGeometry(
     POLE_RADIUS,
     POLE_RADIUS,
     POLE_HEIGHT,
-    12,
+    POLE_RADIAL_SEGMENTS,
   );
   const poleMaterial = new MeshStandardMaterial({
-    color: new Color("#d7bd8b"),
+    color: new Color("#c9c9cf"),
+    roughness: 0.55,
+    metalness: 0.35,
   });
+  createdGeometries.push(poleGeometry);
+  createdMaterials.push(poleMaterial);
+
   const pole = new Mesh(poleGeometry, poleMaterial);
   pole.castShadow = true;
   pole.receiveShadow = true;
-  // Sink base slightly into the surface to prevent gaps / z-fighting while keeping
-  // the flag visibly planted in the terrain.
   pole.position.y = POLE_HEIGHT / 2 - EMBED_DEPTH;
   group.add(pole);
 
+  // --- Cloth ------------------------------------------------------------
   const clothGeometry = new PlaneGeometry(
     FLAG_WIDTH,
     FLAG_HEIGHT,
     FLAG_SEGMENTS_X,
     FLAG_SEGMENTS_Y,
   );
-  const texture = createEmojiTexture();
+  createdGeometries.push(clothGeometry);
+
+  const fabricTexture = createEmojiTexture();
+  if (fabricTexture) createdTextures.push(fabricTexture);
+
   const clothMaterial = new MeshStandardMaterial({
-    color: texture ? 0xffffff : 0xe9c6a8,
-    map: texture,
+    color: fabricTexture ? 0xffffff : 0xe9c6a8,
+    map: fabricTexture,
     side: DoubleSide,
     roughness: 0.96,
     metalness: 0,
   });
+  createdMaterials.push(clothMaterial);
+
   const cloth = new Mesh(clothGeometry, clothMaterial);
   cloth.castShadow = true;
   cloth.receiveShadow = true;
+
   const clothPivot = new Group();
   clothPivot.position.y = POLE_HEIGHT - EMBED_DEPTH;
-  // Keep the cloth in the pole's local frame so its vertical hoist edge is
-  // always collinear with the pole after the moon-surface rotation is applied.
-  // Bias the face toward the default viewer so the emblem is readable from the main page angle.
-  clothPivot.rotation.x = FLAG_FACE_PITCH;
+  // Only yaw (rotation around the pole's own local Y axis) is applied here.
+  // Rotating around Y preserves each hoist-edge vertex's distance from the
+  // pole axis regardless of its height, so the cloth stays flush against
+  // the pole at every point along the seam. A pitch/tilt on this pivot
+  // would swing the hoist edge away from the pole as |y| grows - that was
+  // the cause of the visible gap.
   clothPivot.rotation.y =
     FLAG_FACE_YAW_OFFSET +
     (RANDOMIZE_FLAG_FACE ? (Math.random() - 0.5) * Math.PI * 0.45 : 0);
-  cloth.position.set(FLAG_WIDTH / 2, -FLAG_HEIGHT / 2, 0);
+
+  // Shift the cloth so its hoist edge (local x = -halfWidth in geometry
+  // space) sits flush against the pole's outer surface instead of the
+  // pole's centerline - this is what removes the visible gap.
+  const halfWidth = FLAG_WIDTH / 2;
+  const halfHeight = FLAG_HEIGHT / 2;
+  cloth.position.set(POLE_RADIUS - HOIST_GAP + halfWidth, -halfHeight, 0);
   clothPivot.add(cloth);
   group.add(clothPivot);
 
-  const anchorPoint = TEMP_ANCHOR_POINT.set(
+  // A small target object the ground lamp aims at; it rides along with the
+  // cloth so the light stays roughly centered on the fabric even as the
+  // cloth's static yaw/pitch differs between instances.
+  const lampTarget = new Group();
+  lampTarget.position.set(0, 0, 0);
+  cloth.add(lampTarget);
+
+  // --- Orient the whole assembly to the lunar surface -------------------
+  const anchorPoint = TMP_ANCHOR.set(
     ANCHOR_POSITION.x,
     ANCHOR_POSITION.y,
     ANCHOR_POSITION.z,
   );
-  const anchorNormal = TEMP_ANCHOR_NORMAL.copy(anchorPoint).normalize();
-  const poleBasis = TEMP_QUAT.setFromUnitVectors(TEMP_POLE_UP, anchorNormal);
-  const tiltAxis = TEMP_TILT_AXIS.set(1, 0, 0).cross(anchorNormal).normalize();
-  const tilt = new Quaternion().setFromAxisAngle(
-    tiltAxis,
+  const normal = TMP_NORMAL.copy(anchorPoint).normalize();
+  const tangentAxis = computeSurfaceFrameQuaternion(normal, TMP_FRAME_QUAT);
+  TMP_TILT_QUAT.setFromAxisAngle(
+    tangentAxis,
     MathUtils.degToRad(FLAG_TILT_DEG),
   );
-  group.quaternion.copy(poleBasis).multiply(tilt);
-  group.position.copy(anchorPoint).addScaledVector(anchorNormal, -EMBED_DEPTH);
 
-  // Cache rest pose for the wave deformation.
+  // Apply the surface frame first, then the small physical lean.
+  group.quaternion.multiplyQuaternions(TMP_TILT_QUAT, TMP_FRAME_QUAT);
+  group.position.copy(anchorPoint).addScaledVector(normal, -EMBED_DEPTH);
+
+  // --- Local ground lamp --------------------------------------------------
+  // A small, understated practical light near the base - not a stage
+  // spotlight. Warm/neutral, short range, soft penumbra.
+  //
+  // Ground level (the exposed lunar surface) is local y = 0 in group space
+  // (the pole's own base sits at y = -EMBED_DEPTH, its visible shaft runs
+  // from y = 0 upward). The lamp's post/head/bulb below are all defined
+  // upward from LAMP_BASE_Y so the fixture actually pokes out of the
+  // surface instead of being buried under it.
+  const LAMP_EMBED_DEPTH = 0.0025; // small embed, just enough to look planted
+  const LAMP_POST_HEIGHT = 0.026;
+  const LAMP_BASE_Y = -LAMP_EMBED_DEPTH;
+
+  const lampPostGeometry = new CylinderGeometry(
+    POLE_RADIUS * 1.4,
+    POLE_RADIUS * 1.4,
+    LAMP_POST_HEIGHT,
+    6,
+  );
+  const lampHeadGeometry = new ConeGeometry(0.008, 0.011, 8);
+  const lampBulbGeometry = new SphereGeometry(0.0038, 10, 8);
+  createdGeometries.push(lampPostGeometry, lampHeadGeometry, lampBulbGeometry);
+
+  const lampMetalMaterial = new MeshStandardMaterial({
+    color: new Color("#7a7a80"),
+    roughness: 0.45,
+    metalness: 0.5,
+  });
+  const lampBulbMaterial = new MeshStandardMaterial({
+    color: new Color("#fff3d6"),
+    roughness: 0.5,
+    metalness: 0,
+    emissive: new Color("#ffdf9e"),
+    emissiveIntensity: 1.2, // reads clearly as a small glowing lamp
+  });
+  createdMaterials.push(lampMetalMaterial, lampBulbMaterial);
+
+  const lampPivot = new Group();
+  // Planted near the pole base, slightly toward and in front of the cloth
+  // so it's never hidden behind the pole from the flag's viewing side.
+  lampPivot.position.set(POLE_RADIUS * 6, LAMP_BASE_Y, 0.026);
+  group.add(lampPivot);
+
+  const lampPost = new Mesh(lampPostGeometry, lampMetalMaterial);
+  lampPost.position.y = LAMP_POST_HEIGHT / 2;
+  lampPost.castShadow = false;
+  lampPivot.add(lampPost);
+
+  const lampHead = new Mesh(lampHeadGeometry, lampMetalMaterial);
+  lampHead.position.y = LAMP_POST_HEIGHT + 0.004;
+  lampHead.rotation.x = Math.PI; // cone opening faces downward/outward over the bulb
+  lampPivot.add(lampHead);
+
+  const lampBulb = new Mesh(lampBulbGeometry, lampBulbMaterial);
+  lampBulb.position.y = LAMP_POST_HEIGHT - 0.001;
+  lampPivot.add(lampBulb);
+
+  const groundLamp = new SpotLight(
+    0xffe0b0, // warm/neutral
+    2.8, // boosted so it actually reads next to the moon's global light
+    0.4, // short practical range
+    Math.PI / 4.6, // wide-ish soft cone
+    0.7, // soft penumbra
+    1.4, // decay
+  );
+  groundLamp.position.y = LAMP_POST_HEIGHT + 0.002;
+  groundLamp.target = lampTarget;
+  groundLamp.castShadow = true;
+  groundLamp.shadow.mapSize.set(256, 256);
+  groundLamp.shadow.camera.near = 0.005;
+  groundLamp.shadow.camera.far = 0.45;
+  groundLamp.shadow.bias = -0.0015;
+  lampPivot.add(groundLamp);
+
+  // --- Cloth deformation state -------------------------------------------
   const positionAttr = clothGeometry.getAttribute("position");
   const basePositions = Float32Array.from(positionAttr.array);
-  const halfWidth = FLAG_WIDTH / 2;
 
   let disposed = false;
 
@@ -222,25 +397,61 @@ export function createFlag() {
     if (disposed) return;
     const t = typeof timeMs === "number" ? timeMs : 0;
     const arr = positionAttr.array;
+    const count = positionAttr.count;
 
-    for (let i = 0; i < positionAttr.count; i++) {
+    for (let i = 0; i < count; i++) {
       const ix = i * 3;
       const localX = basePositions[ix];
       const localY = basePositions[ix + 1];
       const localZ = basePositions[ix + 2];
 
-      // 0 at the hoist (pole) edge, 1 at the free edge — keeps the luff pinned.
+      // 0 at the hoist (pole) edge, 1 at the free edge - keeps the luff pinned
+      // and makes every effect below grow naturally toward the free edge.
       const hoistFactor = (localX + halfWidth) / FLAG_WIDTH;
-      const wave =
-        Math.sin(
-          hoistFactor * WAVE_SPATIAL_FREQ * Math.PI * 2 + t * WAVE_SPEED,
-        ) *
-        WAVE_AMPLITUDE *
+      const verticalFactor = (localY + halfHeight) / FLAG_HEIGHT;
+
+      const wave1 =
+        Math.sin(hoistFactor * WAVE1_FREQ * TWO_PI + t * WAVE1_SPEED) *
+        WAVE1_AMP *
         hoistFactor;
 
+      const wave2 =
+        Math.sin(
+          hoistFactor * WAVE2_FREQ * TWO_PI +
+            t * WAVE2_SPEED +
+            verticalFactor * 1.7,
+        ) *
+        WAVE2_AMP *
+        hoistFactor;
+
+      const waveVertical =
+        Math.sin(
+          verticalFactor * VERTICAL_WAVE_FREQ * TWO_PI +
+            t * VERTICAL_WAVE_SPEED,
+        ) *
+        VERTICAL_WAVE_AMP *
+        hoistFactor;
+
+      const irregularity =
+        Math.sin(localX * 17.3 + localY * 11.7 + t * IRREGULARITY_SPEED) *
+        IRREGULARITY_AMP *
+        hoistFactor;
+
+      const sag =
+        SAG_AMOUNT *
+        hoistFactor *
+        hoistFactor *
+        (0.4 + 0.6 * (1 - verticalFactor));
+
+      // Static outward billow: exactly zero at the hoist for every height,
+      // so it adds depth/readability without ever pulling the seam away
+      // from the pole (see the note on clothPivot.rotation.y above).
+      const staticBillow = STATIC_BILLOW * hoistFactor * hoistFactor;
+
       arr[ix] = localX;
-      arr[ix + 1] = localY;
-      arr[ix + 2] = localZ + wave;
+      arr[ix + 1] = localY - sag;
+      arr[ix + 2] =
+        localZ + wave1 + wave2 + waveVertical + irregularity + staticBillow;
     }
 
     positionAttr.needsUpdate = true;
@@ -250,12 +461,11 @@ export function createFlag() {
   group.dispose = () => {
     if (disposed) return;
     disposed = true;
-    poleGeometry.dispose();
-    poleMaterial.dispose();
-    clothGeometry.dispose();
-    clothMaterial.dispose();
-    texture?.dispose();
+    for (const geo of createdGeometries) geo.dispose();
+    for (const mat of createdMaterials) mat.dispose();
+    for (const tex of createdTextures) tex.dispose();
     group.clear();
+    group.parent?.remove(group);
   };
 
   return group;
