@@ -4,10 +4,10 @@ const MOON_RADIUS = 0.4;
 const PATCH_RADIUS = 0.082;
 const LUNAR_GREY = new THREE.Color(0x77736b);
 const SOIL_COLOR = new THREE.Color(0x665849);
-const STEM_COLOR = 0x52694d;
-const LEAF_COLOR = 0x687b5b;
+const STEM_COLOR = 0x54693f;
+const LEAF_COLOR = 0x62784f;
 const TULIP_COLORS = [
-  0x9f5266, 0xb57983, 0xa78c91, 0x92707d, 0xc98a9c, 0x7d5a6b, 0xb26a6a,
+  0x9f5266, 0xb57983, 0xa1707a, 0x8e5c6f, 0xc98a9c, 0x7d5a6b, 0xb26a6a,
 ];
 const REGOLITH_COLOR = 0x88837a;
 const BULB_LIGHT_COLOR = 0xffd9a0;
@@ -313,15 +313,6 @@ function createPebble(size) {
   };
 }
 
-function createCrater(size) {
-  const geometry = new THREE.TorusGeometry(size, size * 0.22, 5, 12);
-  const material = makeMaterial(0x5f5b54, 1);
-  const mesh = markSurfaceMesh(new THREE.Mesh(geometry, material));
-  mesh.rotation.x = Math.PI / 2;
-  mesh.position.y = 0.002;
-  return { mesh, geometry, material };
-}
-
 function createGardenLamp() {
   const group = new THREE.Group();
   const geometries = [];
@@ -435,17 +426,6 @@ export function createGarden() {
     group.add(pebble.mesh);
     geometries.push(pebble.geometry);
     materials.push(pebble.material);
-  }
-
-  for (let index = 0; index < 2; index += 1) {
-    const crater = createCrater(randomBetween(0.007, 0.011));
-    const angle = randomBetween(0, Math.PI * 2);
-    const radius = randomBetween(PATCH_RADIUS * 0.68, PATCH_RADIUS * 0.92);
-    crater.mesh.position.x = Math.cos(angle) * radius;
-    crater.mesh.position.z = Math.sin(angle) * radius;
-    group.add(crater.mesh);
-    geometries.push(crater.geometry);
-    materials.push(crater.material);
   }
 
   const lamp = createGardenLamp();
