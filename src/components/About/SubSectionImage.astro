@@ -12,10 +12,7 @@ const {
 ---
 
 <div id="profilePicContainer" class="profilePicContainer">
-  <div
-    style="position: absolute; z-index: 0;top:-52%; opacity: 0.99;height: 300px; width: 95dvw; pointer-events:all; background:transparent;"
-    id="moonRoot"
-  >
+  <div id="moonRoot">
   </div>
   <img
     class={className}
@@ -26,6 +23,7 @@ const {
     loading={loading}
     fetchpriority={loading === "eager" ? "high" : undefined}
     decoding="async"
+    crossorigin="anonymous"
   />
 
   <ThreeDmoonLoader />

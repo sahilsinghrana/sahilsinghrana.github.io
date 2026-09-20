@@ -48,9 +48,22 @@ section.heading {
   place-items: center;
 
   #moonRoot {
+    position: absolute;
+    top: 40%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: min(740px, 97vw);
+    height: 400px;
+    z-index: 0;
+    pointer-events: all;
+    background: transparent;
+    overflow: hidden;
     view-transition-name: none;
 
     canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
       pointer-events: all;
       z-index: 1;
       view-transition-name: none;
@@ -63,7 +76,7 @@ section.heading {
     align-items: center;
     position: relative;
     pointer-events: none;
-    min-height: 160px;
+    min-height: 190px;
 
     // .flutebg {
     //   pointer-events: none;pointer-eventspointer-eventspointer-events
