@@ -63,6 +63,7 @@ section.heading {
     align-items: center;
     position: relative;
     pointer-events: none;
+    min-height: 160px;
 
     // .flutebg {
     //   pointer-events: none;pointer-eventspointer-eventspointer-events
@@ -79,6 +80,7 @@ section.heading {
     .profileImage {
       height: 150px;
       width: 150px;
+      z-index: 1;
 
       // z-index: ;z-index
       pointer-events: all;

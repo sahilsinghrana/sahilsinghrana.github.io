@@ -108,6 +108,13 @@ const MOON_INITIAL_SCALE = 1.0;
 // LOWER (e.g., 50): A tiny swipe will blow the moon up instantly.
 const TOUCH_SENSITIVITY = 180;
 
+// Two-finger pinch sensitivity (Used as a Divisor)
+// Same divisor logic as TOUCH_SENSITIVITY, but applied to the change in distance
+// between the two touch points instead of a single-finger vertical swipe.
+// HIGHER: Requires a bigger pinch gesture to scale the moon.
+// LOWER: A small pinch will scale the moon quickly.
+const PINCH_SENSITIVITY = 220;
+
 // Wheel scroll sensitivity
 // HIGHER: One mouse wheel click scales the moon drastically.
 // LOWER: Requires aggressive scrolling to see size changes.
@@ -283,6 +290,7 @@ const disposeGpuResources = () => {
 async function initThreeJS() {
   if (isInitialized || isInitializing || disposeRequested) return;
   isInitializing = true;
+  console.info("Starting 3D moon initialization.");
 
   try {
     // Three.js core, OrbitControls, and Moon are loaded only after the visibility gate
@@ -296,6 +304,8 @@ async function initThreeJS() {
         HemisphereLight,
         WebGLRenderer,
         ACESFilmicToneMapping,
+        PCFSoftShadowMap,
+        TOUCH,
       },
       { OrbitControls },
       { Moon },
@@ -306,10 +316,19 @@ async function initThreeJS() {
     ]);
 
     if (disposeRequested) {
+      console.info(
+        "Moon init aborted because teardown was requested before scene creation.",
+      );
       return;
     }
 
     fixedHorizontalFov = computeFixedHorizontalFov();
+    console.info(
+      "Moon camera FOV configured:",
+      INITIAL_FOV,
+      "fixedHorizontalFov:",
+      fixedHorizontalFov,
+    );
 
     // Setup Scene
     // Creates the main 3D environment where everything will live.
@@ -336,11 +355,14 @@ async function initThreeJS() {
       depth: true,
       powerPreference: "high-performance", // ASTRO OPTIMIZATION: Requests dedicated GPU
     });
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.shadowMap.autoUpdate = true;
 
     // Set initial size and canvas quality.
-    // min(devicePixelRatio, 2) prevents high-density screens (like 3x iPhones) from rendering too many pixels and tanking frame rates.
+    // Keep pixel ratio capped for mobile to avoid expensive overdraw while preserving clarity.
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     // toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
     // ACESFilmicToneMapping is the industry standard for realistic cinematic lighting.
@@ -354,11 +376,24 @@ async function initThreeJS() {
     moonRoot.appendChild(renderer.domElement);
 
     // OrbitControls setup
-    // Allows mouse drag to orbit around the moon without affecting camera position directly.
+    // Allows mouse drag / single-finger touch drag to orbit around the moon without
+    // affecting camera position directly.
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // Adds physical inertia/glide to the rotation.
-    controls.enableZoom = false; // Disabled because you built custom wheel/touch scaling.
-    controls.enablePan = false; // Prevents right-click dragging the moon off-center.
+    controls.enableRotate = true; // Explicit: single-finger touch drag / mouse drag orbits the camera.
+    controls.enableZoom = true; // Disabled because you built custom wheel/pinch scaling below.
+    controls.enablePan = true; // Prevents right-click dragging (or two-finger pan) from moving the moon off-center.
+
+    // Touch gesture mapping:
+    // ONE finger  -> orbit rotate (native OrbitControls behavior).
+    // TWO fingers -> NONE here on purpose. The two-finger pinch gesture is handled
+    // manually in attachProfileInteraction() below so it drives the custom
+    // moonBaseScale system instead of OrbitControls' own camera-dolly zoom, which would
+    // fight with the fixed camera distance logic in onContainerResize().
+    controls.touches = {
+      ONE: TOUCH.ROTATE,
+      TWO: TOUCH.NONE,
+    };
 
     // Lighting setup
     sunLight = new DirectionalLight(getSunLightColor(), SUN_LIGHT_INTENSITY);
@@ -367,6 +402,18 @@ async function initThreeJS() {
       SUN_LIGHT_POSITION.y,
       SUN_LIGHT_POSITION.z,
     );
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.set(1024, 1024);
+    sunLight.shadow.camera.left = -1.25;
+    sunLight.shadow.camera.right = 1.25;
+    sunLight.shadow.camera.top = 1.25;
+    sunLight.shadow.camera.bottom = -1.25;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 8;
+    sunLight.shadow.camera.updateProjectionMatrix();
+    sunLight.shadow.bias = -0.0004;
+    sunLight.shadow.normalBias = 0.02;
+    sunLight.shadow.autoUpdate = true;
     scene.add(sunLight);
 
     // A DirectionalLight always points from its position toward its target object.
@@ -412,6 +459,12 @@ async function initThreeJS() {
     dismissLoader();
   } finally {
     isInitializing = false;
+    console.info(
+      "3D moon initialization finished. isInitialized:",
+      isInitialized,
+      "isInitializing:",
+      isInitializing,
+    );
   }
 }
 
@@ -438,6 +491,7 @@ const setMoonPhase = (input) => {
     sunLight.position.z = Math.sin(angle) * radius;
     sunLight.position.y = 0;
     sunLight.target.position.set(0, 0, 0); // Forces the light to always point directly at the moon center.
+    sunLight.shadow.needsUpdate = true;
   }
 
   // Earthshine sits opposite the sun so the dark limb stays faintly lit.
@@ -446,6 +500,10 @@ const setMoonPhase = (input) => {
     earthshineLight.position.z = Math.sin(angle + Math.PI) * radius;
     earthshineLight.position.y = 0.15;
     earthshineLight.target.position.set(0, 0, 0);
+  }
+
+  if (renderer) {
+    renderer.shadowMap.needsUpdate = true;
   }
 };
 
@@ -477,6 +535,8 @@ function animate() {
     moon.mesh.rotation.y =
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
+    moon.updateFlag(performance.now());
+    moon.updateGarden(performance.now());
 
     // Loader handoff intro + quiet idle breath (heartbeat cadence).
     const now = performance.now();
@@ -518,9 +578,14 @@ const onVisibilityChange = (entries) => {
       clearTimeout(initTimeoutId);
       initTimeoutId = setTimeout(() => {
         initTimeoutId = null;
-        initThreeJS().then(() => {
-          if (!disposeRequested && isVisible) animate();
-        });
+        console.info("Moon visibility triggered; beginning Three.js init.");
+        initThreeJS()
+          .then(() => {
+            if (!disposeRequested && isVisible) animate();
+          })
+          .catch((err) => {
+            console.error("Moon initialization promise rejected:", err);
+          });
       }, 10);
     } else if (isInitialized) {
       animate(); // Re-ignite loop when visible.
@@ -569,6 +634,14 @@ const attachProfileInteraction = () => {
   if (!profileImg || profileImg._moonHandlers) return;
 
   let touchStartY = 0;
+  let pinchStartDistance = 0;
+
+  // Distance in pixels between two touch points (Pythagorean theorem).
+  const getPinchDistance = (touches) => {
+    const dx = touches[0].clientX - touches[1].clientX;
+    const dy = touches[0].clientY - touches[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
 
   // Named handler references are required for removable cleanup.
   const onWheel = (event) => {
@@ -580,33 +653,65 @@ const attachProfileInteraction = () => {
     updateMoonScale(delta);
   };
 
-  // Mobile: Record initial touch point
+  // Mobile: Record the starting reference point(s) for whichever gesture is beginning.
+  // Fires on every new finger contact (e.g. going from 1 finger to 2), so the baseline
+  // is always re-captured for the gesture that is actually happening right now.
   const onTouchStart = (e) => {
-    touchStartY = e.touches[0].clientY;
+    if (e.touches.length === 2) {
+      pinchStartDistance = getPinchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+    }
   };
 
-  // Mobile: Calculate drag distance
+  // Mobile: Two-finger pinch scales the moon (real pinch-to-zoom). Single-finger
+  // vertical drag also scales it, kept as a one-thumb fallback alongside the pinch.
   const onTouchMove = (e) => {
     if (!isInitialized) return;
     e.preventDefault(); // Prevents the browser from pulling the whole page down (refresh behavior) or scrolling.
-    const currentY = e.touches[0].clientY;
 
-    // Calculate pixel distance moved, then divide by sensitivity factor.
-    const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
+    if (e.touches.length === 2) {
+      // True two-finger pinch: compare the current finger spread to the last-known spread.
+      const currentDistance = getPinchDistance(e.touches);
+      const delta = (currentDistance - pinchStartDistance) / PINCH_SENSITIVITY;
 
-    updateMoonScale(delta);
+      updateMoonScale(delta);
 
-    // Reset origin to current point so the next frame calculates from here.
-    touchStartY = currentY;
+      // Reset origin to current spread so the next frame calculates incrementally.
+      pinchStartDistance = currentDistance;
+    } else if (e.touches.length === 1) {
+      const currentY = e.touches[0].clientY;
+
+      // Calculate pixel distance moved, then divide by sensitivity factor.
+      const delta = (touchStartY - currentY) / TOUCH_SENSITIVITY;
+
+      updateMoonScale(delta);
+
+      // Reset origin to current point so the next frame calculates from here.
+      touchStartY = currentY;
+    }
+  };
+
+  // Re-baseline whenever the finger count changes mid-gesture (e.g. lifting one finger
+  // out of a pinch), so the next move event doesn't read as a sudden jump in distance
+  // or Y position.
+  const onTouchEnd = (e) => {
+    if (e.touches.length === 2) {
+      pinchStartDistance = getPinchDistance(e.touches);
+    } else if (e.touches.length === 1) {
+      touchStartY = e.touches[0].clientY;
+    }
   };
 
   // Desktop: Intercept the physical mouse wheel
   profileImg.addEventListener("wheel", onWheel, { passive: false }); // Required to allow preventDefault().
   profileImg.addEventListener("touchstart", onTouchStart, { passive: true });
   profileImg.addEventListener("touchmove", onTouchMove, { passive: false });
+  profileImg.addEventListener("touchend", onTouchEnd, { passive: true });
+  profileImg.addEventListener("touchcancel", onTouchEnd, { passive: true });
 
   // Attach handler refs to the element so cleanupThreeJS can find and remove them.
-  profileImg._moonHandlers = { onWheel, onTouchStart, onTouchMove };
+  profileImg._moonHandlers = { onWheel, onTouchStart, onTouchMove, onTouchEnd };
 };
 
 /**
@@ -617,7 +722,18 @@ const setupMoonLifecycle = () => {
   moonRoot = document.getElementById("moonRoot");
   profileImg = document.querySelector(".profileImage");
 
-  if (!moonRoot) return;
+  if (!moonRoot) {
+    console.error(
+      "Moon lifecycle setup failed: #moonRoot was not found in the DOM.",
+    );
+    return;
+  }
+
+  if (!profileImg) {
+    console.error(
+      "Moon lifecycle setup failed: .profileImage was not found in the DOM.",
+    );
+  }
 
   disposeRequested = false;
   isVisible = false;
@@ -678,10 +794,13 @@ const cleanupThreeJS = () => {
   // to the canvas DOM element; controls.dispose() is the only way to remove those -
   // they are not accessible through any public API.
   if (profileImg?._moonHandlers) {
-    const { onWheel, onTouchStart, onTouchMove } = profileImg._moonHandlers;
+    const { onWheel, onTouchStart, onTouchMove, onTouchEnd } =
+      profileImg._moonHandlers;
     profileImg.removeEventListener("wheel", onWheel);
     profileImg.removeEventListener("touchstart", onTouchStart);
     profileImg.removeEventListener("touchmove", onTouchMove);
+    profileImg.removeEventListener("touchend", onTouchEnd);
+    profileImg.removeEventListener("touchcancel", onTouchEnd);
     delete profileImg._moonHandlers;
   }
 

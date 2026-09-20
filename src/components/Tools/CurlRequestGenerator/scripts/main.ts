@@ -349,7 +349,7 @@ document.addEventListener("DOMContentLoaded", () => {
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             z-index: 10000;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: system-ui, sans-serif;
             font-size: 14px;
             max-width: 90%;
             text-align: center;

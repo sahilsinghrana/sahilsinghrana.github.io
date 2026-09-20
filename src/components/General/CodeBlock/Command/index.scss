@@ -30,6 +30,11 @@
       color: white;
     }
 
+    &:focus-visible {
+      outline: 2px solid currentcolor;
+      outline-offset: 3px;
+    }
+
     &[data-copying="true"] {
       color: rgb(222 104 0);
     }

@@ -1,5 +1,3 @@
-@import "https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Tiro+Devanagari+Sanskrit&display=swap";
-
 #shlokaWrapper {
   position: relative;
   border-radius: 16px;
@@ -19,16 +17,8 @@
     transform 0.4s ease;
 }
 
-#shlokaWrapper:hover {
-  border-color: rgb(237 157 60 / 30%);
-  box-shadow:
-    0 14px 40px -5px rgb(0 0 0 / 70%),
-    0 0 20px rgb(237 157 60 / 15%),
-    inset 0 1px 1px rgb(255 255 255 / 15%);
-}
-
 #shlokaDevanagari {
-  font-family: "Tiro Devanagari Sanskrit", serif;
+  font-family: var(--font-tiro-devanagari-sanskrit);
   font-size: 1.38rem;
   color: #fffaf3;
   text-align: center;
@@ -41,6 +31,16 @@
     0 2px 10px rgb(0 0 0 / 80%),
     0 0 12px rgb(237 157 60 / 20%);
   text-wrap: balance;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #shlokaWrapper:hover {
+    border-color: rgb(237 157 60 / 30%);
+    box-shadow:
+      0 14px 40px -5px rgb(0 0 0 / 70%),
+      0 0 20px rgb(237 157 60 / 15%),
+      inset 0 1px 1px rgb(255 255 255 / 15%);
+  }
 }
 
 #shlokaTranslation {
@@ -57,7 +57,7 @@
 }
 
 #shlokaChapter {
-  font-family: Cinzel, serif;
+  font-family: var(--font-cinzel);
   font-size: 0.78rem;
   text-align: right;
   color: #ed9d3c;

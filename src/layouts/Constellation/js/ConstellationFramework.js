@@ -77,7 +77,7 @@ class ConstellationFramework {
       star.style.cssText = `
         position: absolute;
         width: ${width}px;
-        height: ${width}px;
+        height: ${height}px;
         background: white;
         border-radius: 50%;
         top: ${Math.random() * 100}%;
@@ -120,7 +120,7 @@ class ConstellationFramework {
         pointer-events: none;
         z-index: 1000;
         border: 1px solid rgba(74, 158, 255, 0.5);
-        font-family: 'Courier New', monospace;
+        font-family: monospace;
       `;
       document.body.appendChild(tooltip);
     }
@@ -165,7 +165,7 @@ class ConstellationFramework {
         transform: translateY(100px);
         opacity: 0;
         transition: all 0.3s ease;
-        font-family: 'Courier New', monospace;
+        font-family: monospace;
       `;
       document.body.appendChild(infoPanel);
     }
@@ -208,7 +208,7 @@ class ConstellationFramework {
       padding: 0.8rem 1.5rem;
       border-radius: 25px;
       cursor: pointer;
-      font-family: 'Courier New', monospace;
+      font-family: monospace;
       font-size: 0.9rem;
       transition: all 0.3s ease;
       z-index: 100;
@@ -548,7 +548,7 @@ class ConstellationFramework {
       z-index: 1000;
       opacity: 0;
       transition: all 0.3s ease;
-      font-family: 'Courier New', monospace;
+      font-family: monospace;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
     `;
 
@@ -741,18 +741,6 @@ class ConstellationFramework {
 
   initMouseTrail() {
     return;
-    const trail = [];
-    const trailLength = 10;
-
-    document.addEventListener("mousemove", (e) => {
-      trail.push({ x: e.clientX, y: e.clientY, time: Date.now() });
-
-      if (trail.length > trailLength) {
-        trail.shift();
-      }
-
-      this.updateTrail(trail);
-    });
   }
 
   updateTrail(trail) {

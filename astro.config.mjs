@@ -149,5 +149,68 @@ export default defineConfig({
         ],
       },
     },
+    {
+      name: "Cinzel",
+      provider: fontProviders.local(),
+      cssVariable: "--font-cinzel",
+      options: {
+        variants: [
+          {
+            weight: "400",
+            style: "normal",
+            display: "swap",
+            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
+          },
+          {
+            weight: "600",
+            style: "normal",
+            display: "swap",
+            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
+          },
+          {
+            weight: "700",
+            style: "normal",
+            display: "swap",
+            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      name: "Tiro Devanagari Sanskrit",
+      provider: fontProviders.local(),
+      cssVariable: "--font-tiro-devanagari-sanskrit",
+      options: {
+        variants: [
+          {
+            weight: "400",
+            style: "normal",
+            display: "swap",
+            src: ["./src/assets/fonts/TiroDevanagariSanskrit-Regular.woff2"],
+          },
+        ],
+      },
+    },
+    {
+      name: "Libre Baskerville",
+      provider: fontProviders.local(),
+      cssVariable: "--font-libre-baskerville",
+      options: {
+        variants: [
+          {
+            weight: "400",
+            style: "normal",
+            display: "swap",
+            src: ["./src/assets/fonts/LibreBaskerville-Regular.woff2"],
+          },
+          {
+            weight: "400",
+            style: "italic",
+            display: "swap",
+            src: ["./src/assets/fonts/LibreBaskerville-RegularItalic.woff2"],
+          },
+        ],
+      },
+    },
   ],
 });

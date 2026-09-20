@@ -3,7 +3,15 @@ import { Image } from "astro:assets";
 ---
 
 <div class="nowPlaying">
-  <div class="trackVinyl" id="nowPlayingTrackVinyl"></div>
+  <span class="a11yStatus" id="nowPlayingStatus" aria-live="polite"></span>
+  <div
+    class="trackVinyl"
+    id="nowPlayingTrackVinyl"
+    role="img"
+    aria-label="Album artwork"
+    aria-hidden="true"
+  >
+  </div>
 
   <a class="spotifyLogoContainer" target="_blank">
     <Image
@@ -16,6 +24,7 @@ import { Image } from "astro:assets";
   </a>
 
   <div class="nowPlayingLoading" id="nowPlayingLoading" aria-live="polite">
+    <span class="a11yStatus">Loading current track</span>
     <div class="spotifySkeletonBlock spotifySkeletonBar"></div>
     <div
       class="spotifySkeletonBlock spotifySkeletonBar spotifySkeletonBarShort"
@@ -23,14 +32,16 @@ import { Image } from "astro:assets";
     </div>
   </div>
 
-  <div class="notPlaying displayNone" id="notPlayingWrap">
+  <div class="notPlaying displayNone" id="notPlayingWrap" role="status">
     <p>Ears at rest....</p>
   </div>
 
   <div id="nowPlayingInfo" class="nowPlayingInfo displayNone">
     <h3 class="heading">Now Playing</h3>
     <div>
-      <h4><a id="nowPlayingTitle" href=""></a></h4>
+      <h4>
+        <a id="nowPlayingTitle" href="" aria-describedby="nowPlayingStatus"></a>
+      </h4>
       <h5 id="nowPlayingArtists"></h5>
     </div>
   </div>

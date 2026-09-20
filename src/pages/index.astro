@@ -1,5 +1,6 @@
 ---
 import { Schema } from "astro-seo-schema";
+import { Font } from "astro:assets";
 
 import Layout from "@layouts/index.astro";
 
@@ -29,6 +30,8 @@ import "@assets/styles/homePage.scss";
   className="homePage"
 >
   <Fragment slot="head">
+    <Font cssVariable="--font-cinzel" />
+    <Font cssVariable="--font-tiro-devanagari-sanskrit" />
     <Schema
       item={{
         "@context": "https://schema.org",

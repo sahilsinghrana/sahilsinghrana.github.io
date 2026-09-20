@@ -4,6 +4,8 @@
 const TEX_SIZE = 630; // Resolution of the diffuse and bump textures (square).
 const ROUGH_SIZE = 490; // Resolution of the roughness texture (square, can be lower).
 const BUMP_SCALE = 0.065;
+const GARDEN_POLAR_ANGLE = (115 * Math.PI) / 180;
+const GARDEN_AZIMUTH = 0.45;
 
 // Named imports instead of `import("three")` namespace - enables Rollup/Vite tree shaking.
 // Only the classes actually used are included in the final bundle.
@@ -15,7 +17,10 @@ import {
   MeshStandardMaterial,
   SphereGeometry,
   Mesh,
+  Vector3,
 } from "three";
+import { createFlag } from "./flag.js";
+import { createGarden } from "./garden.js";
 
 function makeDataTex(buffer, size, { srgb = false } = {}) {
   const tex = new DataTexture(new Uint8Array(buffer), size, size, RGBAFormat);
@@ -38,6 +43,8 @@ export class Moon {
     // cannot free WebGL objects held by the GPU driver.
     this._geometry = null;
     this._material = null;
+    this._flag = null;
+    this._garden = null;
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
@@ -50,9 +57,17 @@ export class Moon {
   }
 
   async init(onComplete) {
-    const worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
-      type: "module",
-    });
+    let worker;
+    try {
+      worker = new Worker(new URL("./texture-worker.js", import.meta.url), {
+        type: "module",
+      });
+    } catch (err) {
+      console.error("Failed to create Moon texture worker:", err);
+      if (onComplete) onComplete();
+      return;
+    }
+
     this._worker = worker;
 
     // If the worker throws (malformed message, JS error inside the worker, etc.),
@@ -67,6 +82,14 @@ export class Moon {
     };
 
     worker.onmessage = (e) => {
+      if (e.data?.error) {
+        console.error("Moon texture worker reported an error:", e.data.error);
+        worker.terminate();
+        if (this._worker === worker) this._worker = null;
+        if (onComplete) onComplete();
+        return;
+      }
+
       // Teardown may have run while the worker was still generating textures.
       if (this._disposed) {
         worker.terminate();
@@ -109,6 +132,38 @@ export class Moon {
       this.mesh.castShadow = true;
       this.mesh.receiveShadow = true;
 
+      try {
+        this._flag = createFlag();
+        this.mesh.add(this._flag);
+      } catch (err) {
+        // The flag is optional artwork; it must not prevent the moon from rendering
+        // or leave the loading overlay waiting forever if browser canvas support fails.
+        console.error("Flag initialization failed:", err);
+        this._flag = null;
+      }
+
+      try {
+        this._garden = createGarden();
+        const gardenNormal = new Vector3(
+          Math.sin(GARDEN_POLAR_ANGLE) * Math.cos(GARDEN_AZIMUTH),
+          Math.cos(GARDEN_POLAR_ANGLE),
+          Math.sin(GARDEN_POLAR_ANGLE) * Math.sin(GARDEN_AZIMUTH),
+        ).normalize();
+        const gardenAnchor = gardenNormal.clone().multiplyScalar(radius);
+        this._garden.position
+          .copy(gardenAnchor)
+          .addScaledVector(gardenNormal, -0.001);
+        this._garden.quaternion.setFromUnitVectors(
+          new Vector3(0, 1, 0),
+          gardenNormal,
+        );
+        this.mesh.add(this._garden);
+      } catch (err) {
+        console.error("Garden initialization failed:", err);
+        this._garden = null;
+      }
+
+      this.mesh.updateMatrix();
       this.scene.add(this.mesh);
 
       worker.terminate();
@@ -140,6 +195,11 @@ export class Moon {
 
     this.scene.remove(this.mesh);
 
+    this._flag?.dispose?.();
+    this._flag = null;
+    this._garden?.dispose?.();
+    this._garden = null;
+
     // Each texture is an independent GPU upload - each must be disposed individually.
     this._material?.map?.dispose();
     this._material?.bumpMap?.dispose();
@@ -154,5 +214,13 @@ export class Moon {
 
   setVisibility(visible) {
     if (this.mesh) this.mesh.visible = visible;
+  }
+
+  updateFlag(timeMs) {
+    this._flag?.update?.(timeMs);
+  }
+
+  updateGarden(timeMs) {
+    this._garden?.update?.(timeMs);
   }
 }

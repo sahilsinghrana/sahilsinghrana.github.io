@@ -88,6 +88,11 @@
       }
     }
 
+    &:focus-visible {
+      outline: 2px solid currentcolor;
+      outline-offset: 3px;
+    }
+
     &:active {
       transform: translateY(-2px);
     }
@@ -151,8 +156,8 @@
       overflow: hidden;
       opacity: 1;
       transform: translateY(0) scale(1);
-      animation: dialogLuxuryEntrance 0.4s var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1))
-        forwards;
+      animation: dialogLuxuryEntrance 0.4s
+        var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1)) forwards;
       transition:
         opacity 0.4s var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1)),
         transform 0.4s var(--ease-out-soft, cubic-bezier(0.16, 1, 0.3, 1)),
@@ -181,9 +186,7 @@
   }
 
   .designElementInfo {
-    font-family:
-      Caveat, "Dancing Script", Pacifico, Georgia, cursive; /* Prioritizes readable, premium webcursive choices */
-
+    font-family: Georgia, serif;
     font-size: 1.2rem; /* Cursive scripts scale small, scaled up for legibility context */
     line-height: 1.7;
     letter-spacing: 0.5px;

@@ -29,7 +29,19 @@ class TopPanelState {
     return document.getElementById(this.listId);
   }
 
+  getStatusEl() {
+    return document.getElementById(
+      this.containerId.replace("Container", "Status"),
+    );
+  }
+
+  setStatus(message) {
+    const statusEl = this.getStatusEl();
+    if (statusEl) statusEl.textContent = message;
+  }
+
   showLoading() {
+    this.setStatus("Loading");
     hideElement(this.getErrorEl());
     hideElement(this.getListEl());
     showElement(this.getLoadingEl());
@@ -38,6 +50,7 @@ class TopPanelState {
   }
 
   showContent() {
+    this.setStatus("");
     hideElement(this.getLoadingEl());
     hideElement(this.getErrorEl());
     showElement(this.getListEl());
@@ -46,6 +59,7 @@ class TopPanelState {
   }
 
   showError() {
+    this.setStatus("");
     hideElement(this.getLoadingEl());
     hideElement(this.getListEl());
     showElement(this.getErrorEl());
@@ -54,6 +68,7 @@ class TopPanelState {
   }
 
   hideAll() {
+    this.setStatus("");
     hideElement(this.getLoadingEl());
     hideElement(this.getErrorEl());
     hideElement(this.getListEl());
