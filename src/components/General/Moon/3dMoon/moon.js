@@ -4,8 +4,6 @@
 const TEX_SIZE = 630; // Resolution of the diffuse and bump textures (square).
 const ROUGH_SIZE = 490; // Resolution of the roughness texture (square, can be lower).
 const BUMP_SCALE = 0.065;
-const GARDEN_POLAR_ANGLE = (115 * Math.PI) / 180;
-const GARDEN_AZIMUTH = 0.45;
 
 // Named imports instead of `import("three")` namespace - enables Rollup/Vite tree shaking.
 // Only the classes actually used are included in the final bundle.
@@ -21,6 +19,7 @@ import {
 } from "three";
 import { createFlag } from "./flag.js";
 import { createGarden } from "./garden.js";
+import { createMoonBaseLogo } from "./logo.js";
 
 function makeDataTex(buffer, size, { srgb = false } = {}) {
   const tex = new DataTexture(new Uint8Array(buffer), size, size, RGBAFormat);
@@ -45,6 +44,7 @@ export class Moon {
     this._material = null;
     this._flag = null;
     this._garden = null;
+    this._logo = null;
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
@@ -81,7 +81,7 @@ export class Moon {
       if (onComplete) onComplete();
     };
 
-    worker.onmessage = (e) => {
+    worker.onmessage = async (e) => {
       if (e.data?.error) {
         console.error("Moon texture worker reported an error:", e.data.error);
         worker.terminate();
@@ -97,9 +97,11 @@ export class Moon {
         return;
       }
 
-      const diffuseTex = makeDataTex(e.data.diffuse, TEX_SIZE, { srgb: true });
-      const bumpTex = makeDataTex(e.data.bump, TEX_SIZE);
-      const roughTex = makeDataTex(e.data.rough, ROUGH_SIZE);
+      const { diffuse, bump, rough } = e.data;
+
+      const diffuseTex = makeDataTex(diffuse, TEX_SIZE, { srgb: true });
+      const bumpTex = makeDataTex(bump, TEX_SIZE);
+      const roughTex = makeDataTex(rough, ROUGH_SIZE);
 
       // Dispose again if teardown raced in while we built CPU-side textures.
       if (this._disposed) {
@@ -143,24 +145,41 @@ export class Moon {
       }
 
       try {
-        this._garden = createGarden();
+        const gardenPhi = 115 * (Math.PI / 180);
+        const gardenTheta = 0.45;
         const gardenNormal = new Vector3(
-          Math.sin(GARDEN_POLAR_ANGLE) * Math.cos(GARDEN_AZIMUTH),
-          Math.cos(GARDEN_POLAR_ANGLE),
-          Math.sin(GARDEN_POLAR_ANGLE) * Math.sin(GARDEN_AZIMUTH),
+          Math.sin(gardenPhi) * Math.sin(gardenTheta),
+          Math.cos(gardenPhi),
+          Math.sin(gardenPhi) * Math.cos(gardenTheta),
         ).normalize();
-        const gardenAnchor = gardenNormal.clone().multiplyScalar(radius);
-        this._garden.position
-          .copy(gardenAnchor)
-          .addScaledVector(gardenNormal, -0.001);
-        this._garden.quaternion.setFromUnitVectors(
-          new Vector3(0, 1, 0),
+        this._garden = createGarden(
+          this._geometry,
+          radius,
+          diffuse,
+          TEX_SIZE,
           gardenNormal,
         );
         this.mesh.add(this._garden);
       } catch (err) {
         console.error("Garden initialization failed:", err);
         this._garden = null;
+      }
+
+      try {
+        const profileImgEl = document.querySelector(
+          "#profilePicContainer > img",
+        );
+        const logoSrc = profileImgEl?.src || "";
+        if (logoSrc) {
+          const logoMesh = await createMoonBaseLogo(logoSrc, radius);
+          if (logoMesh && !this._disposed && this.mesh) {
+            this._logo = logoMesh;
+            this.mesh.add(this._logo);
+          }
+        }
+      } catch (err) {
+        console.error("Logo initialization failed:", err);
+        this._logo = null;
       }
 
       this.mesh.updateMatrix();
@@ -199,6 +218,8 @@ export class Moon {
     this._flag = null;
     this._garden?.dispose?.();
     this._garden = null;
+    this._logo?.dispose?.();
+    this._logo = null;
 
     // Each texture is an independent GPU upload - each must be disposed individually.
     this._material?.map?.dispose();
@@ -222,5 +243,43 @@ export class Moon {
 
   updateGarden(timeMs) {
     this._garden?.update?.(timeMs);
+  }
+
+  setLogoOpacity(val) {
+    this._logo?.setOpacity?.(val);
+  }
+
+  getLogoProjection(camera, canvas) {
+    if (!this._logo || !this.mesh || !camera) return null;
+
+    const worldPos = new Vector3();
+    this._logo.getWorldPosition(worldPos);
+
+    // Front-facing check relative to camera position at (0, 0, Z)
+    const isFrontFacing = worldPos.z > -0.05;
+
+    const rect = canvas?.getBoundingClientRect();
+    const canvasWidth = rect ? rect.width : window.innerWidth;
+    const canvasHeight = rect ? rect.height : window.innerHeight;
+    const canvasLeft = rect ? rect.left : 0;
+    const canvasTop = rect ? rect.top : 0;
+
+    const ndc = worldPos.clone().project(camera);
+    const screenX = canvasLeft + (ndc.x * 0.5 + 0.5) * canvasWidth;
+    const screenY = canvasTop + (-ndc.y * 0.5 + 0.5) * canvasHeight;
+
+    const logoWorldSize = (this._logo.logoSize || 0.16) * this.mesh.scale.x;
+    const dist = camera.position.distanceTo(worldPos);
+    const vFovRad = (camera.fov * Math.PI) / 180;
+    const screenFraction = logoWorldSize / (2 * dist * Math.tan(vFovRad / 2));
+    const targetSizePx = Math.max(30, screenFraction * canvasHeight);
+
+    return {
+      worldPos,
+      isFrontFacing,
+      screenX,
+      screenY,
+      targetSizePx,
+    };
   }
 }

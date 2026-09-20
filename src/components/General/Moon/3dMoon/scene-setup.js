@@ -16,7 +16,7 @@ const MAX_ASPECT_RATIO = 1.8;
 // INITIAL_FOV (Field of View in degrees)
 // HIGHER (> 60): Wider camera angle. The moon will appear smaller, and edge distortion (fisheye) increases.
 // LOWER (< 30): Narrower camera angle. The moon will appear larger, flattening the 3D perspective (orthographic feel).
-const INITIAL_FOV = 40;
+const INITIAL_FOV = 36;
 
 // NEAR_CLIP / FAR_CLIP (Frustum rendering limits)
 // Objects closer than NEAR_CLIP or further than FAR_CLIP are not rendered by the GPU.
@@ -27,10 +27,9 @@ const FAR_CLIP = 1000;
 
 // Moon size & distance (Controls how big the moon appears relative to the camera)
 // Technically, this moves the camera backward/forward on the Z-axis.
-// HIGHER: Camera moves further back -> Moon looks smaller.
-// LOWER: Camera moves closer -> Moon looks larger.
-const FIXED_CAMERA_DISTANCE_MOBILE = 3.95;
-const FIXED_CAMERA_DISTANCE_DESKTOP = 3.1;
+// In the 250px container with 36 deg FOV, distance ~2.0 gives ~150px moon diameter.
+const FIXED_CAMERA_DISTANCE_MOBILE = 2.05;
+const FIXED_CAMERA_DISTANCE_DESKTOP = 2.0;
 
 // Lighting — original warm-white sun + deep-space ambient.
 const SUN_LIGHT_COLOR = 0xfff8f0; // Warm white.
@@ -128,7 +127,7 @@ const VISIBILITY_THRESHOLD = 0.01;
 // Minimum duration (ms) the loader ring stays visible before it is allowed to fade out.
 // Prevents a jarring instant-dismiss on fast devices where textures load nearly immediately.
 // The fade-out itself adds an additional ~600ms of graceful transition on top of this floor.
-const LOADER_MIN_DISPLAY_MS = 2800;
+const LOADER_MIN_DISPLAY_MS = 350;
 
 // ============================================================
 
@@ -197,35 +196,174 @@ let loaderStartTime = 0;
 // during page transitions without waiting for the fade-out timer.
 let loaderEl = null;
 let loaderDismissTimeoutId = null;
+let flightAnimId = null;
 
-// dismissLoader enforces the minimum display time then fades the loader out gracefully.
-// It is safe to call multiple times â€” once loaderEl is null (already removed) it exits.
-const dismissLoader = () => {
+const removeElementGracefully = (el, fadeMs = 400) => {
+  if (!el) return;
+  el.style.transition = `opacity ${fadeMs}ms ease-out`;
+  el.style.opacity = "0";
+  el.style.pointerEvents = "none";
+  let removed = false;
+  const finish = () => {
+    if (removed) return;
+    removed = true;
+    el.remove();
+  };
+  el.addEventListener("transitionend", finish, { once: true });
+  setTimeout(finish, fadeMs + 60);
+};
+
+const animateProfileToMoon = () => {
+  if (disposeRequested) return;
+  console.info("Starting animateProfileToMoon...");
+
+  // 1. Immediately dismiss loader SVG with guaranteed timeout cleanup
   loaderEl = document.querySelector("#profilePicContainer > .moonLoader");
-  if (!loaderEl) return;
+  if (loaderEl) {
+    removeElementGracefully(loaderEl, 350);
+    loaderEl = null;
+  }
 
-  const elapsed = performance.now() - loaderStartTime;
-  const remaining = Math.max(0, LOADER_MIN_DISPLAY_MS - elapsed);
+  // 2. Identify the profile image
+  const profileImgEl =
+    profileImg ||
+    document.querySelector("#profilePicContainer > img.profileImage");
 
-  clearTimeout(loaderDismissTimeoutId);
-  loaderDismissTimeoutId = setTimeout(() => {
-    loaderDismissTimeoutId = null;
-    if (!loaderEl) return; // Guard: may have been force-removed by cleanupThreeJS.
+  if (!profileImgEl) {
+    console.info("No profileImgEl found, revealing 3D logo directly.");
+    moon?.setLogoOpacity(0.72);
+    return;
+  }
 
-    // CSS transition on opacity triggers the fade. The element is physically removed
-    // from the DOM only after the transition ends to avoid a jarring snap-to-gone.
-    loaderEl.style.transition = "opacity 0.6s ease-out";
-    loaderEl.style.opacity = "0";
+  // 3. Detach all moon interaction listeners
+  if (profileImgEl._moonHandlers) {
+    const { onWheel, onTouchStart, onTouchMove, onTouchEnd } =
+      profileImgEl._moonHandlers;
+    profileImgEl.removeEventListener("wheel", onWheel);
+    profileImgEl.removeEventListener("touchstart", onTouchStart);
+    profileImgEl.removeEventListener("touchmove", onTouchMove);
+    profileImgEl.removeEventListener("touchend", onTouchEnd);
+    profileImgEl.removeEventListener("touchcancel", onTouchEnd);
+    delete profileImgEl._moonHandlers;
+  }
 
-    loaderEl.addEventListener(
-      "transitionend",
-      () => {
-        loaderEl?.remove();
-        loaderEl = null;
-      },
-      { once: true },
-    );
-  }, remaining);
+  // 4. Capture current DOM geometry before promoting to fixed position
+  const startRect = profileImgEl.getBoundingClientRect();
+  const startX = startRect.left;
+  const startY = startRect.top;
+  const startWidth = startRect.width || 150;
+  const startHeight = startRect.height || 150;
+
+  // Check if logo projection is available
+  const initialProj = moon?.getLogoProjection(camera, renderer?.domElement);
+  console.info("Moon logo initial projection:", initialProj);
+
+  // If projection is unavailable or moon is behind camera, fallback to direct fade
+  if (!initialProj || !moon?.mesh) {
+    console.info("Falling back to direct fade for profile image.");
+    removeElementGracefully(profileImgEl, 400);
+    if (profileImg === profileImgEl) profileImg = null;
+    moon?.setLogoOpacity(0.72);
+    return;
+  }
+
+  // Promote element to position: fixed at the exact same coordinates (no visual jump)
+  profileImgEl.style.position = "fixed";
+  profileImgEl.style.left = `${startX}px`;
+  profileImgEl.style.top = `${startY}px`;
+  profileImgEl.style.width = `${startWidth}px`;
+  profileImgEl.style.height = `${startHeight}px`;
+  profileImgEl.style.margin = "0";
+  profileImgEl.style.pointerEvents = "none";
+  profileImgEl.style.zIndex = "100";
+  profileImgEl.style.transformOrigin = "center center";
+  profileImgEl.style.willChange = "transform, opacity, filter";
+  profileImgEl.style.transition = "none";
+
+  const SHRINK_DURATION_MS = 750;
+  const shrinkStartTime = performance.now();
+
+  const shrinkStep = () => {
+    if (disposeRequested || !profileImgEl.parentNode) {
+      if (flightAnimId !== null) {
+        cancelAnimationFrame(flightAnimId);
+        flightAnimId = null;
+      }
+      return;
+    }
+
+    const elapsed = performance.now() - shrinkStartTime;
+    const linearT = Math.min(1, elapsed / SHRINK_DURATION_MS);
+
+    // Natural cubic ease-in-out curve
+    const easeT =
+      linearT < 0.5
+        ? 4 * linearT * linearT * linearT
+        : 1 - Math.pow(-2 * linearT + 2, 3) / 2;
+
+    // Shrink down smoothly from 1 to 0 (no downward translation)
+    const curScale = Math.max(0, 1 - easeT);
+
+    // Smooth opacity fade
+    const curOpacity = Math.max(0, 1 - Math.pow(linearT, 1.4));
+
+    // Progressively transform appearance from photo into etched stencil
+    const grayscale = easeT * 100;
+    const contrast = 100 + easeT * 80;
+    const brightness = 100 - easeT * 30;
+
+    profileImgEl.style.transform = `scale(${curScale})`;
+    profileImgEl.style.opacity = `${curOpacity}`;
+    profileImgEl.style.filter = `grayscale(${grayscale}%) contrast(${contrast}%) brightness(${brightness}%)`;
+
+    // Seamlessly fade in the etched moon base logo on the 3D surface
+    moon?.setLogoOpacity(Math.min(0.72, easeT * 0.72));
+
+    if (linearT < 1) {
+      flightAnimId = requestAnimationFrame(shrinkStep);
+    } else {
+      // Complete: profile logo is fully absorbed/etched into the moon
+      flightAnimId = null;
+      moon?.setLogoOpacity(0.72);
+      profileImgEl.remove();
+      if (profileImg === profileImgEl) profileImg = null;
+    }
+  };
+
+  flightAnimId = requestAnimationFrame(shrinkStep);
+};
+
+// dismissLoader enforces the minimum display time then initiates the profile flight to the moon.
+// It is safe to call multiple times — once triggered it exits.
+const dismissLoader = () => {
+  try {
+    loaderEl = document.querySelector("#profilePicContainer > .moonLoader");
+    const profileImgEl =
+      profileImg ||
+      document.querySelector("#profilePicContainer > img.profileImage");
+    if (!loaderEl && !profileImgEl) return;
+
+    const elapsed = performance.now() - loaderStartTime;
+    const remaining = Math.max(0, LOADER_MIN_DISPLAY_MS - elapsed);
+
+    clearTimeout(loaderDismissTimeoutId);
+    loaderDismissTimeoutId = setTimeout(() => {
+      loaderDismissTimeoutId = null;
+      try {
+        animateProfileToMoon();
+      } catch (err) {
+        console.error("animateProfileToMoon error:", err);
+        removeElementGracefully(loaderEl, 300);
+        removeElementGracefully(profileImgEl, 300);
+        moon?.setLogoOpacity(0.72);
+      }
+    }, remaining);
+  } catch (err) {
+    console.error("dismissLoader error:", err);
+    document.querySelector("#profilePicContainer > .moonLoader")?.remove();
+    document.querySelector("#profilePicContainer > img.profileImage")?.remove();
+    moon?.setLogoOpacity(0.72);
+  }
 };
 
 // onMoonReady is passed into the Moon constructor as its onComplete callback.
@@ -334,14 +472,16 @@ async function initThreeJS() {
     // Creates the main 3D environment where everything will live.
     scene = new Scene();
 
+    const containerWidth = moonRoot?.clientWidth || 340;
+    const containerHeight = moonRoot?.clientHeight || 250;
+
     camera = new PerspectiveCamera(
       INITIAL_FOV,
-      window.innerWidth / window.innerHeight,
+      containerWidth / containerHeight,
       NEAR_CLIP,
       FAR_CLIP,
     );
 
-    // FIXED CAMERA DISTANCE â†’ moon size is controlled by width, not height.
     camera.position.set(0, 0, getMobileDistance());
 
     // WebGLRenderer Configuration
@@ -359,9 +499,8 @@ async function initThreeJS() {
     renderer.shadowMap.type = PCFSoftShadowMap;
     renderer.shadowMap.autoUpdate = true;
 
-    // Set initial size and canvas quality.
-    // Keep pixel ratio capped for mobile to avoid expensive overdraw while preserving clarity.
-    renderer.setSize(window.innerWidth, window.innerHeight);
+    // Set initial size and canvas quality matching the container dimensions.
+    renderer.setSize(containerWidth, containerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
 
     // toneMapping controls how high dynamic range (HDR) colors are compressed to standard screens.
@@ -381,18 +520,17 @@ async function initThreeJS() {
     controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true; // Adds physical inertia/glide to the rotation.
     controls.enableRotate = true; // Explicit: single-finger touch drag / mouse drag orbits the camera.
-    controls.enableZoom = true; // Disabled because you built custom wheel/pinch scaling below.
-    controls.enablePan = true; // Prevents right-click dragging (or two-finger pan) from moving the moon off-center.
+    controls.enableZoom = true; // Allows mouse wheel and touch pinch to zoom in and out.
+    controls.enablePan = false; // Disables panning so the moon remains fixed in position (no left/right/top/bottom shift).
+    controls.minDistance = 0.6; // Prevents zooming inside the moon mesh.
+    controls.maxDistance = 5.0; // Prevents zooming out indefinitely.
 
     // Touch gesture mapping:
-    // ONE finger  -> orbit rotate (native OrbitControls behavior).
-    // TWO fingers -> NONE here on purpose. The two-finger pinch gesture is handled
-    // manually in attachProfileInteraction() below so it drives the custom
-    // moonBaseScale system instead of OrbitControls' own camera-dolly zoom, which would
-    // fight with the fixed camera distance logic in onContainerResize().
+    // ONE finger  -> orbit rotate
+    // TWO fingers -> pinch to zoom (dolly only; pan is disabled above)
     controls.touches = {
       ONE: TOUCH.ROTATE,
-      TWO: TOUCH.NONE,
+      TWO: TOUCH.DOLLY_PAN,
     };
 
     // Lighting setup
@@ -605,26 +743,16 @@ const onVisibilityChange = (entries) => {
 let resizeTimer = null;
 let resizeObserver = null;
 
-// Window resize execution
+// Container resize execution
 const onContainerResize = () => {
-  if (!isInitialized || fixedHorizontalFov == null) return;
+  if (!isInitialized || !moonRoot || !camera || !renderer) return;
 
-  const width = window.innerWidth;
-  const height = window.innerHeight;
+  const width = moonRoot.clientWidth;
+  const height = moonRoot.clientHeight;
+  if (!width || !height) return;
 
-  // 1. Update the physical aspect ratio.
   camera.aspect = width / height;
-
-  // Math aspect is clamped to prevent massive FOV changes on ultra-wides
-  const clampedAspect = Math.min(camera.aspect, MAX_ASPECT_RATIO);
-
-  const tanHalfHoriz = Math.tan((fixedHorizontalFov * Math.PI) / 360);
-  camera.fov = 2 * Math.atan(tanHalfHoriz / clampedAspect) * (180 / Math.PI);
-
-  // getMobileDistance() re-evaluates the current viewport width on every call, so the
-  // camera distance correctly switches between mobile and desktop thresholds after a
-  // resize or orientation change instead of staying locked to the value from page load.
-  camera.position.z = getMobileDistance();
+  camera.fov = INITIAL_FOV;
   camera.updateProjectionMatrix();
 
   renderer.setSize(width, height);
@@ -730,8 +858,8 @@ const setupMoonLifecycle = () => {
   }
 
   if (!profileImg) {
-    console.error(
-      "Moon lifecycle setup failed: .profileImage was not found in the DOM.",
+    console.warn(
+      "Moon lifecycle: .profileImage was not found in the DOM (may have transitioned to moon logo).",
     );
   }
 
@@ -769,6 +897,11 @@ const cleanupThreeJS = () => {
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
+  }
+
+  if (flightAnimId !== null) {
+    cancelAnimationFrame(flightAnimId);
+    flightAnimId = null;
   }
 
   clearTimeout(initTimeoutId);
