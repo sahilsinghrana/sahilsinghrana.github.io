@@ -371,13 +371,22 @@ function createGardenLamp() {
   return { group, geometries, materials, light, baseIntensity: 0.9 };
 }
 
-export function createGarden() {
+export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   const group = new THREE.Group();
   group.name = "LunarGarden";
   const geometries = [];
   const materials = [];
   const movingFlowers = [];
   const rootShadows = [];
+
+  const surfaceNormal = (gardenNormal || new THREE.Vector3(0, 1, 0))
+    .clone()
+    .normalize();
+  group.position.copy(surfaceNormal).multiplyScalar(moonRadius);
+  group.quaternion.setFromUnitVectors(
+    new THREE.Vector3(0, 1, 0),
+    surfaceNormal,
+  );
 
   const patch = createCurvedPatch();
   group.add(patch.mesh);

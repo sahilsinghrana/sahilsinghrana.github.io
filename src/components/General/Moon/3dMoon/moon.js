@@ -152,13 +152,7 @@ export class Moon {
           Math.cos(gardenPhi),
           Math.sin(gardenPhi) * Math.cos(gardenTheta),
         ).normalize();
-        this._garden = createGarden(
-          this._geometry,
-          radius,
-          diffuse,
-          TEX_SIZE,
-          gardenNormal,
-        );
+        this._garden = createGarden(radius, gardenNormal);
         this.mesh.add(this._garden);
       } catch (err) {
         console.error("Garden initialization failed:", err);
