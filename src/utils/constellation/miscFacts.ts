@@ -112,12 +112,6 @@ const miscFacts: Fact[] = [
     "Belts and zones are produced by strong east-west jet streams; differences in cloud opacity/composition create visible light/dark bands.",
     "https://www.jpl.nasa.gov/images/pia26076-cylindrical-orientation-of-jupiters-east-west-jet-streams/",
   ),
-  new Fact(
-    "The Panchang (Hindu almanac) is built on astronomical measures (tithi, nakshatra, yoga, karana, vara). all derived from Sun/Moon/planet positions computed astronomically.",
-    "https://www.britannica.com/topic/Hindu-calendar",
-    "Panchang components are calculable from ephemerides: lunar day (tithi), lunar mansion (nakshatra), yoga (Sun+Moon angle), karana (half-tithi), and weekday (vara). they are astronomical constructs used in traditional timing.",
-    "https://en.wikipedia.org/wiki/Hindu_calendar",
-  ),
 ];
 
 export default miscFacts;

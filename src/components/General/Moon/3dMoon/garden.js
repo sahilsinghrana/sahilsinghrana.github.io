@@ -7,7 +7,13 @@ const SOIL_COLOR = new THREE.Color(0x665849);
 const STEM_COLOR = 0x54693f;
 const LEAF_COLOR = 0x62784f;
 const TULIP_COLORS = [
-  0x9f5266, 0xb57983, 0xa1707a, 0x8e5c6f, 0xc98a9c, 0x7d5a6b, 0xb26a6a,
+  0xc23b4a, // red
+  0xd6a419, // yellow
+  0xf5f0e6, // white
+  0x7a4fa3, // purple
+  0xd9647a, // pink
+  0xb5542e, // orange
+  0x9f5266, // dusty rose (original)
 ];
 const REGOLITH_COLOR = 0x88837a;
 const BULB_LIGHT_COLOR = 0xffd9a0;
@@ -16,6 +22,15 @@ const HEMI_GROUND_COLOR = 0x4a3f33;
 
 const randomBetween = (min, max) => min + Math.random() * (max - min);
 
+// Ground-level / decal-like meshes: they receive shadows from things above
+// them but must never cast shadows themselves (self-shadowing/acne risk).
+function markGroundMesh(mesh) {
+  mesh.castShadow = false;
+  mesh.receiveShadow = true;
+  return mesh;
+}
+
+// Above-ground props (flowers, pebbles, lamp): normal two-way shadowing.
 function markSurfaceMesh(mesh) {
   mesh.castShadow = true;
   mesh.receiveShadow = true;
@@ -114,7 +129,7 @@ function createCurvedPatch() {
   material.customProgramCacheKey = () => "lunar-garden-curved-patch";
 
   return {
-    mesh: markSurfaceMesh(new THREE.Mesh(geometry, material)),
+    mesh: markGroundMesh(new THREE.Mesh(geometry, material)),
     geometry,
     material,
   };
@@ -132,6 +147,8 @@ function createStem(height, radius = 0.0025) {
 }
 
 function createLeaf(length, width) {
+  // Elongated, strap-like blade rather than a stubby oval — real tulip
+  // leaves have a much higher length:width ratio.
   const geometry = new THREE.SphereGeometry(1, 6, 4);
   geometry.scale(width, length, 0.003);
   const material = makeMaterial(LEAF_COLOR, 0.95);
@@ -177,6 +194,8 @@ function createTulip(baseColor, phase) {
   materials.push(stem.material);
 
   if (phase === "bud") {
+    // A closed tulip bud is just the 6 tepals themselves, tightly furled —
+    // there's no true calyx/sepal collar on a real tulip, so we skip that.
     const headGeometry = new THREE.SphereGeometry(
       1,
       10,
@@ -195,30 +214,18 @@ function createTulip(baseColor, phase) {
     group.add(head);
     geometries.push(headGeometry);
     materials.push(headMaterial);
-
-    const sepalGeometry = new THREE.SphereGeometry(1, 6, 4, 0, Math.PI);
-    sepalGeometry.scale(0.0022, 0.0055, 0.0018);
-    sepalGeometry.translate(0, 0.003, 0.0015);
-    const sepalMaterial = makeMaterial(0x4a6b42, 0.9);
-    materials.push(sepalMaterial);
-    geometries.push(sepalGeometry);
-    for (let index = 0; index < 3; index += 1) {
-      const sepal = markSurfaceMesh(
-        new THREE.Mesh(sepalGeometry, sepalMaterial),
-      );
-      sepal.position.y = height + 0.0015;
-      sepal.rotation.y = (index / 3) * Math.PI * 2;
-      sepal.rotation.x = -0.3;
-      group.add(sepal);
-    }
   } else {
+    // Real tulips always have 6 tepals (3 outer + 3 inner), whether
+    // half-open or fully bloomed — only the flare/tilt changes.
     const isOpening = phase === "opening";
-    const petalCount = isOpening ? 4 : 6;
+    const petalCount = 6;
     const petalW = isOpening ? 0.0062 : 0.0082;
     const petalH = isOpening ? 0.0082 : 0.011;
-    const flare = isOpening ? 0.28 : 0.58;
-    const tilt = isOpening ? -0.14 : -0.5;
-    const curl = isOpening ? 0.15 : 0.4;
+    // Kept modest even at full bloom so the flower stays a cupped
+    // goblet/chalice shape instead of splaying flat like a star.
+    const flare = isOpening ? 0.22 : 0.4;
+    const tilt = isOpening ? -0.12 : -0.32;
+    const curl = isOpening ? 0.12 : 0.26;
 
     const coreGeometry = new THREE.SphereGeometry(1, 10, 8);
     coreGeometry.scale(petalW * 0.5, petalH * 0.6, petalW * 0.5);
@@ -263,21 +270,23 @@ function createTulip(baseColor, phase) {
     }
   }
 
+  // Leaves sheathe the stem near its base (as on a real tulip) instead of
+  // being scattered at random heights up the stem.
   const leafChance = phase === "bud" ? 0.5 : 0.85;
   for (const side of [-1, 1]) {
     if (Math.random() < leafChance) {
       const leaf = createLeaf(
-        randomBetween(0.008, 0.013),
-        randomBetween(0.0028, 0.0045),
+        randomBetween(0.014, 0.02),
+        randomBetween(0.0022, 0.0032),
       );
       leaf.mesh.position.set(
-        side * 0.002,
-        height * randomBetween(0.22, 0.4),
+        side * 0.0015,
+        height * randomBetween(0.06, 0.14),
         0,
       );
-      leaf.mesh.rotation.z = side * randomBetween(0.55, 0.9);
-      leaf.mesh.rotation.y = randomBetween(0, Math.PI * 2);
-      leaf.mesh.rotation.x = randomBetween(-0.15, 0.15);
+      leaf.mesh.rotation.z = side * randomBetween(0.75, 1.05);
+      leaf.mesh.rotation.y = randomBetween(-0.3, 0.3);
+      leaf.mesh.rotation.x = randomBetween(-0.1, 0.1);
       group.add(leaf.mesh);
       geometries.push(leaf.geometry);
       materials.push(leaf.material);
@@ -296,7 +305,7 @@ function createRootShadow(size) {
     depthWrite: false,
   });
   return {
-    mesh: markSurfaceMesh(new THREE.Mesh(geometry, material)),
+    mesh: markGroundMesh(new THREE.Mesh(geometry, material)),
     geometry,
     material,
   };
@@ -313,12 +322,14 @@ function createPebble(size) {
   };
 }
 
-function createGardenLamp() {
+function createGardenLamp(clearanceHeight) {
   const group = new THREE.Group();
   const geometries = [];
   const materials = [];
 
-  const poleHeight = 0.018;
+  // Pole is tall enough to clear the tallest bloom, so the bulb lights the
+  // garden from above instead of sitting inside the flower canopy.
+  const poleHeight = clearanceHeight;
   const poleGeometry = new THREE.CylinderGeometry(
     0.0006,
     0.0008,
@@ -336,7 +347,7 @@ function createGardenLamp() {
   const bulbMaterial = new THREE.MeshStandardMaterial({
     color: BULB_LIGHT_COLOR,
     emissive: new THREE.Color(BULB_LIGHT_COLOR),
-    emissiveIntensity: 2.2,
+    emissiveIntensity: 0.6,
     roughness: 0.3,
     metalness: 0,
   });
@@ -350,7 +361,7 @@ function createGardenLamp() {
   const glowMaterial = new THREE.MeshBasicMaterial({
     color: BULB_LIGHT_COLOR,
     transparent: true,
-    opacity: 0.2,
+    opacity: 0.1,
     depthWrite: false,
   });
   const glow = new THREE.Mesh(glowGeometry, glowMaterial);
@@ -359,16 +370,26 @@ function createGardenLamp() {
   geometries.push(glowGeometry);
   materials.push(glowMaterial);
 
-  const light = new THREE.PointLight(BULB_LIGHT_COLOR, 0.9, 0.11, 2);
+  // Intensity/distance tuned down relative to the taller pole — the extra
+  // height already spreads the light further, so keeping the original
+  // intensity here blows out highlights and deepens shadow contrast.
+  const baseIntensity = 0.22;
+  const light = new THREE.PointLight(
+    BULB_LIGHT_COLOR,
+    baseIntensity,
+    0.14,
+    1.3,
+  );
   light.position.y = poleHeight;
   light.castShadow = true;
   light.shadow.mapSize.set(256, 256);
   light.shadow.camera.near = 0.01;
-  light.shadow.camera.far = 0.15;
+  light.shadow.camera.far = 0.2;
   light.shadow.bias = -0.0015;
+  light.shadow.radius = 3;
   group.add(light);
 
-  return { group, geometries, materials, light, baseIntensity: 0.9 };
+  return { group, geometries, materials, light, baseIntensity };
 }
 
 export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
@@ -415,13 +436,24 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     movingFlowers.push(flower.group);
   };
 
+  // Two tulips (user's requested reduced count), with jitter so they don't
+  // read as a perfectly mirrored pair.
   const tulipPositions = [
-    { angle: 0.25, radius: PATCH_RADIUS * 0.82 },
-    { angle: Math.PI + 0.25, radius: PATCH_RADIUS * 0.82 },
+    {
+      angle: 0.25 + randomBetween(-0.15, 0.15),
+      radius: PATCH_RADIUS * randomBetween(0.72, 0.88),
+    },
+    {
+      angle: Math.PI + 0.25 + randomBetween(-0.15, 0.15),
+      radius: PATCH_RADIUS * randomBetween(0.72, 0.88),
+    },
   ];
+  let maxTulipHeight = 0;
   for (const { angle, radius } of tulipPositions) {
     addTulip(Math.cos(angle) * radius, Math.sin(angle) * radius);
   }
+  // Track tallest possible bloom so the lamp can clear it.
+  maxTulipHeight = TULIP_HEIGHT_RANGES.bloom[1] + 0.011; // + petal height
 
   for (let index = 0; index < 6; index += 1) {
     const angle = randomBetween(0, Math.PI * 2);
@@ -437,7 +469,7 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     materials.push(pebble.material);
   }
 
-  const lamp = createGardenLamp();
+  const lamp = createGardenLamp(maxTulipHeight + 0.006);
   lamp.group.position.set(0, 0.001, 0);
   group.add(lamp.group);
   geometries.push(...lamp.geometries);
@@ -446,7 +478,7 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   const hemiLight = new THREE.HemisphereLight(
     HEMI_SKY_COLOR,
     HEMI_GROUND_COLOR,
-    0.08,
+    0.11,
   );
   hemiLight.position.set(0, 0.05, 0);
   group.add(hemiLight);
@@ -467,11 +499,13 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     disposed = true;
     geometries.forEach((geometry) => geometry.dispose());
     materials.forEach((material) => material.dispose());
+    if (lamp.light.shadow?.map) {
+      lamp.light.shadow.map.dispose();
+    }
     geometries.length = 0;
     materials.length = 0;
     movingFlowers.length = 0;
     rootShadows.length = 0;
-    group.remove(hemiLight);
     group.clear();
   };
 
