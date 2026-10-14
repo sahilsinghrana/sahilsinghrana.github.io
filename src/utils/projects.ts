@@ -1,4 +1,7 @@
-import { ExternalLink, Github, Package, Youtube } from "lucide-astro";
+import ExternalLink from "lucide-astro/ExternalLink";
+import Github from "lucide-astro/Github";
+import Package from "lucide-astro/Package";
+import Youtube from "lucide-astro/Youtube";
 
 import iwl from "@images/projects/iwl.webp";
 import nextChat from "@images/projects/nextchat.webp";

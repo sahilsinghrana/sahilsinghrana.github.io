@@ -1,6 +1,7 @@
 // GENERATE USING AI
 
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
+import { createAnimationClock, TARGET_ETCHED_OPACITY } from "./motion.js";
 
 // Mobile detection threshold (in pixels)
 // HIGHER: Treats larger screens (like tablets) as mobile devices.
@@ -164,12 +165,19 @@ let scene,
 let isInitialized = false;
 let isInitializing = false;
 let disposeRequested = false;
+let lifecycleGeneration = 0;
 let initTimeoutId = null;
 let isVisible = false;
 let currentScrollY = 0;
 let autoRotationY = 0;
 let moonBaseScale = MOON_INITIAL_SCALE;
 let introStartTime = null;
+const animationClock = createAnimationClock();
+const reducedMotionQuery = window.matchMedia(
+  "(prefers-reduced-motion: reduce)",
+);
+let motionTime = 0;
+let profileTransitionStep = null;
 
 // null is used instead of 0 because 0 is a valid frame ID returned by requestAnimationFrame.
 // Checking (animationFrameId !== null) is therefore unambiguous; checking (animationFrameId)
@@ -196,7 +204,6 @@ let loaderStartTime = 0;
 // during page transitions without waiting for the fade-out timer.
 let loaderEl = null;
 let loaderDismissTimeoutId = null;
-let flightAnimId = null;
 
 const removeElementGracefully = (el, fadeMs = 400) => {
   if (!el) return;
@@ -231,7 +238,7 @@ const animateProfileToMoon = () => {
 
   if (!profileImgEl) {
     console.info("No profileImgEl found, revealing 3D logo directly.");
-    moon?.setLogoOpacity(0.72);
+    moon?.setLogoOpacity(TARGET_ETCHED_OPACITY);
     return;
   }
 
@@ -263,7 +270,7 @@ const animateProfileToMoon = () => {
     console.info("Falling back to direct fade for profile image.");
     removeElementGracefully(profileImgEl, 400);
     if (profileImg === profileImgEl) profileImg = null;
-    moon?.setLogoOpacity(0.72);
+    moon?.setLogoOpacity(TARGET_ETCHED_OPACITY);
     return;
   }
 
@@ -281,19 +288,18 @@ const animateProfileToMoon = () => {
   profileImgEl.style.transition = "none";
 
   const SHRINK_DURATION_MS = 750;
-  const shrinkStartTime = performance.now();
+  const shrinkStartTime = animationClock.elapsed * 1000;
 
   const shrinkStep = () => {
     if (disposeRequested || !profileImgEl.parentNode) {
-      if (flightAnimId !== null) {
-        cancelAnimationFrame(flightAnimId);
-        flightAnimId = null;
-      }
+      profileTransitionStep = null;
       return;
     }
 
-    const elapsed = performance.now() - shrinkStartTime;
-    const linearT = Math.min(1, elapsed / SHRINK_DURATION_MS);
+    const elapsed = animationClock.elapsed * 1000 - shrinkStartTime;
+    const linearT = reducedMotionQuery.matches
+      ? 1
+      : Math.min(1, elapsed / SHRINK_DURATION_MS);
 
     // Natural cubic ease-in-out curve
     const easeT =
@@ -317,20 +323,20 @@ const animateProfileToMoon = () => {
     profileImgEl.style.filter = `grayscale(${grayscale}%) contrast(${contrast}%) brightness(${brightness}%)`;
 
     // Seamlessly fade in the etched moon base logo on the 3D surface
-    moon?.setLogoOpacity(Math.min(0.72, easeT * 0.72));
+    moon?.setLogoOpacity(
+      Math.min(TARGET_ETCHED_OPACITY, easeT * TARGET_ETCHED_OPACITY),
+    );
 
-    if (linearT < 1) {
-      flightAnimId = requestAnimationFrame(shrinkStep);
-    } else {
+    if (linearT >= 1) {
       // Complete: profile logo is fully absorbed/etched into the moon
-      flightAnimId = null;
-      moon?.setLogoOpacity(0.72);
+      profileTransitionStep = null;
+      moon?.setLogoOpacity(TARGET_ETCHED_OPACITY);
       profileImgEl.remove();
       if (profileImg === profileImgEl) profileImg = null;
     }
   };
 
-  flightAnimId = requestAnimationFrame(shrinkStep);
+  profileTransitionStep = shrinkStep;
 };
 
 // dismissLoader enforces the minimum display time then initiates the profile flight to the moon.
@@ -355,14 +361,14 @@ const dismissLoader = () => {
         console.error("animateProfileToMoon error:", err);
         removeElementGracefully(loaderEl, 300);
         removeElementGracefully(profileImgEl, 300);
-        moon?.setLogoOpacity(0.72);
+        moon?.setLogoOpacity(TARGET_ETCHED_OPACITY);
       }
     }, remaining);
   } catch (err) {
     console.error("dismissLoader error:", err);
     document.querySelector("#profilePicContainer > .moonLoader")?.remove();
     document.querySelector("#profilePicContainer > img.profileImage")?.remove();
-    moon?.setLogoOpacity(0.72);
+    moon?.setLogoOpacity(TARGET_ETCHED_OPACITY);
   }
 };
 
@@ -378,14 +384,21 @@ const dismissLoader = () => {
 // has been shown to the user before the loader begins its fade.
 const onMoonReady = () => {
   if (disposeRequested) return;
+  if (!moon?.mesh) {
+    removeElementGracefully(loaderEl, 350);
+    loaderEl = null;
+    return;
+  }
 
   // Seed scale undersized; animate() eases into moonBaseScale.
   introStartTime = null;
   applyMoonScale(INTRO_SCALE_FROM * moonBaseScale);
+  const generation = lifecycleGeneration;
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (!disposeRequested) dismissLoader();
+      if (!disposeRequested && generation === lifecycleGeneration)
+        dismissLoader();
     });
   });
 };
@@ -403,6 +416,7 @@ const disposeGpuResources = () => {
   // (textures, material, geometry). Without this, each page navigation leaks ~3 texture
   // uploads and a geometry buffer on the GPU.
   moon?.dispose();
+  sunLight?.shadow.dispose();
 
   if (renderer) {
     renderer.dispose();
@@ -421,6 +435,10 @@ const disposeGpuResources = () => {
   isInitializing = false;
   fixedHorizontalFov = null;
   introStartTime = null;
+  animationClock.reset();
+  motionTime = 0;
+  autoRotationY = 0;
+  profileTransitionStep = null;
 };
 
 // ===================== CORE INITIALIZATION =====================
@@ -428,6 +446,7 @@ const disposeGpuResources = () => {
 async function initThreeJS() {
   if (isInitialized || isInitializing || disposeRequested) return;
   isInitializing = true;
+  const generation = lifecycleGeneration;
   console.info("Starting 3D moon initialization.");
 
   try {
@@ -442,7 +461,7 @@ async function initThreeJS() {
         HemisphereLight,
         WebGLRenderer,
         ACESFilmicToneMapping,
-        PCFSoftShadowMap,
+        PCFShadowMap,
         TOUCH,
       },
       { OrbitControls },
@@ -453,7 +472,7 @@ async function initThreeJS() {
       import("./moon.js"),
     ]);
 
-    if (disposeRequested) {
+    if (disposeRequested || generation !== lifecycleGeneration) {
       console.info(
         "Moon init aborted because teardown was requested before scene creation.",
       );
@@ -496,7 +515,7 @@ async function initThreeJS() {
       powerPreference: "high-performance", // ASTRO OPTIMIZATION: Requests dedicated GPU
     });
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = PCFSoftShadowMap;
+    renderer.shadowMap.type = PCFShadowMap;
     renderer.shadowMap.autoUpdate = true;
 
     // Set initial size and canvas quality matching the container dimensions.
@@ -583,7 +602,9 @@ async function initThreeJS() {
     // Load the custom Moon 3D model into the scene.
     // onMoonReady is used instead of an inline callback so the loader dismissal is tied
     // to a confirmed painted frame rather than to scene.add() â€” see onMoonReady() above.
-    moon = new Moon(scene, onMoonReady);
+    moon = new Moon(scene, () => {
+      if (generation === lifecycleGeneration) onMoonReady();
+    });
 
     isInitialized = true;
     window.toggleMoon = (val) => moon?.setVisibility?.(val);
@@ -594,15 +615,17 @@ async function initThreeJS() {
     }
   } catch (err) {
     console.error("Failed to initialize 3D moon:", err);
-    dismissLoader();
+    if (generation === lifecycleGeneration) dismissLoader();
   } finally {
-    isInitializing = false;
-    console.info(
-      "3D moon initialization finished. isInitialized:",
-      isInitialized,
-      "isInitializing:",
-      isInitializing,
-    );
+    if (generation === lifecycleGeneration) {
+      isInitializing = false;
+      console.info(
+        "3D moon initialization finished. isInitialized:",
+        isInitialized,
+        "isInitializing:",
+        isInitializing,
+      );
+    }
   }
 }
 
@@ -662,33 +685,45 @@ const updateMoonScale = (delta) => {
 
 // ===================== RENDER LOOP =====================
 // Main rendering loop (executes up to 60/120 times per second depending on monitor refresh rate)
-function animate() {
-  if (!isVisible || !isInitialized || disposeRequested) return; // Hard kill switch if off-screen or not loaded.
+function animate(timestamp = performance.now()) {
+  animationFrameId = null;
+  if (!isVisible || document.hidden || !isInitialized || disposeRequested) {
+    animationClock.pause();
+    return;
+  }
+  const delta = animationClock.tick(timestamp);
+  const reducedMotion = reducedMotionQuery.matches;
+  if (!reducedMotion) motionTime += delta;
+  profileTransitionStep?.();
 
   if (moon?.mesh) {
     // Add continuous base spin.
-    autoRotationY += AUTO_ROTATION_SPEED;
+    if (!reducedMotion) autoRotationY += AUTO_ROTATION_SPEED * 60 * delta;
 
     // Combine base spin with scroll-driven rotation.
     moon.mesh.rotation.y =
       autoRotationY + currentScrollY * SCROLL_ROTATION_MULTIPLIER;
     moon.mesh.rotation.x = currentScrollY * SCROLL_TILT_MULTIPLIER;
-    moon.updateFlag(performance.now());
-    moon.updateGarden(performance.now());
+    if (!reducedMotion) {
+      moon.updateFlag(motionTime * 1000);
+      moon.updateGarden(motionTime * 1000);
+    }
+    moon.updateBase(delta, reducedMotion);
 
     // Loader handoff intro + quiet idle breath (heartbeat cadence).
-    const now = performance.now();
+    const now = animationClock.elapsed * 1000;
     if (introStartTime == null) introStartTime = now;
 
-    let introT = (now - introStartTime) / INTRO_DURATION_MS;
+    let introT = reducedMotion ? 1 : (now - introStartTime) / INTRO_DURATION_MS;
     if (introT > 1) introT = 1;
     // Ease-out cubic so the settle feels like the orbit loader resolving into the sphere.
     const eased = 1 - (1 - introT) ** 3;
     const introScale =
       INTRO_SCALE_FROM + (moonBaseScale - INTRO_SCALE_FROM) * eased;
 
-    const breathWave = Math.sin(now * BREATH_SPEED);
-    const breath = introT >= 1 ? 1 + breathWave * BREATH_AMPLITUDE : 1;
+    const breathWave = Math.sin(motionTime * 1000 * BREATH_SPEED);
+    const breath =
+      introT >= 1 && !reducedMotion ? 1 + breathWave * BREATH_AMPLITUDE : 1;
 
     applyMoonScale(introScale * breath);
   }
@@ -707,6 +742,28 @@ const onScroll = () => {
   currentScrollY = window.scrollY;
 };
 
+const stopAnimation = () => {
+  if (animationFrameId !== null) cancelAnimationFrame(animationFrameId);
+  animationFrameId = null;
+  animationClock.pause();
+};
+
+const startAnimation = () => {
+  if (
+    animationFrameId === null &&
+    isVisible &&
+    isInitialized &&
+    !document.hidden &&
+    !disposeRequested
+  )
+    animate();
+};
+
+const onDocumentVisibilityChange = () => {
+  if (document.hidden) stopAnimation();
+  else startAnimation();
+};
+
 // IntersectionObserver acts as a performance guard AND a true lazy-loader.
 const onVisibilityChange = (entries) => {
   isVisible = entries[0].isIntersecting;
@@ -719,18 +776,17 @@ const onVisibilityChange = (entries) => {
         console.info("Moon visibility triggered; beginning Three.js init.");
         initThreeJS()
           .then(() => {
-            if (!disposeRequested && isVisible) animate();
+            startAnimation();
           })
           .catch((err) => {
             console.error("Moon initialization promise rejected:", err);
           });
       }, 10);
     } else if (isInitialized) {
-      animate(); // Re-ignite loop when visible.
+      startAnimation();
     }
-  } else if (animationFrameId !== null) {
-    cancelAnimationFrame(animationFrameId); // Explicitly stop frame requests
-    animationFrameId = null;
+  } else {
+    stopAnimation();
   }
 };
 
@@ -893,16 +949,15 @@ const setupMoonLifecycle = () => {
 // Always clears observers/timers/DOM listeners; disposes GPU only if constructed.
 const cleanupThreeJS = () => {
   disposeRequested = true;
+  lifecycleGeneration++;
 
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);
     animationFrameId = null;
   }
 
-  if (flightAnimId !== null) {
-    cancelAnimationFrame(flightAnimId);
-    flightAnimId = null;
-  }
+  profileTransitionStep = null;
+  animationClock.pause();
 
   clearTimeout(initTimeoutId);
   initTimeoutId = null;
@@ -976,5 +1031,6 @@ document.addEventListener("astro:before-swap", onBeforeSwap);
 window.addEventListener("pagehide", onPageHide);
 document.addEventListener("astro:page-load", onPageLoad);
 window.addEventListener("pageshow", onPageShow);
+document.addEventListener("visibilitychange", onDocumentVisibilityChange);
 
 setupMoonLifecycle();

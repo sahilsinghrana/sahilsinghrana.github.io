@@ -18,8 +18,9 @@ import {
   Vector3,
 } from "three";
 import { createFlag } from "./flag.js";
-import { createGarden } from "./garden.js";
-import { createMoonBaseLogo } from "./logo.js";
+import { createGarden, GARDEN_SURFACE_NORMAL } from "./garden.js";
+import { createMoonBaseLogo, TARGET_ETCHED_OPACITY } from "./logo.js";
+import { BASE_REVEAL_SECONDS, createMoonBase } from "./base.js";
 
 function makeDataTex(buffer, size, { srgb = false } = {}) {
   const tex = new DataTexture(new Uint8Array(buffer), size, size, RGBAFormat);
@@ -45,6 +46,9 @@ export class Moon {
     this._flag = null;
     this._garden = null;
     this._logo = null;
+    this._base = null;
+    this._baseReveal = 0;
+    this._baseReady = false;
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
@@ -145,14 +149,7 @@ export class Moon {
       }
 
       try {
-        const gardenPhi = 115 * (Math.PI / 180);
-        const gardenTheta = 0.45;
-        const gardenNormal = new Vector3(
-          Math.sin(gardenPhi) * Math.sin(gardenTheta),
-          Math.cos(gardenPhi),
-          Math.sin(gardenPhi) * Math.cos(gardenTheta),
-        ).normalize();
-        this._garden = createGarden(radius, gardenNormal);
+        this._garden = createGarden(radius, GARDEN_SURFACE_NORMAL);
         this.mesh.add(this._garden);
       } catch (err) {
         console.error("Garden initialization failed:", err);
@@ -169,11 +166,22 @@ export class Moon {
           if (logoMesh && !this._disposed && this.mesh) {
             this._logo = logoMesh;
             this.mesh.add(this._logo);
+          } else {
+            logoMesh?.dispose();
           }
         }
       } catch (err) {
         console.error("Logo initialization failed:", err);
         this._logo = null;
+      }
+
+      // Image decoding can finish after navigation disposed the Moon.
+      if (this._disposed || !this.mesh) return;
+      try {
+        this._base = createMoonBase(radius);
+        this.mesh.add(this._base);
+      } catch (err) {
+        console.error("Lunar base initialization failed:", err);
       }
 
       this.mesh.updateMatrix();
@@ -214,6 +222,8 @@ export class Moon {
     this._garden = null;
     this._logo?.dispose?.();
     this._logo = null;
+    this._base?.dispose();
+    this._base = null;
 
     // Each texture is an independent GPU upload - each must be disposed individually.
     this._material?.map?.dispose();
@@ -241,6 +251,17 @@ export class Moon {
 
   setLogoOpacity(val) {
     this._logo?.setOpacity?.(val);
+    if (val >= TARGET_ETCHED_OPACITY) this._baseReady = true;
+  }
+
+  updateBase(deltaSeconds, reducedMotion = false) {
+    if (!this._base || !this._baseReady) return;
+    this._baseReveal = reducedMotion
+      ? 1
+      : Math.min(1, this._baseReveal + deltaSeconds / BASE_REVEAL_SECONDS);
+    this._base.setReveal(this._baseReveal);
+    if (!reducedMotion) this._base.update(deltaSeconds);
+    this._base.updateLighting();
   }
 
   getLogoProjection(camera, canvas) {
