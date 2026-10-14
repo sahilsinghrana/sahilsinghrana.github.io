@@ -1,4 +1,3 @@
-import autoprefixer from "autoprefixer";
 import cssnano from "cssnano";
 import postcssDupSelectors from "postcss-combine-duplicated-selectors";
 
@@ -10,10 +9,12 @@ const config = {
   map: isProd ? false : { inline: true },
 
   plugins: [
-    postcssDupSelectors({
-      removeDuplicatedProperties: false,
-      removeDuplicatedValues: true,
-    }),
+    // Keep optimization out of dev; preserve CSS compatibility transforms below.
+    isProd &&
+      postcssDupSelectors({
+        removeDuplicatedProperties: false,
+        removeDuplicatedValues: true,
+      }),
     postcssPresetEnv({
       stage: 3,
       features: {
@@ -24,8 +25,7 @@ const config = {
       preserve: false,
     }),
 
-    autoprefixer,
-    cssnano({ preset: "advanced" }),
+    isProd && cssnano({ preset: "advanced" }),
   ].filter(Boolean),
 };
 

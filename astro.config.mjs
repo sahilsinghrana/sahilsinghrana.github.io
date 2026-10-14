@@ -47,6 +47,9 @@ export default defineConfig({
   },
 
   vite: {
+    // Let Node load YAML's CommonJS entry instead of evaluating it as ESM.
+    ssr: { external: ["yaml"] },
+    environments: { astro: { resolve: { external: ["yaml"] } } },
     build: {
       chunkSizeWarningLimit: 800,
       rolldownOptions: {

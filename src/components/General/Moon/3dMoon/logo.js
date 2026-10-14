@@ -10,7 +10,7 @@ import {
 } from "three";
 
 export const LOGO_NORMAL = new Vector3(-0.25, -0.04, 0.31).normalize();
-export const TARGET_ETCHED_OPACITY = 0.72;
+export { TARGET_ETCHED_OPACITY } from "./motion.js";
 
 // Cache finished meshes' source materials so re-requesting the same
 // image/radius doesn't repeat the getImageData/putImageData work
@@ -55,6 +55,7 @@ export function createMoonBaseLogo(imageSrc, moonRadius = 0.4) {
     }, 2000);
 
     const onImageLoaded = (img) => {
+      if (settled) return;
       try {
         const canvas = etchImageToStencil(img);
         if (!canvas) {
@@ -319,7 +320,6 @@ function buildMeshFromCanvas(canvas, moonRadius) {
 
   mesh.setOpacity = (val) => {
     material.opacity = val;
-    material.needsUpdate = true;
   };
 
   mesh.dispose = () => {

@@ -1,6 +1,11 @@
 import * as THREE from "three";
 
 const MOON_RADIUS = 0.4;
+export const GARDEN_SURFACE_NORMAL = new THREE.Vector3(
+  Math.sin((115 * Math.PI) / 180) * Math.sin(0.45),
+  Math.cos((115 * Math.PI) / 180),
+  Math.sin((115 * Math.PI) / 180) * Math.cos(0.45),
+).normalize();
 const PATCH_RADIUS = 0.082;
 const LUNAR_GREY = new THREE.Color(0x77736b);
 const SOIL_COLOR = new THREE.Color(0x665849);
@@ -448,12 +453,11 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
       radius: PATCH_RADIUS * randomBetween(0.72, 0.88),
     },
   ];
-  let maxTulipHeight = 0;
   for (const { angle, radius } of tulipPositions) {
     addTulip(Math.cos(angle) * radius, Math.sin(angle) * radius);
   }
   // Track tallest possible bloom so the lamp can clear it.
-  maxTulipHeight = TULIP_HEIGHT_RANGES.bloom[1] + 0.011; // + petal height
+  const maxTulipHeight = TULIP_HEIGHT_RANGES.bloom[1] + 0.011; // + petal height
 
   for (let index = 0; index < 6; index += 1) {
     const angle = randomBetween(0, Math.PI * 2);

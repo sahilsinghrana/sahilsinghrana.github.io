@@ -44,7 +44,7 @@ const EMBED_DEPTH = 0.014; // sinks the pole base under the moon surface
 const HOIST_GAP = POLE_RADIUS * 0.6; // tiny negative-ish overlap, not a visible gap
 
 // Anchor on the moon surface (r = 0.4), matches the flag's planted position.
-const ANCHOR_POSITION = { x: 0, y: 0.16, z: 0.35 };
+export const ANCHOR_POSITION = { x: 0, y: 0.16, z: 0.35 };
 
 // Orientation of the cloth around the pole axis (local Y after the surface
 // frame is applied) and a small static lean so the pole doesn't look glued
@@ -464,6 +464,7 @@ export function createFlag() {
     for (const geo of createdGeometries) geo.dispose();
     for (const mat of createdMaterials) mat.dispose();
     for (const tex of createdTextures) tex.dispose();
+    groundLamp.shadow.dispose();
     group.clear();
     group.parent?.remove(group);
   };
