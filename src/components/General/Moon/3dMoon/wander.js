@@ -27,6 +27,12 @@ export function createWalker(
   forward.normalize();
   return {
     normal: up,
+    mode: "wander",
+    arrived: false,
+    arrivalRadius: 0.012,
+    lookTarget: up.clone(),
+    softPartner: null,
+    softObstacle: null,
     forward,
     radius,
     speed,
@@ -119,7 +125,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
     let nearest = null;
     let nearestGap = Infinity;
     for (const obstacle of blockers) {
-      if (obstacle === agent) continue;
+      if (obstacle === agent || obstacle === agent.softPartner) continue;
+      // Only soften the inspected object's clearance on the final approach.
+      // Hard collision checks still apply, and distant routes still detour.
+      if (
+        obstacle.normal === agent.softObstacle &&
+        agent.normal.dot(agent.target) > Math.cos(0.12)
+      )
+        continue;
       const gap =
         Math.acos(
           Math.max(-1, Math.min(1, agent.normal.dot(obstacle.normal))),
@@ -159,12 +172,26 @@ export function createWanderSimulation(agents, obstacles, seed) {
     side
       .addScaledVector(away, Math.max(0.15, 0.7 - nearestGap / buffer))
       .normalize();
-    desired.lerp(side, urgency).normalize();
+    const goalBlend =
+      agent.mode === "arrive"
+        ? Math.max(
+            0,
+            Math.min(
+              1,
+              (Math.acos(
+                Math.max(-1, Math.min(1, agent.normal.dot(agent.target))),
+              ) -
+                agent.arrivalRadius) /
+                0.108,
+            ),
+          )
+        : 1;
+    desired.lerp(side, urgency * goalBlend).normalize();
   }
 
   function step(agent) {
     agent.retargetIn = Math.max(0, agent.retargetIn - STEP);
-    if (agent.pause > 0) {
+    if (agent.mode === "wander" && agent.pause > 0) {
       agent.pause -= STEP;
       agent.velocity = 0;
       agent.yawVelocity = 0;
@@ -172,20 +199,29 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.turning = false;
       return;
     }
-    if (agent.normal.dot(agent.target) > Math.cos(0.035)) {
+    const remaining = Math.acos(
+      Math.max(-1, Math.min(1, agent.normal.dot(agent.target))),
+    );
+    if (agent.mode === "wander" && remaining < 0.035) {
       agent.pause = 0.8 + random() * 2;
       chooseTarget(agent);
       agent.moving = false;
       agent.turning = false;
       return;
     }
-    desired
-      .copy(agent.target)
-      .addScaledVector(agent.normal, -agent.target.dot(agent.normal));
+    if (agent.mode === "arrive" && remaining < agent.arrivalRadius)
+      agent.arrived = true;
+    const holding = agent.mode === "hold" || agent.arrived;
+    const aim = holding ? agent.lookTarget : agent.target;
+    desired.copy(aim).addScaledVector(agent.normal, -aim.dot(agent.normal));
     if (desired.lengthSq() < 1e-10) desired.copy(agent.forward);
     desired.normalize();
-    avoid(agent);
-    if (agent.normal.z < agent.boundCos + 0.08) {
+    if (!holding) avoid(agent);
+    if (
+      !holding &&
+      !(agent.mode === "arrive" && remaining < 0.16) &&
+      agent.normal.z < agent.boundCos + 0.08
+    ) {
       away
         .set(0, 0, 1)
         .addScaledVector(agent.normal, -agent.normal.z)
@@ -216,7 +252,11 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.forward.applyQuaternion(rotation).normalize();
     // Brake before sharp changes of heading; accelerate into the new route.
     const alignment = Math.max(0, agent.forward.dot(desired));
-    const targetSpeed = agent.speed * alignment * alignment;
+    const arrivalBrake =
+      agent.mode === "arrive" ? Math.min(1, remaining / 0.08) : 1;
+    const targetSpeed = holding
+      ? 0
+      : agent.speed * alignment * alignment * arrivalBrake;
     const speedStep = (rover ? 0.035 : 0.09) * STEP;
     agent.velocity += Math.max(
       -speedStep,
@@ -243,7 +283,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.moving = false;
       agent.velocity = 0;
       if (agent.turning) agent.gaitDistance += 0.02 * STEP;
-      if (agent.retargetIn === 0) {
+      if (agent.mode === "wander" && agent.retargetIn === 0) {
         chooseTarget(agent);
         agent.retargetIn = 6;
       }
@@ -257,15 +297,41 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.moving = angle > 1e-7;
     agent.blocked = false;
   }
-  return {
+  const simulation = {
     agents,
     obstacles,
+    beforeStep: null,
+    isClear: clear,
+    arrive(agent, normal, facing = normal) {
+      if (!clear(normal, agent)) return false;
+      agent.mode = "arrive";
+      agent.target.copy(normal);
+      agent.lookTarget.copy(facing);
+      agent.arrived = false;
+      agent.pause = 0;
+      return true;
+    },
+    hold(agent, facing) {
+      agent.mode = "hold";
+      agent.lookTarget.copy(facing);
+      agent.pause = 0;
+    },
+    wander(agent) {
+      agent.mode = "wander";
+      agent.arrived = false;
+      agent.softPartner = null;
+      agent.softObstacle = null;
+      agent.pause = 0;
+      chooseTarget(agent);
+    },
     update(deltaSeconds) {
       accumulator += Math.max(0, Math.min(0.05, deltaSeconds));
       while (accumulator + 1e-10 >= STEP) {
+        simulation.beforeStep?.(STEP);
         for (const agent of agents) step(agent);
         accumulator -= STEP;
       }
     },
   };
+  return simulation;
 }

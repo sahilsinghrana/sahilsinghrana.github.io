@@ -6,9 +6,12 @@ import {
   PCFShadowMap,
   PerspectiveCamera,
   Scene,
+  Vector3,
+  Quaternion,
   WebGLRenderer,
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { createMoonBase } from "../src/components/General/Moon/3dMoon/base.js";
 import { Moon } from "../src/components/General/Moon/3dMoon/moon.js";
 import { createAnimationClock } from "../src/components/General/Moon/3dMoon/motion.js";
 
@@ -74,6 +77,13 @@ let frameId;
 let captureRequested = false;
 let auditRequested = false;
 let recreations = 0;
+let previewTarget = null;
+let previewLimit = 0;
+let capturedActivity = null;
+let comparison = "base";
+let compareAfterPreview = false;
+let behaviorRunning = true;
+const activityStatus = document.querySelector("#activity");
 const clock = createAnimationClock();
 const report = {};
 const quantile = (values, fraction) =>
@@ -85,6 +95,12 @@ function createMoon() {
   moon = new Moon(scene, () => {
     ready = !!moon.mesh;
     if (!ready) return;
+    moon._base.dispose();
+    moon._base = createMoonBase(0.4, {
+      seed: 123,
+      gardenInterestPoints: moon._garden?.userData.interestPoints,
+    });
+    moon.mesh.add(moon._base);
     moon.mesh.rotation.y = 0.68;
     moon.setLogoOpacity(0.72);
     moon.updateBase(0, true);
@@ -103,6 +119,35 @@ function render(timestamp) {
   }
   const delta = clock.tick(timestamp);
   if (ready) {
+    if (previewTarget) {
+      for (let i = 0; i < 120 && previewTarget; i++) {
+        moon._base.update(1 / 60);
+        const actor = moon._base.userData.behavior.actors.find(
+          (item) =>
+            item.state === previewTarget &&
+            item.pose.weight > 0.99 &&
+            (previewTarget === "wave"
+              ? item.pose.wave > 0.8
+              : Math.max(item.pose.hand, item.pose.chest) > 0.35),
+        );
+        if (actor) {
+          capturedActivity = previewTarget;
+          focusActivity(actor);
+          previewTarget = null;
+          paused = true;
+          document.querySelector("#motion").textContent = "Resume motion";
+          if (compareAfterPreview) {
+            compareAfterPreview = false;
+            beginBehaviorComparison();
+          }
+        } else if (moon._base.userData.behavior.time >= previewLimit) {
+          previewTarget = null;
+          results.textContent = "No event found before the preview timeout.";
+        }
+      }
+    }
+    if (!sample)
+      activityStatus.textContent = `${moon._base.userData.behavior.time.toFixed(1)}s | ${moon._base.userData.behavior.actors.map((actor) => actor.state).join(" / ")}`;
     if (!paused && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       elapsed += delta;
       moon.updateFlag(elapsed * 1000);
@@ -135,7 +180,9 @@ function render(timestamp) {
   }
   if (captureRequested) {
     captureRequested = false;
-    const name = `moon-${document.querySelector("#phase").value}-${innerWidth < 500 ? "mobile" : "desktop"}-${baseVisible ? "base" : "baseline"}.png`;
+    const name = capturedActivity
+      ? `astronaut-${capturedActivity}-${innerWidth < 500 ? "mobile" : "desktop"}.png`
+      : `moon-${document.querySelector("#phase").value}-${innerWidth < 500 ? "mobile" : "desktop"}-${baseVisible ? "base" : "baseline"}.png`;
     renderer.domElement.toBlob(async (blob) => {
       const response = await fetch(`/capture?name=${name}`, {
         method: "POST",
@@ -163,6 +210,7 @@ function render(timestamp) {
       };
       if (sample.label === "baseline") {
         baseVisible = true;
+        if (comparison === "behavior") setBehaviorRunning(true);
         sample = {
           label: "base",
           warmup: 60,
@@ -172,6 +220,10 @@ function render(timestamp) {
         };
       } else {
         sample = null;
+        report.comparison =
+          comparison === "behavior"
+            ? "Same base: behavior controller off / on"
+            : "Base hidden / visible";
         report.viewport = {
           width: innerWidth,
           height: innerHeight,
@@ -190,6 +242,8 @@ function render(timestamp) {
 frameId = requestAnimationFrame(render);
 document.querySelector("#compare").onclick = () => {
   if (!ready || sample) return;
+  comparison = "base";
+  capturedActivity = null;
   baseVisible = false;
   report.baseline = null;
   report.base = null;
@@ -203,6 +257,81 @@ document.querySelector("#compare").onclick = () => {
   results.textContent =
     "Measuring 240 frames per scene after 60 warmup frames. Keep this tab visible.";
 };
+function focusActivity(actor) {
+  moon.mesh.updateWorldMatrix(true, true);
+  const model = moon._base.getObjectByName(
+    actor === moon._base.userData.behavior.actors[0]
+      ? "BoyAstronaut"
+      : "GirlAstronaut",
+  );
+  const target = model.parent.getWorldPosition(new Vector3());
+  const frame = moon._base.getWorldQuaternion(new Quaternion());
+  const normal = actor.walker.normal.clone().applyQuaternion(frame);
+  const forward = actor.walker.forward.clone().applyQuaternion(frame);
+  let distance = 0.28;
+  if (
+    capturedActivity === "conversation" ||
+    capturedActivity === "wave" ||
+    capturedActivity === "showGarden"
+  ) {
+    const other = moon._base
+      .getObjectByName("BoyAstronaut")
+      .parent.getWorldPosition(new Vector3());
+    distance = Math.max(distance, target.distanceTo(other) * 2.2);
+    target.add(other).multiplyScalar(0.5);
+    forward.crossVectors(normal, forward).normalize();
+  }
+  controls.minDistance = 0.25;
+  controls.target.copy(target);
+  camera.position
+    .copy(target)
+    .addScaledVector(normal, distance * 0.86)
+    .addScaledVector(forward, distance * 0.5);
+  controls.update();
+}
+function setBehaviorRunning(enabled) {
+  behaviorRunning = enabled;
+  const base = moon._base;
+  base.userData.motion.beforeStep = enabled
+    ? base.userData.behavior.step
+    : null;
+  if (!enabled)
+    for (const actor of base.userData.behavior.actors) actor.pose.weight = 0;
+}
+function beginBehaviorComparison() {
+  comparison = "behavior";
+  baseVisible = true;
+  paused = false;
+  document.querySelector("#motion").textContent = "Pause motion";
+  setBehaviorRunning(false);
+  report.baseline = report.base = null;
+  sample = {
+    label: "baseline",
+    warmup: 60,
+    previous: performance.now(),
+    cpu: [],
+    frames: [],
+  };
+  results.textContent =
+    "Measuring the same scene with behavior logic off, then on. No GPU resources are added.";
+}
+for (const button of document.querySelectorAll("[data-activity]"))
+  button.onclick = () => {
+    if (!ready || sample) return;
+    setBehaviorRunning(true);
+    capturedActivity = null;
+    previewTarget = button.dataset.activity;
+    previewLimit = moon._base.userData.behavior.time + 1800;
+    results.textContent = `Advancing the seeded simulation to ${previewTarget}...`;
+  };
+document.querySelector("#behaviorCompare").onclick = () => {
+  if (!ready || sample) return;
+  if (!behaviorRunning) setBehaviorRunning(true);
+  compareAfterPreview = true;
+  previewTarget = "garden";
+  previewLimit = moon._base.userData.behavior.time + 1800;
+};
+
 document.querySelector("#phase").onchange = (event) =>
   setPhase(Number(event.target.value));
 document.querySelector("#base").onclick = (event) => {

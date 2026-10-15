@@ -404,6 +404,9 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   const materials = [];
   const movingFlowers = [];
   const rootShadows = [];
+  // Nominal bloom centers, captured once for nearby astronaut attention.
+  const interestPoints = [];
+  group.userData.interestPoints = interestPoints;
 
   const surfaceNormal = (gardenNormal || new THREE.Vector3(0, 1, 0))
     .clone()
@@ -419,6 +422,7 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   geometries.push(patch.geometry);
   materials.push(patch.material);
 
+  group.updateMatrix();
   const addTulip = (x, z) => {
     const phase = pickTulipPhase();
     const color = TULIP_COLORS[Math.floor(Math.random() * TULIP_COLORS.length)];
@@ -438,6 +442,14 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     geometries.push(shadow.geometry);
     materials.push(shadow.material);
 
+    interestPoints.push({
+      base: new THREE.Vector3(x, 0.004, z).applyMatrix4(group.matrix),
+      bloom: new THREE.Vector3(
+        x,
+        0.004 + flower.height + 0.008,
+        z,
+      ).applyMatrix4(group.matrix),
+    });
     movingFlowers.push(flower.group);
   };
 

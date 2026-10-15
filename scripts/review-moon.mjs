@@ -24,6 +24,8 @@ pre{white-space:pre-wrap;text-align:left;max-width:740px;margin:16px auto;font-s
 <button id="front">Front view</button><button id="back">Back view</button><button id="zoom">Close view</button>
 <button id="reset">Recreate scene</button>
 <button id="capture">Capture scene</button>
+<button data-activity="garden">Preview garden</button><button data-activity="rocket">Preview rocket</button><button data-activity="conversation">Preview conversation</button><button data-activity="wave">Preview greeting</button><button data-activity="showGarden">Preview shared garden</button><button data-activity="house">Preview house</button>
+<button id="behaviorCompare">Measure behavior overhead</button><pre id="activity">Live behavior</pre>
 <select id="phase" aria-label="Moon phase"><option value="0.5">Full Moon</option><option value="0.25">Quarter Moon</option><option value="0">New Moon</option></select>
 <pre id="results">Loading real Moon scene…</pre>
 <script type="module" src="/scripts/moon-review-client.js"></script></html>`;
@@ -44,7 +46,7 @@ const server = await createServer({
             ).searchParams.get("name");
             if (
               request.method !== "POST" ||
-              !/^moon-(0|0\.25|0\.5)-(mobile|desktop)-(base|baseline)\.png$/.test(
+              !/^(moon-(0|0\.25|0\.5)-(mobile|desktop)-(base|baseline)|astronaut-(garden|rocket|house|conversation|wave|showGarden)-(mobile|desktop))\.png$/.test(
                 name || "",
               )
             ) {
