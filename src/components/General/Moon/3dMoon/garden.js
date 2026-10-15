@@ -177,6 +177,50 @@ function pickTulipPhase() {
   return "bloom";
 }
 
+function createPetalGeometry(width, height, opening, inner) {
+  const positions = [];
+  const indices = [];
+  const rows = 8;
+  const columns = 6;
+  for (let row = 0; row <= rows; row += 1) {
+    const t = row / rows;
+    // A rounded belly narrows gently toward the rim; all six bases meet
+    // at the stem instead of surrounding a separate, solid-looking core.
+    const radius =
+      width *
+      Math.sin(t * Math.PI * 0.5) *
+      (1 + 0.22 * Math.sin(t * Math.PI) - (opening ? 0.25 : 0.06) * t ** 3) *
+      (inner ? 0.91 : 1);
+    const halfAngle = 0.82 + 0.35 * Math.sin(t * Math.PI);
+    for (let column = 0; column <= columns; column += 1) {
+      const u = (column / columns) * 2 - 1;
+      const angle = u * halfAngle;
+      positions.push(
+        Math.sin(angle) * radius,
+        height * (t - 0.16 * t ** 5 * u * u) * (inner ? 1.035 : 1),
+        Math.cos(angle) * radius,
+      );
+    }
+  }
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * (columns + 1) + column;
+      const b = a + columns + 1;
+      // Skip the collapsed triangle along the shared, pointed base.
+      if (row > 0) indices.push(a, b, a + 1);
+      indices.push(a + 1, b, b + 1);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  return geometry;
+}
+
 function createTulip(baseColor, phase) {
   const group = new THREE.Group();
   const geometries = [];
@@ -223,54 +267,30 @@ function createTulip(baseColor, phase) {
     // Real tulips always have 6 tepals (3 outer + 3 inner), whether
     // half-open or fully bloomed — only the flare/tilt changes.
     const isOpening = phase === "opening";
-    const petalCount = 6;
     const petalW = isOpening ? 0.0062 : 0.0082;
     const petalH = isOpening ? 0.0082 : 0.011;
-    // Kept modest even at full bloom so the flower stays a cupped
-    // goblet/chalice shape instead of splaying flat like a star.
-    const flare = isOpening ? 0.22 : 0.4;
-    const tilt = isOpening ? -0.12 : -0.32;
-    const curl = isOpening ? 0.12 : 0.26;
-
-    const coreGeometry = new THREE.SphereGeometry(1, 10, 8);
-    coreGeometry.scale(petalW * 0.5, petalH * 0.6, petalW * 0.5);
-    const coreMaterial = makeMaterial(color, 0.5, { metalness: 0.02 });
-    const core = markSurfaceMesh(new THREE.Mesh(coreGeometry, coreMaterial));
-    core.position.y = height + petalH * 0.5;
-    group.add(core);
-    geometries.push(coreGeometry);
-    materials.push(coreMaterial);
-
-    const petalGeometry = new THREE.SphereGeometry(
-      1,
-      8,
-      7,
-      0,
-      Math.PI,
-      0,
-      Math.PI * 0.7,
+    const petalGeometries = [false, true].map((inner) =>
+      createPetalGeometry(petalW * 0.86, petalH * 1.1, isOpening, inner),
     );
-    petalGeometry.translate(0, -0.5, 0);
-    petalGeometry.scale(petalW * 0.55, petalH, petalW * 0.4);
     const petalMaterial = makeMaterial(color, 0.5, {
       metalness: 0.02,
       side: THREE.DoubleSide,
     });
-    geometries.push(petalGeometry);
+    geometries.push(...petalGeometries);
     materials.push(petalMaterial);
 
-    for (let index = 0; index < petalCount; index += 1) {
+    for (let index = 0; index < 6; index += 1) {
+      const inner = index % 2;
       const petal = markSurfaceMesh(
-        new THREE.Mesh(petalGeometry, petalMaterial),
+        new THREE.Mesh(petalGeometries[inner], petalMaterial),
       );
-      const angle =
-        (index / petalCount) * Math.PI * 2 + randomBetween(-0.08, 0.08);
-      petal.position.y = height + petalH * 0.42;
-      petal.position.x = Math.cos(angle) * petalW * flare;
-      petal.position.z = Math.sin(angle) * petalW * flare;
-      petal.rotation.y = angle;
-      petal.rotation.x = tilt + randomBetween(-curl * 0.3, curl * 0.3);
-      petal.scale.setScalar(randomBetween(0.92, 1.08));
+      petal.position.y = height - 0.001;
+      petal.rotation.y =
+        (index / 6) * Math.PI * 2 + randomBetween(-0.025, 0.025);
+      petal.scale.y = randomBetween(0.98, 1.02);
+      const breadth = randomBetween(0.98, 1.02);
+      petal.scale.x = breadth;
+      petal.scale.z = breadth;
       group.add(petal);
     }
   }
@@ -407,6 +427,9 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   // Nominal bloom centers, captured once for nearby astronaut attention.
   const interestPoints = [];
   group.userData.interestPoints = interestPoints;
+  const features = [];
+  const colliders = [];
+  group.userData.navigation = { features, colliders };
 
   const surfaceNormal = (gardenNormal || new THREE.Vector3(0, 1, 0))
     .clone()
@@ -450,6 +473,16 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
         z,
       ).applyMatrix4(group.matrix),
     });
+    features.push({
+      kind: "flower",
+      base: interestPoints[interestPoints.length - 1].base.clone(),
+      focus: interestPoints[interestPoints.length - 1].bloom.clone(),
+      radius: 0.017,
+    });
+    colliders.push({
+      position: features[features.length - 1].base,
+      radius: 0.017,
+    });
     movingFlowers.push(flower.group);
   };
 
@@ -474,7 +507,8 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   for (let index = 0; index < 6; index += 1) {
     const angle = randomBetween(0, Math.PI * 2);
     const radius = randomBetween(PATCH_RADIUS * 0.7, PATCH_RADIUS * 0.98);
-    const pebble = createPebble(randomBetween(0.0035, 0.0065));
+    const pebbleSize = randomBetween(0.0035, 0.0065);
+    const pebble = createPebble(pebbleSize);
     pebble.mesh.position.set(
       Math.cos(angle) * radius,
       0.002,
@@ -483,6 +517,18 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     group.add(pebble.mesh);
     geometries.push(pebble.geometry);
     materials.push(pebble.material);
+    const rockBase = pebble.mesh.position.clone().applyMatrix4(group.matrix);
+    colliders.push({ position: rockBase, radius: pebbleSize });
+    features.push({
+      kind: "rock",
+      base: rockBase,
+      focus: new THREE.Vector3(
+        pebble.mesh.position.x,
+        0.002 + pebbleSize * 0.55,
+        pebble.mesh.position.z,
+      ).applyMatrix4(group.matrix),
+      radius: pebbleSize,
+    });
   }
 
   const lamp = createGardenLamp(maxTulipHeight + 0.006);
@@ -490,6 +536,16 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   group.add(lamp.group);
   geometries.push(...lamp.geometries);
   materials.push(...lamp.materials);
+  const lampBase = new THREE.Vector3(0, 0.001, 0).applyMatrix4(group.matrix);
+  colliders.push({ position: lampBase, radius: 0.003 });
+  features.push({
+    kind: "lamp",
+    base: lampBase,
+    focus: new THREE.Vector3(0, 0.001 + maxTulipHeight + 0.006, 0).applyMatrix4(
+      group.matrix,
+    ),
+    radius: 0.003,
+  });
 
   const hemiLight = new THREE.HemisphereLight(
     HEMI_SKY_COLOR,

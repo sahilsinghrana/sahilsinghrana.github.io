@@ -3,6 +3,13 @@ import { Buffer } from "node:buffer";
 import { createServer } from "vite";
 import { resolve } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
+import { execFileSync } from "node:child_process";
+
+// Read-only, pinned Git snapshot for repeatable local before/after reviews.
+const beforeRef = execFileSync("git", ["rev-parse", "HEAD"], {
+  encoding: "utf8",
+}).trim();
+const beforePrefix = "/@moon-before/";
 
 const outputDirectory = resolve(
   process.argv[2] || "node_modules/.cache/moon-review",
@@ -24,8 +31,10 @@ pre{white-space:pre-wrap;text-align:left;max-width:740px;margin:16px auto;font-s
 <button id="front">Front view</button><button id="back">Back view</button><button id="zoom">Close view</button>
 <button id="reset">Recreate scene</button>
 <button id="capture">Capture scene</button>
+<button id="record">Record 8-second motion</button>
 <button data-activity="garden">Preview garden</button><button data-activity="rocket">Preview rocket</button><button data-activity="conversation">Preview conversation</button><button data-activity="wave">Preview greeting</button><button data-activity="showGarden">Preview shared garden</button><button data-activity="house">Preview house</button>
 <button id="behaviorCompare">Measure behavior overhead</button><pre id="activity">Live behavior</pre>
+<button id="revisionCompare">Measure this revision</button><a href="?revision=before">Before</a> / <a href="?revision=after">After</a>
 <select id="phase" aria-label="Moon phase"><option value="0.5">Full Moon</option><option value="0.25">Quarter Moon</option><option value="0">New Moon</option></select>
 <pre id="results">Loading real Moon scene…</pre>
 <script type="module" src="/scripts/moon-review-client.js"></script></html>`;
@@ -37,6 +46,28 @@ const server = await createServer({
   plugins: [
     {
       name: "moon-review-page",
+      resolveId(source, importer) {
+        if (source.startsWith(beforePrefix)) return `\0${source}`;
+        if (
+          importer?.startsWith(`\0${beforePrefix}`) &&
+          /^\.\/[\w-]+\.js$/.test(source)
+        )
+          return `\0${beforePrefix}${source.slice(2)}`;
+      },
+      load(id) {
+        if (!id.startsWith(`\0${beforePrefix}`)) return;
+        const filename = id.slice(beforePrefix.length + 1);
+        if (!/^[\w-]+\.js$/.test(filename))
+          throw new Error("Invalid before module");
+        return execFileSync(
+          "git",
+          [
+            "show",
+            `${beforeRef}:src/components/General/Moon/3dMoon/${filename}`,
+          ],
+          { encoding: "utf8" },
+        );
+      },
       configureServer(viteServer) {
         viteServer.middlewares.use((request, response, next) => {
           if (request.url?.startsWith("/capture?")) {
@@ -46,7 +77,7 @@ const server = await createServer({
             ).searchParams.get("name");
             if (
               request.method !== "POST" ||
-              !/^(moon-(0|0\.25|0\.5)-(mobile|desktop)-(base|baseline)|astronaut-(garden|rocket|house|conversation|wave|showGarden)-(mobile|desktop))\.png$/.test(
+              !/^(?:(?:moon-(?:0|0\.25|0\.5)-(?:mobile|desktop)-(?:base|baseline)|astronaut-(?:garden|rocket|house|conversation|wave|showGarden)-(?:mobile|desktop))(?:-before|-after)?\.png|astronaut-motion-(?:mobile|desktop)-(?:before|after)\.webm)$/.test(
                 name || "",
               )
             ) {

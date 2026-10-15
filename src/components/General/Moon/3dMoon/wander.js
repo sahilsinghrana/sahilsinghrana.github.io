@@ -54,6 +54,28 @@ export function createWalker(
   };
 }
 
+// Signed angular distance to the actual footprint. Rectangles use the object's
+// surface tangent frame, not a large enclosing circle that hides its doorway.
+export function obstacleGap(normal, obstacle) {
+  if (!obstacle.halfWidth)
+    return (
+      Math.acos(Math.max(-1, Math.min(1, normal.dot(obstacle.normal)))) -
+      obstacle.radius
+    );
+  const up = normal.dot(obstacle.normal);
+  const x =
+    Math.abs(Math.atan2(normal.dot(obstacle.axisX), up)) - obstacle.halfWidth;
+  const y =
+    Math.abs(Math.atan2(normal.dot(obstacle.axisY), up)) - obstacle.halfDepth;
+  return (
+    Math.hypot(Math.max(0, x), Math.max(0, y)) + Math.min(Math.max(x, y), 0)
+  );
+}
+
+const applies = (obstacle, agent) =>
+  !(obstacle.roverOnly && agent.radius < 0.06) &&
+  !(obstacle.peopleOnly && agent.radius >= 0.06);
+
 export function createWanderSimulation(agents, obstacles, seed) {
   const random = createRandom(seed);
   const blockers = [...obstacles, ...agents];
@@ -63,6 +85,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
   const lookahead = new Vector3();
   const side = new Vector3();
   const rotation = new Quaternion();
+  const routeSample = new Vector3();
   let accumulator = 0;
   const STEP = 1 / 60;
 
@@ -73,14 +96,15 @@ export function createWanderSimulation(agents, obstacles, seed) {
     )
       return false;
     for (const obstacle of obstacles) {
-      const limit = Math.cos(agent.radius + obstacle.radius + margin);
-      const next = normal.dot(obstacle.normal);
+      if (!applies(obstacle, agent)) continue;
+      const limit = agent.radius + margin;
+      const next = obstacleGap(normal, obstacle);
       if (
-        next > limit &&
+        next < limit - 1e-10 &&
         !(
           allowEscape &&
-          agent.normal.dot(obstacle.normal) > limit &&
-          next < agent.normal.dot(obstacle.normal) - 1e-10
+          obstacleGap(agent.normal, obstacle) < limit &&
+          next > obstacleGap(agent.normal, obstacle) + 1e-10
         )
       )
         return false;
@@ -126,6 +150,10 @@ export function createWanderSimulation(agents, obstacles, seed) {
     let nearestGap = Infinity;
     for (const obstacle of blockers) {
       if (obstacle === agent || obstacle === agent.softPartner) continue;
+      if (!applies(obstacle, agent)) continue;
+      // The prevalidated garden graph supplies clearance through narrow gaps;
+      // soft personal-space buffers must not seal those gaps. Hard checks stay.
+      if (agent.gardenRoute && obstacle.peopleOnly) continue;
       // Only soften the inspected object's clearance on the final approach.
       // Hard collision checks still apply, and distant routes still detour.
       if (
@@ -133,12 +161,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
         agent.normal.dot(agent.target) > Math.cos(0.12)
       )
         continue;
-      const gap =
-        Math.acos(
-          Math.max(-1, Math.min(1, agent.normal.dot(obstacle.normal))),
-        ) -
-        agent.radius -
-        obstacle.radius;
+      const gap = obstacleGap(agent.normal, obstacle) - agent.radius;
       away
         .copy(obstacle.normal)
         .addScaledVector(agent.normal, -obstacle.normal.dot(agent.normal));
@@ -252,8 +275,19 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.forward.applyQuaternion(rotation).normalize();
     // Brake before sharp changes of heading; accelerate into the new route.
     const alignment = Math.max(0, agent.forward.dot(desired));
+    // Constant-deceleration stopping distance avoids the exponential, visibly
+    // slow crawl produced by scaling speed over the final 0.08 radians.
     const arrivalBrake =
-      agent.mode === "arrive" ? Math.min(1, remaining / 0.08) : 1;
+      agent.mode === "arrive"
+        ? Math.min(
+            1,
+            Math.sqrt(
+              2 *
+                (rover ? 0.035 : 0.09) *
+                Math.max(0, remaining - agent.arrivalRadius),
+            ) / agent.speed,
+          )
+        : 1;
     const targetSpeed = holding
       ? 0
       : agent.speed * alignment * alignment * arrivalBrake;
@@ -268,7 +302,13 @@ export function createWanderSimulation(agents, obstacles, seed) {
       .multiplyScalar(Math.cos(angle))
       .addScaledVector(agent.forward, Math.sin(angle))
       .normalize();
-    const ahead = angle + 0.012;
+    const ahead =
+      angle +
+      (holding
+        ? 0
+        : agent.mode === "arrive"
+          ? Math.min(0.008, remaining)
+          : 0.012);
     lookahead
       .copy(agent.normal)
       .multiplyScalar(Math.cos(ahead))
@@ -302,6 +342,28 @@ export function createWanderSimulation(agents, obstacles, seed) {
     obstacles,
     beforeStep: null,
     isClear: clear,
+    isStaticClear(normal, agent) {
+      return (
+        normal.z >= agent.boundCos &&
+        obstacles.every(
+          (obstacle) =>
+            !applies(obstacle, agent) ||
+            obstacleGap(normal, obstacle) >= agent.radius + 0.004,
+        )
+      );
+    },
+    segmentClear(from, to, agent) {
+      const distance = Math.acos(Math.max(-1, Math.min(1, from.dot(to))));
+      const count = Math.max(1, Math.ceil(distance / 0.012));
+      for (let i = 0; i <= count; i++) {
+        routeSample
+          .copy(from)
+          .lerp(to, i / count)
+          .normalize();
+        if (!simulation.isStaticClear(routeSample, agent)) return false;
+      }
+      return true;
+    },
     arrive(agent, normal, facing = normal) {
       if (!clear(normal, agent)) return false;
       agent.mode = "arrive";
@@ -321,6 +383,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.arrived = false;
       agent.softPartner = null;
       agent.softObstacle = null;
+      agent.gardenRoute = false;
       agent.pause = 0;
       chooseTarget(agent);
     },

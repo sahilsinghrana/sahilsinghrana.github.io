@@ -1,5 +1,6 @@
 import { Vector3 } from "three";
 import { createRandom } from "./wander.js";
+import { createGardenRoutes } from "./garden-routes.js";
 
 // Activity selection above steering, following Reynolds' steering hierarchy and
 // the FSM example at threejs.org/manual/pages/game.html. No independent timers.
@@ -19,6 +20,8 @@ const ENGAGED = new Set([
   "waitGarden",
   "showGarden",
   "gardenGuest",
+  "inviteGarden",
+  "acceptGarden",
 ]);
 
 export function createAstronautBehavior({
@@ -31,6 +34,7 @@ export function createAstronautBehavior({
   seed,
 }) {
   const random = createRandom(seed ^ 0x51e8b39);
+  const gestureRandom = createRandom(seed ^ 0x734ab9);
   const between = (min, max) => min + random() * (max - min);
   const tangent = new Vector3();
   const lateral = new Vector3();
@@ -41,7 +45,13 @@ export function createAstronautBehavior({
   let talkStarted = 0;
   let talkDuration = 0;
   let exchanges = 0;
-  let nodMask = 0;
+  const talkTurns = Array.from({ length: 24 }, () => ({
+    start: 0,
+    duration: 1,
+    arm: 0,
+    both: false,
+    nod: false,
+  }));
   let disposed = false;
   let nextTourAt = 0;
   let nextOpportunityAt = 0;
@@ -49,7 +59,9 @@ export function createAstronautBehavior({
   let tourStarted = 0;
   let tourShowingAt = 0;
   let tourDuration = 0;
-  let tourFlower = 0;
+  let tourStops = 0;
+  let tourCounted = false;
+  const tourFocus = new Vector3();
   const meetingGirl = new Vector3();
   const meetingBoy = new Vector3();
   const tourGirl = new Vector3();
@@ -71,22 +83,41 @@ export function createAstronautBehavior({
   function views(interest, walker) {
     if (!interest) return [];
     const points = [];
-    tangent
-      .set(0, 0, 1)
-      .addScaledVector(interest.normal, -interest.normal.z)
-      .normalize();
-    lateral.crossVectors(interest.normal, tangent).normalize();
-    const radius = interest.radius + walker.radius + 0.035;
-    for (let i = 0; i < 12; i++) {
-      const turn = (i * Math.PI) / 6;
-      points.push(
-        interest.normal
+    const features = interest.features || [
+      { normal: interest.normal, radius: interest.radius },
+    ];
+    for (const feature of features) {
+      tangent
+        .set(1, 0, 0)
+        .addScaledVector(feature.normal, -feature.normal.x)
+        .normalize();
+      lateral.crossVectors(feature.normal, tangent).normalize();
+      const count = interest.features ? 8 : 12;
+      for (let i = 0; i < count; i++) {
+        const turn = (i * Math.PI * 2) / count;
+        candidate
+          .copy(tangent)
+          .multiplyScalar(Math.cos(turn))
+          .addScaledVector(lateral, Math.sin(turn));
+        let boundary = feature.radius;
+        if (interest.halfWidth)
+          boundary = Math.min(
+            interest.halfWidth /
+              Math.max(1e-5, Math.abs(candidate.dot(interest.axisX))),
+            interest.halfDepth /
+              Math.max(1e-5, Math.abs(candidate.dot(interest.axisY))),
+          );
+        const radius =
+          boundary + walker.radius + (interest.features ? 0.018 : 0.02);
+        const point = feature.normal
           .clone()
           .multiplyScalar(Math.cos(radius))
           .addScaledVector(tangent, Math.sin(radius) * Math.cos(turn))
           .addScaledVector(lateral, Math.sin(radius) * Math.sin(turn))
-          .normalize(),
-      );
+          .normalize();
+        point.feature = feature;
+        points.push(point);
+      }
     }
     return points;
   }
@@ -102,6 +133,26 @@ export function createAstronautBehavior({
       nextInspectAt: 0,
       nextTalkAt: 0,
       lastView: -1,
+      previousView: -1,
+      lastFeature: null,
+      route: new Int16Array(128),
+      routeLength: 0,
+      routeIndex: 0,
+      goal: new Vector3(),
+      stopsRemaining: 0,
+      visitUntil: 0,
+      visitCounted: false,
+      visitStarted: 0,
+      visitDuration: 0,
+      visitEnd: Infinity,
+      visitFeatures: new Array(4).fill(null),
+      featureCount: 0,
+      featureSeen: new Uint8Array(4),
+      lastFlower: null,
+      waveHop: false,
+      waveHopAt: 1,
+      responded: false,
+      goalIndex: -1,
       variant: 0,
       focus: new Vector3(),
       gazeNormal: new Vector3(),
@@ -112,7 +163,24 @@ export function createAstronautBehavior({
       nextDestinationAt: 0,
       acknowledgmentAt: 0,
       completedAt: -1,
-      pose: { weight: 0, lean: 0, tilt: 0, hand: 0, nod: 0, chest: 0, wave: 0 },
+      pose: {
+        weight: 0,
+        lean: 0,
+        tilt: 0,
+        hand: 0,
+        nod: 0,
+        chest: 0,
+        wave: 0,
+        left: 0,
+        right: 0,
+        pointLeft: 0,
+        pointRight: 0,
+        shift: 0,
+        yaw: 0,
+        stance: 0,
+        shake: 0,
+        hop: 0,
+      },
     };
   }
   const male = actor(boy, rocket, between(8, 16));
@@ -120,7 +188,12 @@ export function createAstronautBehavior({
   const actors = [male, female];
   const rocketViews = male.views;
   const houseViews = views(house, boy);
-  const guestViews = views(garden, boy);
+  const guestViews = garden?.features ? female.views : views(garden, boy);
+  const tourFlowers =
+    garden?.features?.filter((feature) => feature.kind === "flower") || [];
+  const gardenRoutes = garden?.features
+    ? createGardenRoutes(navigation, female.views, garden.normal, boy)
+    : null;
 
   function enter(record, state, duration) {
     record.state = state;
@@ -129,16 +202,16 @@ export function createAstronautBehavior({
     record.stalled = 0;
     record.progress = record.walker.distance;
     record.bestRemaining = Infinity;
-    record.variant = (record.variant + 1 + Math.floor(random() * 2)) % 3;
+    record.variant = (record.variant + 1 + Math.floor(gestureRandom() * 2)) % 3;
   }
   function wander(record) {
     navigation.wander(record.walker);
     // Occasionally wander near a social interest, rather than relying on two
     // independent broad random walks to happen to meet. The full bounds stay open.
     const anchor =
-      record === female && random() < 0.55
+      record === female && random() < 0.75
         ? boy.normal
-        : record === male && garden && random() < 0.3
+        : record === male && garden && random() < 0.4
           ? garden.normal
           : null;
     if (anchor) {
@@ -150,7 +223,7 @@ export function createAstronautBehavior({
       for (let i = 0; i < 12; i++) {
         const turn = between(0, Math.PI * 2);
         const radius =
-          record === female ? between(0.2, 0.45) : between(0.35, 0.55);
+          record === female ? between(0.16, 0.32) : between(0.35, 0.55);
         candidate
           .copy(anchor)
           .multiplyScalar(Math.cos(radius))
@@ -163,37 +236,45 @@ export function createAstronautBehavior({
         }
       }
     }
-    enter(
-      record,
-      "wander",
-      record === female ? between(10, 22) : between(20, 40),
-    );
+    enter(record, "wander", record === female ? between(5, 9) : between(8, 14));
   }
   function endVisit(record) {
     record.completedAt = time;
     record.nextInspectAt =
-      time + (record === female ? between(15, 30) : between(35, 65));
+      time + (record === female ? between(10, 18) : between(15, 28));
     wander(record);
   }
   function inspectDestination(record) {
     if (!record.interest) return false;
-    const start = Math.floor(random() * 12);
+    const count = record.views.length;
+    const start = Math.floor(random() * count);
     let selected = -1;
     let best = Infinity;
-    for (let i = 0; i < 12; i++) {
-      const index = (start + i) % 12;
-      if (index === record.lastView) continue;
+    for (let i = 0; i < count; i++) {
+      const index = (start + i) % count;
+      if (index === record.lastView || index === record.previousView) continue;
       const point = record.views[index];
-      if (!navigation.isClear(point, record.walker, 0.015)) continue;
-      const score = angle(record.walker.normal, point) + i * 0.003;
+      if (record.featureCount && !record.visitFeatures.includes(point.feature))
+        continue;
+      if (pendingFeature(record)) {
+        const slot = record.visitFeatures.indexOf(point.feature);
+        if (slot < 0 || record.featureSeen[slot]) continue;
+      }
+      if (!navigation.isClear(point, record.walker, 0.004)) continue;
+      const score =
+        angle(record.walker.normal, point) +
+        i * 0.012 +
+        (point.feature === record.lastFeature ? 0.18 : 0);
       if (score < best) {
         best = score;
         selected = index;
       }
     }
     if (selected < 0) return false;
+    record.previousView = record.lastView;
     record.lastView = selected;
     const point = record.views[selected];
+    record.lastFeature = point.feature;
     let nearest = Infinity;
     for (const focus of record.interest.focuses) {
       const distance = point.distanceToSquared(focus);
@@ -202,9 +283,28 @@ export function createAstronautBehavior({
         record.focus.copy(focus);
       }
     }
+    if (point.feature.focus) record.focus.copy(point.feature.focus);
     record.gazeNormal.copy(record.focus).normalize();
     record.walker.softObstacle = record.interest.normal;
     record.bestRemaining = Infinity;
+    record.goal.copy(point);
+    record.goalIndex = selected;
+    record.routeIndex = 0;
+    record.routeLength = 0;
+    if (record === female && record.interest === garden && gardenRoutes) {
+      record.routeLength = gardenRoutes.plan(
+        record.walker.normal,
+        selected,
+        record.route,
+      );
+      if (!record.routeLength) return false;
+      record.walker.gardenRoute = true;
+      return navigation.arrive(
+        record.walker,
+        gardenRoutes.nodes[record.route[0]],
+        record.gazeNormal,
+      );
+    }
     return navigation.arrive(record.walker, point, record.gazeNormal);
   }
   function startInspection(record, first = false) {
@@ -213,6 +313,45 @@ export function createAstronautBehavior({
         !first && (random() < 0.4 || rocketStreak >= 2) ? house : rocket;
       record.views = record.interest === house ? houseViews : rocketViews;
     }
+    record.visitDuration =
+      record === female ? between(18, 35) : between(12, 24);
+    record.stopsRemaining = Math.ceil(record.visitDuration / 4);
+    record.visitEnd = Infinity;
+    record.featureCount = 0;
+    record.visitFeatures.fill(null);
+    record.featureSeen.fill(0);
+    if (record === female && garden?.features) {
+      record.featureCount = 1 + Math.floor(random() * 4);
+      if (tourFlowers.length && random() < 0.85) {
+        let index = Math.floor(random() * tourFlowers.length);
+        if (tourFlowers[index] === record.lastFlower)
+          index = (index + 1) % tourFlowers.length;
+        record.visitFeatures[0] = tourFlowers[index];
+        if (record.featureCount > 1 && tourFlowers.length > 1 && random() < 0.8)
+          record.visitFeatures[1] =
+            tourFlowers[(index + 1) % tourFlowers.length];
+      }
+      for (let slot = 0; slot < record.featureCount; slot++) {
+        if (record.visitFeatures[slot]) continue;
+        let total = 0;
+        for (const feature of garden.features)
+          if (!record.visitFeatures.includes(feature))
+            total +=
+              feature.kind === "flower" ? 3 : feature.kind === "lamp" ? 2 : 0.5;
+        let roll = random() * total;
+        for (const feature of garden.features) {
+          if (record.visitFeatures.includes(feature)) continue;
+          roll -=
+            feature.kind === "flower" ? 3 : feature.kind === "lamp" ? 2 : 0.5;
+          if (roll <= 0) {
+            record.visitFeatures[slot] = feature;
+            break;
+          }
+        }
+      }
+    }
+    record.visitUntil = time + 90;
+    record.visitCounted = false;
     if (!inspectDestination(record)) {
       wander(record);
       return;
@@ -230,6 +369,11 @@ export function createAstronautBehavior({
   }
   function available(record) {
     return !ENGAGED.has(record.state);
+  }
+  function pendingFeature(record) {
+    for (let slot = 0; slot < record.featureCount; slot++)
+      if (!record.featureSeen[slot]) return true;
+    return false;
   }
   function sees(walker, target) {
     facing
@@ -266,6 +410,7 @@ export function createAstronautBehavior({
     return true;
   }
   function reserveMeeting() {
+    boy.arrivalRadius = girl.arrivalRadius = 0.002;
     facing.copy(boy.normal).add(girl.normal).normalize();
     tangent
       .copy(girl.normal)
@@ -273,13 +418,13 @@ export function createAstronautBehavior({
       .normalize();
     meetingGirl
       .copy(facing)
-      .multiplyScalar(Math.cos(0.06))
-      .addScaledVector(tangent, Math.sin(0.06))
+      .multiplyScalar(Math.cos(0.04))
+      .addScaledVector(tangent, Math.sin(0.04))
       .normalize();
     meetingBoy
       .copy(facing)
-      .multiplyScalar(Math.cos(0.06))
-      .addScaledVector(tangent, -Math.sin(0.06))
+      .multiplyScalar(Math.cos(0.04))
+      .addScaledVector(tangent, -Math.sin(0.04))
       .normalize();
     return (
       navigation.isClear(meetingGirl, girl, 0.005) &&
@@ -288,16 +433,21 @@ export function createAstronautBehavior({
   }
   function greeting() {
     if (!reserveMeeting()) return false;
-    enter(female, "wave", between(1.8, 2.6));
+    enter(female, "wave", between(3.5, 5.5));
     enter(male, "acknowledge", 30);
     male.acknowledgmentAt = time + between(0.4, 0.9);
-    navigation.hold(girl, boy.normal);
+    female.waveHop = gestureRandom() < 0.5;
+    female.waveHopAt = 0.8 + gestureRandom() * 1.2;
+    male.responded = false;
+    navigation.arrive(girl, meetingGirl, boy.normal);
     girl.softPartner = boy;
     boy.softPartner = girl;
     stats.waves++;
     return true;
   }
-  function socialDestination(mover = girl, anchor = boy, spacing = 0.12) {
+  function socialDestination(mover = girl, anchor = boy, spacing = 0.08) {
+    mover.gardenRoute = false;
+    mover.arrivalRadius = 0.002;
     tangent
       .copy(mover.normal)
       .addScaledVector(anchor.normal, -mover.normal.dot(anchor.normal));
@@ -320,7 +470,7 @@ export function createAstronautBehavior({
   }
   function finishSocial(aborted = false) {
     if (aborted) stats.aborts++;
-    const cooldown = aborted ? between(8, 15) : between(18, 35);
+    const cooldown = aborted ? between(6, 10) : between(10, 18);
     for (const record of actors) {
       record.nextTalkAt = time + cooldown;
       record.walker.softPartner = null;
@@ -359,7 +509,7 @@ export function createAstronautBehavior({
       time >= male.nextTalkAt &&
       angle(boy.normal, girl.normal) <= 0.75;
     const inspectionWeight = canInspect ? (record === female ? 0.5 : 0.35) : 0;
-    const socialWeight = canTalk ? 0.35 : 0;
+    const socialWeight = canTalk ? 0.8 : 0;
     const idleWeight = record === male ? 0.1 : 0;
     const roll =
       random() *
@@ -390,37 +540,58 @@ export function createAstronautBehavior({
   function readyToTalk() {
     const separation = angle(girl.normal, boy.normal);
     return (
-      separation >= 0.1 &&
-      separation <= 0.15 &&
+      separation >= 0.075 &&
+      separation <= 0.09 &&
       aligned(girl, boy.normal) &&
       aligned(boy, girl.normal)
     );
   }
   function beginTalk() {
     talkStarted = time;
-    talkDuration = between(7, 12);
-    exchanges = 2 + Math.floor(random() * 2);
-    nodMask = Math.floor(random() * 8);
+    talkDuration = between(16, 28);
+    exchanges = Math.min(talkTurns.length, Math.round(talkDuration / 1.5));
+    for (let i = 0; i < exchanges; i++) {
+      const turn = talkTurns[i];
+      const period = talkDuration / exchanges;
+      turn.start = i * period + 0.12 + gestureRandom() * 0.12;
+      turn.duration = Math.min(period - 0.28, 0.85 + gestureRandom() * 0.35);
+      turn.arm = gestureRandom() < 0.5 ? 0 : 1;
+      turn.both = gestureRandom() < 0.22;
+      turn.nod = gestureRandom() < 0.5;
+    }
     for (const record of actors) enter(record, "conversation", talkDuration);
     navigation.hold(girl, boy.normal);
     navigation.hold(boy, girl.normal);
     stats.conversations++;
   }
-  function startTour() {
+  function startTour(continuing = false) {
+    female.featureCount = 0;
+    female.visitFeatures.fill(null);
+    if (tourFlowers.length) {
+      let index = Math.floor(random() * tourFlowers.length);
+      if (tourFlowers[index] === female.lastFeature)
+        index = (index + 1) % tourFlowers.length;
+      female.featureCount = 1;
+      female.visitFeatures[0] = tourFlowers[index];
+    }
     if (!garden || !inspectDestination(female)) return false;
-    tourGirl.copy(girl.target);
+    tourGirl.copy(female.goal);
+    tourFocus.copy(female.focus);
     let selected = -1;
     let best = Infinity;
     for (let index = 0; index < guestViews.length; index++) {
+      if (index === male.lastView || index === male.previousView) continue;
       const point = guestViews[index];
       const spacing = angle(tourGirl, point);
       if (
-        spacing < 0.11 ||
-        spacing > 0.22 ||
-        !navigation.isClear(point, boy, 0.01)
+        spacing < 0.09 ||
+        spacing > 0.18 ||
+        !navigation.isClear(point, boy, 0.004)
       )
         continue;
-      const distance = point.distanceToSquared(boy.normal);
+      const distance =
+        point.distanceToSquared(boy.normal) +
+        (point.feature === female.lastFeature ? 0 : 0.1);
       if (distance < best) {
         best = distance;
         selected = index;
@@ -428,14 +599,37 @@ export function createAstronautBehavior({
     }
     if (selected < 0) return false;
     tourBoy.copy(guestViews[selected]);
+    male.previousView = male.lastView;
+    male.lastView = selected;
+    male.routeLength = gardenRoutes
+      ? gardenRoutes.plan(boy.normal, selected, male.route)
+      : 0;
+    male.routeIndex = 0;
+    if (gardenRoutes && !male.routeLength) return false;
+    boy.gardenRoute = !!gardenRoutes;
+    male.goal.copy(tourBoy);
+    male.goalIndex = selected;
     tourStarted = time;
     tourShowingAt = 0;
-    tourFlower = Math.floor(random() * garden.focuses.length);
     girl.softPartner = boy;
     boy.softPartner = girl;
     boy.softObstacle = garden.normal;
-    enter(female, "leadGarden", 90);
-    enter(male, "followGarden", 90);
+    female.retries = male.retries = 0;
+    if (!continuing) {
+      tourStops = 1 + Math.floor(random() * 3);
+      tourCounted = false;
+    }
+    enter(
+      female,
+      continuing ? "leadGarden" : "inviteGarden",
+      continuing ? 90 : between(2.2, 3.2),
+    );
+    enter(male, continuing ? "followGarden" : "acceptGarden", 90);
+    if (!continuing) {
+      navigation.hold(girl, female.gazeNormal);
+      navigation.hold(boy, female.gazeNormal);
+      male.focus.copy(tourFocus);
+    }
     male.nextDestinationAt = time;
     return true;
   }
@@ -450,20 +644,90 @@ export function createAstronautBehavior({
     if (
       female.state !== "leadGarden" &&
       female.state !== "waitGarden" &&
-      female.state !== "showGarden"
+      female.state !== "showGarden" &&
+      female.state !== "inviteGarden"
     )
       return false;
     if (time - tourStarted >= 90 && female.state !== "showGarden") {
       endTour(true);
       return true;
     }
+    for (const record of actors) {
+      if (
+        !gardenRoutes ||
+        record.walker.mode !== "arrive" ||
+        record.stalled < 3
+      )
+        continue;
+      if (record.retries++ >= 2) {
+        endTour(true);
+        return true;
+      }
+      record.routeLength = gardenRoutes.plan(
+        record.walker.normal,
+        record.goalIndex,
+        record.route,
+      );
+      record.routeIndex = 0;
+      record.stalled = 0;
+      record.bestRemaining = Infinity;
+      if (record.routeLength)
+        navigation.arrive(
+          record.walker,
+          gardenRoutes.nodes[record.route[0]],
+          female.gazeNormal,
+        );
+    }
+    if (female.state === "inviteGarden") {
+      if (
+        time >= female.until &&
+        aligned(girl, female.gazeNormal) &&
+        aligned(boy, female.gazeNormal)
+      ) {
+        enter(female, "leadGarden", 90);
+        enter(male, "followGarden", 90);
+        male.nextDestinationAt = time + 0.8;
+        const waypoint = female.routeLength
+          ? gardenRoutes.nodes[female.route[female.routeIndex]]
+          : tourGirl;
+        navigation.arrive(girl, waypoint, female.gazeNormal);
+      } else if (time - female.since > 9) endTour(true);
+      return true;
+    }
     if (female.state === "leadGarden") {
+      if (girl.arrived && female.routeIndex + 1 < female.routeLength) {
+        female.routeIndex++;
+        navigation.arrive(
+          girl,
+          gardenRoutes.nodes[female.route[female.routeIndex]],
+          female.gazeNormal,
+        );
+      }
       const distance = angle(girl.normal, boy.normal);
-      if (angle(girl.normal, tourGirl) < 0.02 && girl.velocity < 0.003) {
+      if (
+        girl.arrived &&
+        angle(girl.normal, tourGirl) < 0.012 &&
+        girl.velocity < 0.003
+      ) {
         enter(female, "waitGarden", 90);
         navigation.hold(girl, female.gazeNormal);
         enter(male, "joinGarden", 90);
-        if (!navigation.arrive(boy, tourBoy, female.gazeNormal)) {
+        if (gardenRoutes) {
+          male.routeLength = gardenRoutes.plan(
+            boy.normal,
+            male.goalIndex,
+            male.route,
+          );
+          male.routeIndex = 0;
+          if (!male.routeLength) {
+            endTour(true);
+            return true;
+          }
+        }
+        const destination = male.routeLength
+          ? gardenRoutes.nodes[male.route[0]]
+          : tourBoy;
+        if (!navigation.arrive(boy, destination, female.gazeNormal)) {
           endTour(true);
           return true;
         }
@@ -471,31 +735,59 @@ export function createAstronautBehavior({
         if (distance > 0.3 && girl.mode !== "hold")
           navigation.hold(girl, female.gazeNormal);
         else if (distance < 0.2 && girl.mode === "hold")
-          navigation.arrive(girl, tourGirl, female.gazeNormal);
+          navigation.arrive(
+            girl,
+            female.routeLength
+              ? gardenRoutes.nodes[female.route[female.routeIndex]]
+              : tourGirl,
+            female.gazeNormal,
+          );
         if (time >= male.nextDestinationAt) {
-          socialDestination(boy, girl, 0.14);
+          if (boy.arrived && male.routeIndex + 1 < male.routeLength)
+            male.routeIndex++;
+          const waypoint = male.routeLength
+            ? gardenRoutes.nodes[male.route[male.routeIndex]]
+            : tourBoy;
+          if (boy.mode === "hold" || boy.arrived)
+            navigation.arrive(boy, waypoint, female.gazeNormal);
           male.nextDestinationAt = time + 0.5;
         }
       }
     } else if (female.state === "waitGarden") {
+      if (time - female.since > 25) {
+        endTour(true);
+        return true;
+      }
+      if (boy.arrived && male.routeIndex + 1 < male.routeLength) {
+        male.routeIndex++;
+        navigation.arrive(
+          boy,
+          gardenRoutes.nodes[male.route[male.routeIndex]],
+          female.gazeNormal,
+        );
+      }
       if (boy.arrived && boy.velocity < 0.003 && !boy.turning) {
         tourShowingAt = time;
-        tourDuration = between(12, 18);
+        tourDuration = between(6, 9);
         enter(female, "showGarden", tourDuration);
         enter(male, "gardenGuest", tourDuration);
-        stats.gardenTours++;
+        if (!tourCounted) {
+          stats.gardenTours++;
+          tourCounted = true;
+        }
         stats.gardenVisits++;
       }
     } else if (time >= tourShowingAt + tourDuration) {
-      endTour();
+      if (--tourStops <= 0 || !startTour(true)) endTour();
       return true;
     }
     if (female.state === "showGarden") {
-      const which =
-        (tourFlower + (time - tourShowingAt >= tourDuration * 0.5 ? 1 : 0)) %
-        garden.focuses.length;
+      const local = (time - tourShowingAt) / tourDuration;
       for (const record of actors) {
-        record.focus.copy(garden.focuses[which]);
+        const partner = record === female ? boy : girl;
+        if (local > 0.55 && local < 0.75)
+          record.focus.copy(partner.normal).multiplyScalar(1.063);
+        else record.focus.copy(tourFocus);
         record.gazeNormal.copy(record.focus).normalize();
         navigation.hold(record.walker, record.gazeNormal);
       }
@@ -599,7 +891,23 @@ export function createAstronautBehavior({
           record.walker.velocity < 0.003 &&
           !record.walker.turning
         ) {
+          if (record.routeIndex + 1 < record.routeLength) {
+            record.routeIndex++;
+            if (
+              !navigation.arrive(
+                record.walker,
+                gardenRoutes.nodes[record.route[record.routeIndex]],
+                record.gazeNormal,
+              )
+            )
+              record.stalled = 3;
+            continue;
+          }
           navigation.hold(record.walker, record.gazeNormal);
+          if (!record.visitCounted) {
+            record.visitStarted = time;
+            record.visitEnd = time + record.visitDuration;
+          }
           enter(
             record,
             record === female
@@ -607,8 +915,10 @@ export function createAstronautBehavior({
               : record.interest === house
                 ? "house"
                 : "rocket",
-            between(8, 14),
+            Math.max(0.5, Math.min(between(4, 7), record.visitEnd - time)),
           );
+          if (record.visitCounted) continue;
+          record.visitCounted = true;
           if (record === female) stats.gardenVisits++;
           else if (record.interest === house) {
             stats.houseVisits++;
@@ -617,8 +927,8 @@ export function createAstronautBehavior({
             stats.rocketVisits++;
             rocketStreak++;
           }
-        } else if (time >= record.until) {
-          stats.aborts++;
+        } else if (time >= record.until || time >= record.visitEnd) {
+          if (time >= record.until) stats.aborts++;
           endVisit(record);
         } else if (record.stalled >= 3) {
           if (record.retries++ >= 2 || !inspectDestination(record)) {
@@ -628,8 +938,24 @@ export function createAstronautBehavior({
           record.stalled = 0;
         }
       } else if (time >= record.until) {
-        if (INSPECTION.has(record.state)) endVisit(record);
-        else choose(record);
+        if (INSPECTION.has(record.state)) {
+          if (
+            --record.stopsRemaining > 0 &&
+            time < record.visitEnd - 3 &&
+            time < record.visitUntil &&
+            inspectDestination(record)
+          ) {
+            enter(
+              record,
+              record === female
+                ? "travelGarden"
+                : record.interest === house
+                  ? "travelHouse"
+                  : "travelRocket",
+              Math.max(0, record.visitUntil - time),
+            );
+          } else endVisit(record);
+        } else choose(record);
       }
     }
   }
@@ -643,6 +969,19 @@ export function createAstronautBehavior({
     let chest = 0;
     let nod = 0;
     let wave = 0;
+    let left = 0,
+      right = 0,
+      pointLeft = 0,
+      pointRight = 0;
+    let shift = 0,
+      yaw = 0,
+      stance = 0;
+    const elapsed = time - record.since;
+    const inviting =
+      record.state === "inviteGarden" || record.state === "acceptGarden";
+    const walkingTogether =
+      record.state === "leadGarden" || record.state === "followGarden";
+    let pointing = false;
     if (record.state === "wave") {
       record.focus.copy(boy.normal).multiplyScalar(1.063);
       const phase = clamp(
@@ -651,18 +990,20 @@ export function createAstronautBehavior({
         1,
       );
       wave =
-        Math.sin(phase * Math.PI) * (0.8 + 0.2 * Math.sin(phase * Math.PI * 5));
+        Math.min(1, phase * 6, (1 - phase) * 6) *
+        (0.88 + 0.12 * Math.cos(phase * Math.PI * 6));
     } else if (inspecting) {
       const phase = clamp(
         (time - record.since) / (record.until - record.since),
         0,
         1,
       );
-      const gesturePhase = (phase * 3 + record.variant) % 3;
+      const gesturePhase = (phase * 2 + record.variant) % 3;
       hand =
         gesturePhase > 1 && gesturePhase < 2
           ? Math.sin((gesturePhase - 1) * Math.PI)
           : 0;
+      pointing = record.lastFeature?.kind !== "rock" && hand > 0;
       chest =
         record === female && gesturePhase < 1
           ? Math.sin(gesturePhase * Math.PI)
@@ -671,33 +1012,84 @@ export function createAstronautBehavior({
       record.focus
         .copy(record === female ? boy.normal : girl.normal)
         .multiplyScalar(1.063);
-      const phase =
-        clamp((time - talkStarted) / talkDuration, 0, 0.9999) * exchanges;
-      const turn = Math.floor(phase);
-      const local = phase - turn;
-      const envelope =
-        local > 0.15 && local < 0.7
-          ? Math.sin(((local - 0.15) / 0.55) * Math.PI)
-          : 0;
-      const speaker = turn % 2 === 0 ? female : male;
-      if (record === speaker) hand = envelope;
-      else if (nodMask & (1 << turn)) nod = envelope * 0.045;
+      for (let i = 0; i < exchanges; i++) {
+        const turn = talkTurns[i];
+        const local = (time - talkStarted - turn.start) / turn.duration;
+        if (local < 0 || local > 1) continue;
+        const envelope = Math.sin(local * Math.PI) ** 1.4;
+        const speaker = i % 2 === 0 ? female : male;
+        if (record === speaker) {
+          hand = envelope * (record === female ? 1 : 0.76);
+          left = turn.arm === 0 || turn.both ? hand : 0;
+          right =
+            turn.arm === 1 || turn.both ? hand * (turn.both ? 0.82 : 1) : 0;
+        } else if (turn.nod) nod = Math.sin(local * Math.PI * 2) * 0.045;
+      }
+      shift = Math.sin(elapsed * 0.48 + record.variant) * 0.0014;
+      yaw = Math.sin(elapsed * 0.7 + record.variant) * 0.045;
+      // A tiny one-foot adjustment, entirely inside the reserved body footprint.
+      // It is sparse and phase-offset, rather than an idle walking cycle.
+      const adjustment = (elapsed + record.variant * 1.7) % 8;
+      if (
+        adjustment > 5.5 &&
+        adjustment < 6.4 &&
+        navigation.isClear(record.walker.normal, record.walker, 0.002)
+      )
+        stance = Math.sin(((adjustment - 5.5) * Math.PI) / 0.9) * 0.002;
     }
     if (record.state === "showGarden") {
-      const local = (((time - tourShowingAt) / tourDuration) * 2) % 1;
+      const local = (time - tourShowingAt) / tourDuration;
       hand =
-        local > 0.15 && local < 0.8
-          ? Math.sin(((local - 0.15) / 0.65) * Math.PI)
+        local > 0.08 && local < 0.5
+          ? Math.sin(((local - 0.08) / 0.42) * Math.PI)
           : 0;
+      pointing = true;
       chest = 0;
     }
     if (record.state === "gardenGuest") {
-      nod = female.pose.hand * 0.035;
-      hand = 0;
+      nod =
+        elapsed > 2 && elapsed < 2.7
+          ? Math.sin(((elapsed - 2) * Math.PI) / 0.7) * 0.06
+          : 0;
+      hand =
+        elapsed > 3.5 && elapsed < 4.4
+          ? Math.sin(((elapsed - 3.5) * Math.PI) / 0.9) * 0.55
+          : 0;
       chest = 0;
     }
-    const active = inspecting || talking || record.state === "wave";
-    const blend = 1 - Math.exp(-dt / 0.16);
+    if (inviting) {
+      record.focus.copy(tourFocus);
+      const start = record === female ? 0.25 : 1.1;
+      const local = clamp((elapsed - start) / 1.4, 0, 1);
+      hand = Math.sin(local * Math.PI) * (record === female ? 1 : 0.65);
+      pointing = true;
+      nod =
+        record === male && elapsed > 0.8 && elapsed < 1.3
+          ? Math.sin((elapsed - 0.8) * Math.PI * 2) * 0.05
+          : 0;
+    }
+    if (walkingTogether) {
+      if ((elapsed + (record === male ? 2 : 0)) % 7 > 5.8)
+        record.focus
+          .copy(record === female ? boy.normal : girl.normal)
+          .multiplyScalar(1.063);
+      else record.focus.copy(tourFocus);
+    }
+    if (!talking) {
+      left = record.variant % 2 === 0 ? hand : 0;
+      right = record.variant % 2 === 1 ? hand : 0;
+    }
+    if (pointing) {
+      pointLeft = left;
+      pointRight = right;
+    }
+    const active =
+      inspecting ||
+      talking ||
+      inviting ||
+      walkingTogether ||
+      record.state === "wave";
+    const blend = 1 - Math.exp(-dt / (talking ? 0.09 : 0.16));
     const output = record.pose;
     output.weight += ((active ? 1 : 0) - output.weight) * blend;
     output.hand += (hand - output.hand) * blend;
@@ -706,10 +1098,17 @@ export function createAstronautBehavior({
     output.lean +=
       ((inspecting ? 0.04 + hand * 0.04 : 0) - output.lean) * blend;
     output.tilt +=
-      ((record.state === "garden" || record.state === "showGarden" ? 0.07 : 0) -
+      ((inspecting ? Math.sin(elapsed * 0.8 + record.variant) * 0.06 : 0) -
         output.tilt) *
       blend;
     output.nod += (nod - output.nod) * blend;
+    output.left += (left - output.left) * blend;
+    output.right += (right - output.right) * blend;
+    output.pointLeft += (pointLeft - output.pointLeft) * blend;
+    output.pointRight += (pointRight - output.pointRight) * blend;
+    output.shift += (shift - output.shift) * blend;
+    output.yaw += (yaw - output.yaw) * blend;
+    output.stance += (stance - output.stance) * blend;
   }
   return {
     actors,
@@ -723,11 +1122,14 @@ export function createAstronautBehavior({
       for (const record of actors) {
         if (
           record.state === "travelGarden" ||
-          record.state === "travelRocket"
+          record.state === "travelRocket" ||
+          record.state === "travelHouse" ||
+          record.state === "joinGarden" ||
+          record.state === "leadGarden"
         ) {
           const remaining = angle(record.walker.normal, record.walker.target);
           if (
-            remaining < record.bestRemaining - 0.003 ||
+            remaining < record.bestRemaining - 0.0005 ||
             record.walker.arrived
           ) {
             record.bestRemaining = remaining;

@@ -12,10 +12,21 @@ import {
 } from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 import { createMoonBase } from "../src/components/General/Moon/3dMoon/base.js";
+import { createMoonBase as createBeforeBase } from "/@moon-before/base.js";
+import {
+  createGarden,
+  GARDEN_SURFACE_NORMAL,
+} from "../src/components/General/Moon/3dMoon/garden.js";
+import { createRandom } from "../src/components/General/Moon/3dMoon/wander.js";
 import { Moon } from "../src/components/General/Moon/3dMoon/moon.js";
 import { createAnimationClock } from "../src/components/General/Moon/3dMoon/motion.js";
 
 const root = document.querySelector("#moonRoot");
+const revision =
+  new URLSearchParams(location.search).get("revision") === "before"
+    ? "before"
+    : "after";
+const baseFactory = revision === "before" ? createBeforeBase : createMoonBase;
 const results = document.querySelector("#results");
 const renderer = new WebGLRenderer({
   antialias: true,
@@ -75,6 +86,8 @@ let elapsed = 0;
 let sample = null;
 let frameId;
 let captureRequested = false;
+let recording = null;
+let recordingStarted = 0;
 let auditRequested = false;
 let recreations = 0;
 let previewTarget = null;
@@ -96,9 +109,20 @@ function createMoon() {
     ready = !!moon.mesh;
     if (!ready) return;
     moon._base.dispose();
-    moon._base = createMoonBase(0.4, {
+    moon._garden.removeFromParent();
+    moon._garden.dispose();
+    const originalRandom = Math.random;
+    try {
+      Math.random = createRandom(147);
+      moon._garden = createGarden(0.4, GARDEN_SURFACE_NORMAL);
+    } finally {
+      Math.random = originalRandom;
+    }
+    moon.mesh.add(moon._garden);
+    moon._base = baseFactory(0.4, {
       seed: 123,
       gardenInterestPoints: moon._garden?.userData.interestPoints,
+      gardenLayout: moon._garden?.userData.navigation,
     });
     moon.mesh.add(moon._base);
     moon.mesh.rotation.y = 0.68;
@@ -125,6 +149,9 @@ function render(timestamp) {
         const actor = moon._base.userData.behavior.actors.find(
           (item) =>
             item.state === previewTarget &&
+            (previewTarget !== "garden" ||
+              !item.interest.features ||
+              item.lastFeature?.kind === "flower") &&
             item.pose.weight > 0.99 &&
             (previewTarget === "wave"
               ? item.pose.wave > 0.8
@@ -159,6 +186,11 @@ function render(timestamp) {
   controls.update();
   const started = performance.now();
   renderer.render(scene, camera);
+  if (
+    recording?.state === "recording" &&
+    performance.now() - recordingStarted >= 8000
+  )
+    recording.stop();
   const duration = performance.now() - started;
   if (auditRequested) {
     auditRequested = false;
@@ -180,9 +212,10 @@ function render(timestamp) {
   }
   if (captureRequested) {
     captureRequested = false;
-    const name = capturedActivity
+    const stem = capturedActivity
       ? `astronaut-${capturedActivity}-${innerWidth < 500 ? "mobile" : "desktop"}.png`
       : `moon-${document.querySelector("#phase").value}-${innerWidth < 500 ? "mobile" : "desktop"}-${baseVisible ? "base" : "baseline"}.png`;
+    const name = stem.replace(".png", `-${revision}.png`);
     renderer.domElement.toBlob(async (blob) => {
       const response = await fetch(`/capture?name=${name}`, {
         method: "POST",
@@ -220,26 +253,74 @@ function render(timestamp) {
         };
       } else {
         sample = null;
-        report.comparison =
-          comparison === "behavior"
-            ? "Same base: behavior controller off / on"
-            : "Base hidden / visible";
-        report.viewport = {
-          width: innerWidth,
-          height: innerHeight,
-          dpr: renderer.getPixelRatio(),
-        };
-        report.frameMedianChangePercent =
-          (report.base.frameMedianMs / report.baseline.frameMedianMs - 1) * 100;
-        report.frameP95ChangePercent =
-          (report.base.frameP95Ms / report.baseline.frameP95Ms - 1) * 100;
-        results.textContent = JSON.stringify(report, null, 2);
+        if (comparison === "revision") {
+          results.textContent = JSON.stringify(
+            {
+              revision,
+              ...report.base,
+              viewport: {
+                width: innerWidth,
+                height: innerHeight,
+                dpr: renderer.getPixelRatio(),
+              },
+            },
+            null,
+            2,
+          );
+        } else {
+          report.comparison =
+            comparison === "behavior"
+              ? "Same base: behavior controller off / on"
+              : "Base hidden / visible";
+          report.viewport = {
+            width: innerWidth,
+            height: innerHeight,
+            dpr: renderer.getPixelRatio(),
+          };
+          report.frameMedianChangePercent =
+            (report.base.frameMedianMs / report.baseline.frameMedianMs - 1) *
+            100;
+          report.frameP95ChangePercent =
+            (report.base.frameP95Ms / report.baseline.frameP95Ms - 1) * 100;
+          results.textContent = JSON.stringify(report, null, 2);
+        }
       }
     }
   }
   frameId = requestAnimationFrame(render);
 }
 frameId = requestAnimationFrame(render);
+document.querySelector("#revisionCompare").onclick = () => {
+  if (!ready || sample) return;
+  moon._base.dispose();
+  moon._base = baseFactory(0.4, {
+    seed: 123,
+    gardenInterestPoints: moon._garden.userData.interestPoints,
+    gardenLayout: moon._garden.userData.navigation,
+  });
+  moon.mesh.add(moon._base);
+  moon._base.setReveal(1);
+  moon.mesh.rotation.y = 0.68;
+  moon._base.updateLighting();
+  elapsed = 0;
+  moon.updateGarden(0);
+  moon.updateFlag(0);
+  controls.target.set(0, 0, 0);
+  camera.position.set(0, 0, innerWidth < 500 ? 2.05 : 2);
+  comparison = "revision";
+  baseVisible = true;
+  paused = true;
+  document.querySelector("#motion").textContent = "Resume motion";
+  report.base = null;
+  sample = {
+    label: "base",
+    warmup: 60,
+    previous: performance.now(),
+    cpu: [],
+    frames: [],
+  };
+  results.textContent = `Measuring ${revision} revision, fixed scene and seeded garden.`;
+};
 document.querySelector("#compare").onclick = () => {
   if (!ready || sample) return;
   comparison = "base";
@@ -361,6 +442,35 @@ document.querySelector("#reset").onclick = () => {
 document.querySelector("#capture").onclick = () => {
   captureRequested = true;
 };
+document.querySelector("#record").onclick = () => {
+  if (!ready || recording?.state === "recording") return;
+  const stream = renderer.domElement.captureStream(20);
+  const chunks = [];
+  const mimeType = MediaRecorder.isTypeSupported("video/webm;codecs=vp9")
+    ? "video/webm;codecs=vp9"
+    : "video/webm";
+  recording = new MediaRecorder(stream, {
+    mimeType,
+    videoBitsPerSecond: 900000,
+  });
+  recording.ondataavailable = (event) => {
+    if (event.data.size) chunks.push(event.data);
+  };
+  recording.onstop = async () => {
+    stream.getTracks().forEach((track) => track.stop());
+    const name = `astronaut-motion-${innerWidth < 500 ? "mobile" : "desktop"}-${revision}.webm`;
+    const response = await fetch(`/capture?name=${name}`, {
+      method: "POST",
+      body: new Blob(chunks, { type: mimeType }),
+    });
+    results.textContent = await response.text();
+  };
+  recordingStarted = performance.now();
+  paused = false;
+  document.querySelector("#motion").textContent = "Pause motion";
+  results.textContent = "Recording eight seconds of the real scene…";
+  recording.start();
+};
 const resize = new ResizeObserver(() => {
   camera.aspect = root.clientWidth / root.clientHeight;
   camera.updateProjectionMatrix();
@@ -368,6 +478,7 @@ const resize = new ResizeObserver(() => {
 });
 resize.observe(root);
 window.addEventListener("pagehide", () => {
+  if (recording?.state === "recording") recording.stop();
   cancelAnimationFrame(frameId);
   resize.disconnect();
   controls.dispose();
