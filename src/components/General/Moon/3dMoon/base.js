@@ -18,6 +18,15 @@ import {
   Vector3,
 } from "three";
 import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import {
+  PLAZA_SCALE,
+  PLAZA_DIAMETER,
+  HABITAT_SCALE,
+  ROVER_SCALE,
+  ROCKET_SCALE,
+  HABITAT_POSITION,
+  ROCKET_POSITION,
+} from "./dimensions.js";
 import { LOGO_NORMAL } from "./logo.js";
 import { createWalker, createWanderSimulation } from "./wander.js";
 import { ANCHOR_POSITION as FLAG_ANCHOR_POSITION } from "./flag.js";
@@ -146,8 +155,8 @@ export function createMoonBase(
     placeOnSurface(
       curbAnchor,
       r,
-      Math.cos(angle) * r * 0.35,
-      Math.sin(angle) * r * 0.35,
+      (Math.cos(angle) * r * PLAZA_DIAMETER) / 2,
+      (Math.sin(angle) * r * PLAZA_DIAMETER) / 2,
       0.002 * r,
       angle + Math.PI / 2,
     );
@@ -155,7 +164,7 @@ export function createMoonBase(
     const curb = part(
       "box",
       COLORS.metal,
-      [0.043, 0.009, 0.008],
+      [0.043 * PLAZA_SCALE, 0.009, 0.008],
       [0, 0.003, 0],
     );
     curb.applyMatrix4(curbAnchor.matrix);
@@ -186,12 +195,18 @@ export function createMoonBase(
       [0, 0.08, 0],
       [0, 0, Math.PI / 2],
     ),
-    part("box", COLORS.dark, [0.042, 0.054, 0.006], [0, 0.043, 0.069]),
+    part("box", COLORS.dark, [0.042, 0.083, 0.006], [0, 0.052, 0.069]),
     part("box", COLORS.blue, [0.075, 0.006, 0.055], [-0.085, 0.096, 0]),
     part("cylinder", COLORS.metal, [0.002, 0.07, 0.002], [0.075, 0.13, 0]),
     part("sphere", COLORS.metal, [0.016, 0.006, 0.016], [0.075, 0.164, 0]),
   ]);
-  const habitatAnchor = mount(habitat, 0.27, 0.29, -0.35);
+  habitat.geometry.scale(HABITAT_SCALE, HABITAT_SCALE, HABITAT_SCALE);
+  const habitatAnchor = mount(
+    habitat,
+    HABITAT_POSITION.x,
+    HABITAT_POSITION.y,
+    -0.35,
+  );
   const windows = assembly(
     [
       part("box", COLORS.warm, [0.035, 0.02, 0.004], [-0.066, 0.058, 0.07]),
@@ -200,6 +215,7 @@ export function createMoonBase(
     ],
     glow,
   );
+  windows.geometry.scale(HABITAT_SCALE, HABITAT_SCALE, HABITAT_SCALE);
   habitatAnchor.add(windows);
   reveals.push(windows);
 
@@ -228,10 +244,14 @@ export function createMoonBase(
       ),
     );
   }
-  mount(assembly(rocketParts), -0.33, 0.1, -0.25);
+  const rocket = assembly(rocketParts);
+  rocket.geometry.scale(ROCKET_SCALE, ROCKET_SCALE, ROCKET_SCALE);
+  mount(rocket, ROCKET_POSITION.x, ROCKET_POSITION.y, -0.25);
 
   const rover = new Group();
   rover.name = "LunarRover";
+  // Scale around the ground contact, preserving wheel clearance and reveal size.
+  rover.userData.revealScale = ROVER_SCALE;
   rover.add(
     assembly([
       part("box", COLORS.hull, [0.15, 0.035, 0.064], [0, 0.037, 0]),
@@ -401,13 +421,23 @@ export function createMoonBase(
     group.add(anchor);
     return { mesh, anchor };
   }
-  mountShadow(0.27, 0.29, 0.15, 0.1);
-  mountShadow(-0.33, 0.1, 0.06, 0.06);
+  mountShadow(
+    HABITAT_POSITION.x,
+    HABITAT_POSITION.y,
+    0.15 * HABITAT_SCALE,
+    0.1 * HABITAT_SCALE,
+  );
+  mountShadow(
+    ROCKET_POSITION.x,
+    ROCKET_POSITION.y,
+    0.06 * ROCKET_SCALE,
+    0.06 * ROCKET_SCALE,
+  );
   const people = [boy, girl];
   const wheelSides = [-1, 1];
   const normalAt = (x, y) => new Vector3(x, y, Math.sqrt(1 - x * x - y * y));
   const roverWalker = createWalker(FRONT, {
-    radius: 0.095,
+    radius: 0.095 * ROVER_SCALE,
     speed: 0.065,
     heading: 0.32,
   });
@@ -425,8 +455,16 @@ export function createMoonBase(
   });
   const inverseFrame = group.quaternion.clone().invert();
   const obstacles = [
-    { name: "Habitat", normal: normalAt(0.27, 0.29), radius: 0.17 },
-    { name: "Rocket", normal: normalAt(-0.33, 0.1), radius: 0.065 },
+    {
+      name: "Habitat",
+      normal: normalAt(HABITAT_POSITION.x, HABITAT_POSITION.y),
+      radius: 0.17 * HABITAT_SCALE,
+    },
+    {
+      name: "Rocket",
+      normal: normalAt(ROCKET_POSITION.x, ROCKET_POSITION.y),
+      radius: 0.065 * ROCKET_SCALE,
+    },
     {
       name: "Flag",
       normal: new Vector3(
@@ -493,7 +531,7 @@ export function createMoonBase(
 
   function positionRover() {
     placeWalker(roverAnchor, roverWalker, true, 0.001 * r);
-    wheelAngle = -roverWalker.distance / 0.02;
+    wheelAngle = -roverWalker.distance / (0.02 * ROVER_SCALE);
     updateWheels();
   }
   positionRover();
@@ -654,7 +692,7 @@ export function createMoonBase(
   group.updateLighting = () => {
     if (disposed) return;
     group.getWorldScale(worldScale);
-    const size = worldScale.x;
+    const size = worldScale.x * ROVER_SCALE;
     headlight.distance = r * 0.3 * size;
     headlight.intensity = HEADLIGHT_INTENSITY * size * size * smooth(reveal);
   };

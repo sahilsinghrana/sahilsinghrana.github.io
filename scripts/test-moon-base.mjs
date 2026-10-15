@@ -279,8 +279,8 @@ test("headlights illuminate forward, remain shadowless and scale with the Moon",
   parent.scale.setScalar(2);
   base.updateLighting();
   const light = base.getObjectByName("RoverHeadlights");
-  near(light.intensity, 0.08);
-  near(light.distance, 0.24);
+  near(light.intensity, 0.056448);
+  near(light.distance, 0.2016);
   assert.equal(light.castShadow, false);
   assert.ok(light.target.position.x > light.position.x);
   assert.ok(light.target.position.y < light.position.y);
