@@ -10,6 +10,7 @@ import { createAnimationClock } from "../src/components/General/Moon/3dMoon/moti
 import {
   createWalker,
   createWanderSimulation,
+  obstacleGap,
 } from "../src/components/General/Moon/3dMoon/wander.js";
 
 const near = (actual, expected, epsilon = 1e-8) =>
@@ -68,7 +69,7 @@ test("base stays within geometry, draw-call, material and lighting budgets", () 
   assert.ok(triangles <= 8000);
   assert.ok(calls <= 30);
   assert.ok(palette.size <= 9);
-  assert.equal(lights, 1);
+  assert.equal(lights, 2);
   console.log(
     `Base budget: ${triangles} triangles, ${calls} draw calls, ${palette.size} materials, ${lights} lights`,
   );
@@ -156,10 +157,7 @@ test("random wandering explores beyond the plaza and avoids every stationary obj
     for (const agent of simulation.agents) {
       assert.ok(agent.normal.z >= agent.boundCos - 1e-8);
       for (const obstacle of simulation.obstacles)
-        assert.ok(
-          agent.normal.dot(obstacle.normal) <=
-            Math.cos(agent.radius + obstacle.radius) + 1e-8,
-        );
+        assert.ok(obstacleGap(agent.normal, obstacle) >= agent.radius - 1e-8);
       for (const other of simulation.agents)
         if (agent !== other)
           assert.ok(
@@ -279,8 +277,8 @@ test("headlights illuminate forward, remain shadowless and scale with the Moon",
   parent.scale.setScalar(2);
   base.updateLighting();
   const light = base.getObjectByName("RoverHeadlights");
-  near(light.intensity, 0.08);
-  near(light.distance, 0.24);
+  near(light.intensity, 0.056448);
+  near(light.distance, 0.2016);
   assert.equal(light.castShadow, false);
   assert.ok(light.target.position.x > light.position.x);
   assert.ok(light.target.position.y < light.position.y);

@@ -178,7 +178,10 @@ export class Moon {
       // Image decoding can finish after navigation disposed the Moon.
       if (this._disposed || !this.mesh) return;
       try {
-        this._base = createMoonBase(radius);
+        this._base = createMoonBase(radius, {
+          gardenInterestPoints: this._garden?.userData.interestPoints,
+          gardenLayout: this._garden?.userData.navigation,
+        });
         this.mesh.add(this._base);
       } catch (err) {
         console.error("Lunar base initialization failed:", err);

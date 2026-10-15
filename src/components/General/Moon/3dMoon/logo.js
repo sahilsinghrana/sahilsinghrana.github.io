@@ -9,6 +9,8 @@ import {
   Vector3,
 } from "three";
 
+import { PLAZA_DIAMETER } from "./dimensions.js";
+
 export const LOGO_NORMAL = new Vector3(-0.25, -0.04, 0.31).normalize();
 export { TARGET_ETCHED_OPACITY } from "./motion.js";
 
@@ -289,7 +291,7 @@ function buildMeshFromCanvas(canvas, moonRadius) {
     depthWrite: false,
   });
 
-  const logoSize = moonRadius * 0.7;
+  const logoSize = moonRadius * PLAZA_DIAMETER;
   const segments = 24;
   const geometry = new PlaneGeometry(logoSize, logoSize, segments, segments);
 
