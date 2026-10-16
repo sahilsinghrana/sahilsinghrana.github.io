@@ -7,6 +7,7 @@ import {
   placeOnSurface,
 } from "../src/components/General/Moon/3dMoon/base.js";
 import { createAnimationClock } from "../src/components/General/Moon/3dMoon/motion.js";
+import { ASTRONAUT_SCALES } from "../src/components/General/Moon/3dMoon/dimensions.js";
 import {
   createWalker,
   createWanderSimulation,
@@ -117,7 +118,9 @@ test("walkers stay grounded, clear other movers, and animate heads, arms and leg
     for (const name of ["BoyAstronaut", "GirlAstronaut"]) {
       const person = base.getObjectByName(name).parent;
       const altitude = person.position.clone().add(center).length() - 0.4;
-      near(altitude, 0);
+      const actor =
+        base.userData.behavior.actors[name === "BoyAstronaut" ? 0 : 1];
+      near(altitude, actor.pose.hop * 0.4);
       assert.ok(person.position.distanceTo(rover.position) > 0.025);
     }
     if (
@@ -129,8 +132,8 @@ test("walkers stay grounded, clear other movers, and animate heads, arms and leg
   }
   assert.ok(changed);
   assert.ok(initialHead.angleTo(head.quaternion) > 0.01);
-  near(base.getObjectByName("BoyAstronaut").scale.x, 0.8);
-  near(base.getObjectByName("GirlAstronaut").scale.x, 0.8);
+  near(base.getObjectByName("BoyAstronaut").scale.x, ASTRONAUT_SCALES.boy);
+  near(base.getObjectByName("GirlAstronaut").scale.x, ASTRONAUT_SCALES.girl);
   base.dispose();
 });
 
@@ -139,6 +142,9 @@ test("random wandering explores beyond the plaza and avoids every stationary obj
   base.setReveal(1);
   const rover = base.getObjectByName("LunarRover").parent;
   const simulation = base.userData.motion;
+  // Isolate spherical navigation from random social activity choices. The
+  // full controller's collisions and exploration have separate long-run tests.
+  simulation.beforeStep = null;
   let backReached = false;
   let wideWalkingReached = false;
   for (let i = 0; i < 600 * 60; i++) {
@@ -239,7 +245,7 @@ test("each walking astronaut keeps a planted boot without penetrating the Moon",
         assert.ok(lowest >= 0.4 - 1e-7);
         if (lowest < 0.4001) planted = true;
       }
-      assert.ok(planted);
+      assert.ok(planted || base.userData.behavior.actors[person].pose.hop > 0);
     }
   }
   base.dispose();

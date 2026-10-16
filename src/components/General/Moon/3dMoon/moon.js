@@ -263,7 +263,7 @@ export class Moon {
       ? 1
       : Math.min(1, this._baseReveal + deltaSeconds / BASE_REVEAL_SECONDS);
     this._base.setReveal(this._baseReveal);
-    if (!reducedMotion) this._base.update(deltaSeconds);
+    this._base.update(reducedMotion ? 0 : deltaSeconds, reducedMotion);
     this._base.updateLighting();
   }
 

@@ -22,6 +22,9 @@ import { Moon } from "../src/components/General/Moon/3dMoon/moon.js";
 import { createAnimationClock } from "../src/components/General/Moon/3dMoon/motion.js";
 
 const root = document.querySelector("#moonRoot");
+let interactionSeed = new URLSearchParams(location.search).has("seed")
+  ? Number(new URLSearchParams(location.search).get("seed"))
+  : Math.floor(Math.random() * 0xffffffff);
 const revision =
   new URLSearchParams(location.search).get("revision") === "before"
     ? "before"
@@ -120,7 +123,7 @@ function createMoon() {
     }
     moon.mesh.add(moon._garden);
     moon._base = baseFactory(0.4, {
-      seed: 123,
+      seed: interactionSeed,
       gardenInterestPoints: moon._garden?.userData.interestPoints,
       gardenLayout: moon._garden?.userData.navigation,
     });
@@ -148,14 +151,22 @@ function render(timestamp) {
         moon._base.update(1 / 60);
         const actor = moon._base.userData.behavior.actors.find(
           (item) =>
-            item.state === previewTarget &&
+            (item.state === previewTarget ||
+              (previewTarget === "call" &&
+                item.state === "wave" &&
+                item.calling) ||
+              (previewTarget === "waiting" &&
+                item.playfulWait &&
+                item.pose.dance > 0.2)) &&
             (previewTarget !== "garden" ||
               !item.interest.features ||
               item.lastFeature?.kind === "flower") &&
             item.pose.weight > 0.99 &&
-            (previewTarget === "wave"
+            (previewTarget === "wave" || previewTarget === "call"
               ? item.pose.wave > 0.8
-              : Math.max(item.pose.hand, item.pose.chest) > 0.35),
+              : previewTarget === "sit"
+                ? item.pose.sit > 0.99
+                : Math.max(item.pose.hand, item.pose.chest) > 0.35),
         );
         if (actor) {
           capturedActivity = previewTarget;
@@ -353,7 +364,9 @@ function focusActivity(actor) {
   if (
     capturedActivity === "conversation" ||
     capturedActivity === "wave" ||
-    capturedActivity === "showGarden"
+    capturedActivity === "call" ||
+    capturedActivity === "showGarden" ||
+    capturedActivity === "showHouse"
   ) {
     const other = moon._base
       .getObjectByName("BoyAstronaut")
@@ -363,11 +376,20 @@ function focusActivity(actor) {
     forward.crossVectors(normal, forward).normalize();
   }
   controls.minDistance = 0.25;
+  if (capturedActivity === "sit" || capturedActivity === "garden")
+    forward.crossVectors(normal, forward).normalize();
   controls.target.copy(target);
+  camera.up.copy(normal);
   camera.position
     .copy(target)
-    .addScaledVector(normal, distance * 0.86)
-    .addScaledVector(forward, distance * 0.5);
+    .addScaledVector(
+      normal,
+      distance * (capturedActivity === "sit" ? 0.42 : 0.86),
+    )
+    .addScaledVector(
+      forward,
+      distance * (capturedActivity === "sit" ? 0.9 : 0.5),
+    );
   controls.update();
 }
 function setBehaviorRunning(enabled) {
@@ -435,6 +457,7 @@ document.querySelector("#zoom").onclick = () => {
   camera.position.set(0, 0, 0.85);
 };
 document.querySelector("#reset").onclick = () => {
+  interactionSeed = Math.floor(Math.random() * 0xffffffff);
   moon.dispose();
   recreations++;
   createMoon();

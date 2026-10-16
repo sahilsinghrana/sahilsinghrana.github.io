@@ -32,7 +32,8 @@ pre{white-space:pre-wrap;text-align:left;max-width:740px;margin:16px auto;font-s
 <button id="reset">Recreate scene</button>
 <button id="capture">Capture scene</button>
 <button id="record">Record 8-second motion</button>
-<button data-activity="garden">Preview garden</button><button data-activity="rocket">Preview rocket</button><button data-activity="conversation">Preview conversation</button><button data-activity="wave">Preview greeting</button><button data-activity="showGarden">Preview shared garden</button><button data-activity="house">Preview house</button>
+<button data-activity="garden">Preview garden</button><button data-activity="rocket">Preview rocket</button><button data-activity="conversation">Preview conversation</button><button data-activity="wave">Preview greeting</button><button data-activity="showGarden">Preview shared garden</button><button data-activity="house">Preview house</button><button data-activity="showHouse">Preview shared house</button>
+<button data-activity="sit">Preview sitting</button><button data-activity="waiting">Preview playful wait</button><button data-activity="call">Preview silent call</button>
 <button id="behaviorCompare">Measure behavior overhead</button><pre id="activity">Live behavior</pre>
 <button id="revisionCompare">Measure this revision</button><a href="?revision=before">Before</a> / <a href="?revision=after">After</a>
 <select id="phase" aria-label="Moon phase"><option value="0.5">Full Moon</option><option value="0.25">Quarter Moon</option><option value="0">New Moon</option></select>
@@ -77,7 +78,7 @@ const server = await createServer({
             ).searchParams.get("name");
             if (
               request.method !== "POST" ||
-              !/^(?:(?:moon-(?:0|0\.25|0\.5)-(?:mobile|desktop)-(?:base|baseline)|astronaut-(?:garden|rocket|house|conversation|wave|showGarden)-(?:mobile|desktop))(?:-before|-after)?\.png|astronaut-motion-(?:mobile|desktop)-(?:before|after)\.webm)$/.test(
+              !/^(?:(?:moon-(?:0|0\.25|0\.5)-(?:mobile|desktop)-(?:base|baseline)|astronaut-(?:garden|rocket|house|conversation|wave|showGarden|showHouse|sit|waiting|call)-(?:mobile|desktop))(?:-before|-after)?\.png|astronaut-motion-(?:mobile|desktop)-(?:before|after)\.webm)$/.test(
                 name || "",
               )
             ) {

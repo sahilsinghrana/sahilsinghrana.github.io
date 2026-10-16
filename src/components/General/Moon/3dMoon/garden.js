@@ -152,11 +152,41 @@ function createStem(height, radius = 0.0025) {
 }
 
 function createLeaf(length, width) {
-  // Elongated, strap-like blade rather than a stubby oval — real tulip
-  // leaves have a much higher length:width ratio.
-  const geometry = new THREE.SphereGeometry(1, 6, 4);
-  geometry.scale(width, length, 0.003);
-  const material = makeMaterial(LEAF_COLOR, 0.95);
+  // Rooted at the origin: a thin, cupped blade that rises along the stem
+  // before bending outward, with a broad middle and a pointed tip.
+  const positions = [];
+  const indices = [];
+  const rows = 8;
+  const columns = 2;
+  for (let row = 0; row <= rows; row += 1) {
+    const t = row / rows;
+    const breadth = Math.sin(Math.PI * t) ** 0.8;
+    for (let column = 0; column <= columns; column += 1) {
+      const u = column - 1;
+      positions.push(
+        u * width * breadth,
+        t * length,
+        length * (0.14 * t + 0.23 * t * t) +
+          width * 0.2 * (1 - u * u) * breadth,
+      );
+    }
+  }
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < columns; column += 1) {
+      const a = row * (columns + 1) + column;
+      const b = a + columns + 1;
+      if (row > 0) indices.push(a, a + 1, b);
+      if (row < rows - 1) indices.push(a + 1, b + 1, b);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute(
+    "position",
+    new THREE.Float32BufferAttribute(positions, 3),
+  );
+  geometry.setIndex(indices);
+  geometry.computeVertexNormals();
+  const material = makeMaterial(LEAF_COLOR, 0.95, { side: THREE.DoubleSide });
   return {
     mesh: markSurfaceMesh(new THREE.Mesh(geometry, material)),
     geometry,
@@ -169,6 +199,8 @@ const TULIP_HEIGHT_RANGES = {
   opening: [0.029, 0.037],
   bloom: [0.036, 0.046],
 };
+const TULIP_SCALE = 0.9;
+const TULIP_HEIGHT_SCALE = 0.85;
 
 function pickTulipPhase() {
   const roll = Math.random();
@@ -189,7 +221,7 @@ function createPetalGeometry(width, height, opening, inner) {
     const radius =
       width *
       Math.sin(t * Math.PI * 0.5) *
-      (1 + 0.22 * Math.sin(t * Math.PI) - (opening ? 0.25 : 0.06) * t ** 3) *
+      (1 + 0.22 * Math.sin(t * Math.PI) - (opening ? 0.32 : 0.18) * t ** 3) *
       (inner ? 0.91 : 1);
     const halfAngle = 0.82 + 0.35 * Math.sin(t * Math.PI);
     for (let column = 0; column <= columns; column += 1) {
@@ -207,8 +239,8 @@ function createPetalGeometry(width, height, opening, inner) {
       const a = row * (columns + 1) + column;
       const b = a + columns + 1;
       // Skip the collapsed triangle along the shared, pointed base.
-      if (row > 0) indices.push(a, b, a + 1);
-      indices.push(a + 1, b, b + 1);
+      if (row > 0) indices.push(a, a + 1, b);
+      indices.push(a + 1, b + 1, b);
     }
   }
   const geometry = new THREE.BufferGeometry();
@@ -223,6 +255,7 @@ function createPetalGeometry(width, height, opening, inner) {
 
 function createTulip(baseColor, phase) {
   const group = new THREE.Group();
+  group.scale.set(TULIP_SCALE, TULIP_HEIGHT_SCALE, TULIP_SCALE);
   const geometries = [];
   const materials = [];
 
@@ -234,7 +267,7 @@ function createTulip(baseColor, phase) {
   );
 
   const [minHeight, maxHeight] = TULIP_HEIGHT_RANGES[phase];
-  const height = randomBetween(minHeight, maxHeight);
+  const height = randomBetween(minHeight, maxHeight) * 0.85;
 
   const stem = createStem(height, phase === "bud" ? 0.00105 : 0.00145);
   stem.mesh.rotation.z = randomBetween(-0.05, 0.05);
@@ -295,30 +328,54 @@ function createTulip(baseColor, phase) {
     }
   }
 
-  // Leaves sheathe the stem near its base (as on a real tulip) instead of
-  // being scattered at random heights up the stem.
-  const leafChance = phase === "bud" ? 0.5 : 0.85;
+  // Alternate, clasping leaves rise toward the head rather than forming
+  // a flat rosette below the stem.
   for (const side of [-1, 1]) {
-    if (Math.random() < leafChance) {
-      const leaf = createLeaf(
-        randomBetween(0.014, 0.02),
-        randomBetween(0.0022, 0.0032),
-      );
-      leaf.mesh.position.set(
-        side * 0.0015,
-        height * randomBetween(0.06, 0.14),
-        0,
-      );
-      leaf.mesh.rotation.z = side * randomBetween(0.75, 1.05);
-      leaf.mesh.rotation.y = randomBetween(-0.3, 0.3);
-      leaf.mesh.rotation.x = randomBetween(-0.1, 0.1);
-      group.add(leaf.mesh);
-      geometries.push(leaf.geometry);
-      materials.push(leaf.material);
-    }
+    const leaf = createLeaf(
+      height * randomBetween(0.62, 0.72),
+      randomBetween(0.0026, 0.0033),
+    );
+    leaf.mesh.position.set(
+      side * 0.0006,
+      height * (side === -1 ? 0.18 : 0.3),
+      0,
+    );
+    leaf.mesh.rotation.z = side * randomBetween(0.05, 0.12);
+    leaf.mesh.rotation.y = (side * Math.PI) / 2 + randomBetween(-0.2, 0.2);
+    leaf.mesh.rotation.x = randomBetween(-0.08, 0.08);
+    group.add(leaf.mesh);
+    geometries.push(leaf.geometry);
+    materials.push(leaf.material);
   }
 
-  return { group, geometries, materials, height };
+  // Nominal contact points on the existing leaf/petal surfaces, prepared once.
+  const touchPoints = Array.from({ length: 4 }, () => new THREE.Vector3());
+  const scores = new Float64Array(4).fill(-Infinity);
+  const vertex = new THREE.Vector3();
+  for (const mesh of group.children) {
+    mesh.updateMatrix();
+    const positions = mesh.geometry?.attributes.position;
+    if (!positions) continue;
+    for (let i = 0; i < positions.count; i++) {
+      vertex.fromBufferAttribute(positions, i).applyMatrix4(mesh.matrix);
+      const y = vertex.y * TULIP_HEIGHT_SCALE;
+      if (y < 0.014 || y > 0.028) continue;
+      for (let side = 0; side < 4; side++) {
+        const score = (side < 2 ? vertex.x : vertex.z) * (side % 2 ? -1 : 1);
+        if (score > scores[side]) {
+          scores[side] = score;
+          touchPoints[side].copy(vertex);
+        }
+      }
+    }
+  }
+  return {
+    group,
+    geometries,
+    materials,
+    height,
+    touchPoints: touchPoints.filter((_, i) => scores[i] > 0.001),
+  };
 }
 
 function createRootShadow(size) {
@@ -334,6 +391,169 @@ function createRootShadow(size) {
     geometry,
     material,
   };
+}
+
+function createSunflower() {
+  const group = new THREE.Group();
+  group.name = "Sunflower";
+  const headHeight = 0.037;
+  const headRotation = new THREE.Quaternion().setFromAxisAngle(
+    new THREE.Vector3(1, 0, 0),
+    (-35 * Math.PI) / 180,
+  );
+  const headPoint = (x, y, z) =>
+    new THREE.Vector3(x, y, z)
+      .applyQuaternion(headRotation)
+      .add(new THREE.Vector3(0, headHeight, 0));
+  const buffer = () => ({ positions: [], colors: [], indices: [] });
+  const petals = buffer();
+  const center = buffer();
+  const green = buffer();
+  // Bake disconnected surfaces into one indexed buffer per material.
+  // No petal objects, instance buffers, textures, or animated vertices.
+  const surface = (data, rows, columns, point, color) => {
+    const start = data.positions.length / 3;
+    for (let row = 0; row <= rows; row++) {
+      for (let column = 0; column <= columns; column++) {
+        const t = row / rows;
+        const u = column / columns;
+        data.positions.push(...point(t, u).toArray());
+        const shade = color(t, u);
+        data.colors.push(shade.r, shade.g, shade.b);
+      }
+    }
+    for (let row = 0; row < rows; row++) {
+      for (let column = 0; column < columns; column++) {
+        const a = start + row * (columns + 1) + column;
+        const b = a + columns + 1;
+        data.indices.push(a, b, a + 1, a + 1, b, b + 1);
+      }
+    }
+  };
+  const gold = new THREE.Color(0xd9ac42);
+  const goldBase = new THREE.Color(0xb88a28);
+  for (let petal = 0; petal < 18; petal++) {
+    const angle = (petal * Math.PI * 2) / 18 + Math.sin(petal * 2.4) * 0.018;
+    const length = 0.0051 + Math.sin(petal * 2.3) * 0.0002;
+    surface(
+      petals,
+      3,
+      2,
+      (t, u) => {
+        const radius = 0.0037 + length * t;
+        const across = (u * 2 - 1) * 0.00125 * Math.sin(Math.PI * t) ** 0.7;
+        return headPoint(
+          Math.cos(angle) * radius - Math.sin(angle) * across,
+          Math.sin(angle) * radius + Math.cos(angle) * across,
+          0.0002 +
+            Math.sin(t * Math.PI) * 0.0006 -
+            t * t * 0.0007 +
+            (1 - (u * 2 - 1) ** 2) * 0.0002,
+        );
+      },
+      (t) => goldBase.clone().lerp(gold, 0.35 + t * 0.65),
+    );
+  }
+  const brown = new THREE.Color(0x594126);
+  surface(
+    center,
+    3,
+    20,
+    (t, u) => {
+      const angle = u * Math.PI * 2;
+      return headPoint(
+        Math.cos(angle) * t * 0.0044,
+        Math.sin(angle) * t * 0.0044,
+        0.0007 + 0.0011 * (1 - t * t),
+      );
+    },
+    (t, u) =>
+      brown
+        .clone()
+        .multiplyScalar(
+          0.85 + t * 0.12 + 0.09 * Math.sin(u * Math.PI * 34 + t * 19),
+        ),
+  );
+
+  const leafColor = new THREE.Color(LEAF_COLOR);
+  const stemColor = new THREE.Color(STEM_COLOR);
+  // Six-sided tapered stem; its ends are buried in the soil and head.
+  surface(
+    green,
+    1,
+    6,
+    (t, u) => {
+      const angle = u * Math.PI * 2;
+      const radius = 0.0011 - t * 0.00025;
+      return new THREE.Vector3(
+        Math.cos(angle) * radius,
+        t * headHeight,
+        Math.sin(angle) * radius,
+      );
+    },
+    () => stemColor,
+  );
+  for (const side of [-1, 1]) {
+    surface(
+      green,
+      5,
+      2,
+      (t, u) => {
+        // Broad shoulders low on the blade suggest a heart-shaped leaf.
+        const breadth =
+          Math.sin(Math.PI * t) ** 0.65 *
+          (1 + 0.25 * Math.sin(t * Math.PI * 2));
+        return new THREE.Vector3(
+          side * (0.0008 + 0.008 * t),
+          (side < 0 ? 0.012 : 0.022) + 0.011 * t,
+          (u * 2 - 1) * 0.0043 * breadth + Math.sin(t * Math.PI) * 0.001,
+        );
+      },
+      () => leafColor,
+    );
+  }
+  surface(
+    green,
+    1,
+    16,
+    (t, u) =>
+      headPoint(
+        Math.cos(u * Math.PI * 2) * t * 0.0048,
+        Math.sin(u * Math.PI * 2) * t * 0.0048,
+        -0.00065,
+      ),
+    () => stemColor,
+  );
+
+  const geometries = [];
+  const materials = [];
+  for (const [name, data, roughness] of [
+    ["SunflowerPetals", petals, 0.8],
+    ["SunflowerCenter", center, 0.98],
+    ["SunflowerGreen", green, 0.95],
+  ]) {
+    const geometry = new THREE.BufferGeometry();
+    geometry.setAttribute(
+      "position",
+      new THREE.Float32BufferAttribute(data.positions, 3),
+    );
+    geometry.setAttribute(
+      "color",
+      new THREE.Float32BufferAttribute(data.colors, 3),
+    );
+    geometry.setIndex(data.indices);
+    geometry.computeVertexNormals();
+    const material = makeMaterial(0xffffff, roughness, {
+      vertexColors: true,
+      side: THREE.DoubleSide,
+    });
+    const mesh = markSurfaceMesh(new THREE.Mesh(geometry, material));
+    mesh.name = name;
+    group.add(mesh);
+    geometries.push(geometry);
+    materials.push(material);
+  }
+  return { group, geometries, materials, headHeight };
 }
 
 function createPebble(size) {
@@ -452,13 +672,14 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     const flower = createTulip(color, phase);
     flower.group.position.set(x, 0.004, z);
     flower.group.rotation.y = randomBetween(0, Math.PI * 2);
+    flower.group.updateMatrix();
     group.add(flower.group);
     geometries.push(...flower.geometries);
     materials.push(...flower.materials);
 
     const shadowSize =
       phase === "bud" ? 0.006 : phase === "opening" ? 0.0078 : 0.0095;
-    const shadow = createRootShadow(shadowSize);
+    const shadow = createRootShadow(shadowSize * TULIP_SCALE);
     shadow.mesh.position.set(x, 0.003, z);
     group.add(shadow.mesh);
     rootShadows.push(shadow.mesh);
@@ -469,7 +690,7 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
       base: new THREE.Vector3(x, 0.004, z).applyMatrix4(group.matrix),
       bloom: new THREE.Vector3(
         x,
-        0.004 + flower.height + 0.008,
+        0.004 + (flower.height + 0.008) * TULIP_HEIGHT_SCALE,
         z,
       ).applyMatrix4(group.matrix),
     });
@@ -477,11 +698,17 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
       kind: "flower",
       base: interestPoints[interestPoints.length - 1].base.clone(),
       focus: interestPoints[interestPoints.length - 1].bloom.clone(),
-      radius: 0.017,
+      radius: 0.0045,
+      touches: flower.touchPoints.map((point) =>
+        point
+          .clone()
+          .applyMatrix4(flower.group.matrix)
+          .applyMatrix4(group.matrix),
+      ),
     });
     colliders.push({
       position: features[features.length - 1].base,
-      radius: 0.017,
+      radius: 0.0045,
     });
     movingFlowers.push(flower.group);
   };
@@ -503,17 +730,35 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
   }
   // Track tallest possible bloom so the lamp can clear it.
   const maxTulipHeight = TULIP_HEIGHT_RANGES.bloom[1] + 0.011; // + petal height
+  const sunflowerAngle = 1.82;
+  const sunflowerRadius = PATCH_RADIUS * 0.78;
+  const sunflowerX = Math.cos(sunflowerAngle) * sunflowerRadius;
+  const sunflowerZ = Math.sin(sunflowerAngle) * sunflowerRadius;
+  const sunflowerFootprint = 0.017;
 
   for (let index = 0; index < 6; index += 1) {
-    const angle = randomBetween(0, Math.PI * 2);
+    let angle = randomBetween(0, Math.PI * 2);
     const radius = randomBetween(PATCH_RADIUS * 0.7, PATCH_RADIUS * 0.98);
     const pebbleSize = randomBetween(0.0035, 0.0065);
+    for (let attempt = 0; attempt < 12; attempt++) {
+      if (
+        Math.hypot(
+          Math.cos(angle) * radius - sunflowerX,
+          Math.sin(angle) * radius - sunflowerZ,
+        ) >=
+        sunflowerFootprint + pebbleSize + 0.003
+      )
+        break;
+      angle += Math.PI / 6;
+    }
     const pebble = createPebble(pebbleSize);
-    pebble.mesh.position.set(
-      Math.cos(angle) * radius,
-      0.002,
-      Math.sin(angle) * radius,
-    );
+    const rockX = Math.cos(angle) * radius;
+    const rockZ = Math.sin(angle) * radius;
+    const rockGround =
+      Math.sqrt(moonRadius * moonRadius - rockX * rockX - rockZ * rockZ) -
+      moonRadius;
+    const rockY = rockGround + pebbleSize * 0.12;
+    pebble.mesh.position.set(rockX, rockY, rockZ);
     group.add(pebble.mesh);
     geometries.push(pebble.geometry);
     materials.push(pebble.material);
@@ -524,7 +769,7 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
       base: rockBase,
       focus: new THREE.Vector3(
         pebble.mesh.position.x,
-        0.002 + pebbleSize * 0.55,
+        rockY + pebbleSize * 0.55,
         pebble.mesh.position.z,
       ).applyMatrix4(group.matrix),
       radius: pebbleSize,
@@ -546,6 +791,41 @@ export function createGarden(moonRadius = MOON_RADIUS, gardenNormal) {
     ),
     radius: 0.003,
   });
+
+  // Construct last so the two existing tulips keep their random choices.
+  const sunflower = createSunflower();
+  sunflower.group.position.set(sunflowerX, 0.004, sunflowerZ);
+  sunflower.group.rotation.y = -sunflowerAngle - Math.PI / 2;
+  group.add(sunflower.group);
+  geometries.push(...sunflower.geometries);
+  materials.push(...sunflower.materials);
+  movingFlowers.push(sunflower.group);
+  const sunflowerBase = sunflower.group.position
+    .clone()
+    .applyMatrix4(group.matrix);
+  const sunflowerBloom = new THREE.Vector3(
+    sunflowerX,
+    0.004 + sunflower.headHeight,
+    sunflowerZ,
+  ).applyMatrix4(group.matrix);
+  interestPoints.push({ base: sunflowerBase, bloom: sunflowerBloom });
+  features.push({
+    kind: "flower",
+    base: sunflowerBase.clone(),
+    focus: sunflowerBloom.clone(),
+    radius: sunflowerFootprint,
+  });
+  colliders.push({
+    position: sunflowerBase.clone(),
+    radius: sunflowerFootprint,
+  });
+  const sunflowerShadow = createRootShadow(0.008);
+  sunflowerShadow.mesh.name = "SunflowerRootShadow";
+  sunflowerShadow.mesh.position.set(sunflowerX, 0.003, sunflowerZ);
+  group.add(sunflowerShadow.mesh);
+  rootShadows.push(sunflowerShadow.mesh);
+  geometries.push(sunflowerShadow.geometry);
+  materials.push(sunflowerShadow.material);
 
   const hemiLight = new THREE.HemisphereLight(
     HEMI_SKY_COLOR,
