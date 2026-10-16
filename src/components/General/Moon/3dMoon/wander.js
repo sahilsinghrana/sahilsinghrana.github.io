@@ -261,9 +261,10 @@ export function createWanderSimulation(agents, obstacles, seed) {
     side.crossVectors(agent.forward, desired);
     const sign = side.dot(agent.normal) >= 0 ? 1 : -1;
     const rover = agent.radius > 0.06;
-    const maxYaw = rover ? 0.26 : 1.2;
-    const targetYaw = sign * Math.min(maxYaw, turn * 2);
-    const yawStep = (rover ? 0.45 : 3) * STEP;
+    const maxYaw = rover ? 0.26 : holding ? 2.2 : 1.4;
+    const targetYaw =
+      sign * Math.min(maxYaw, turn * (rover ? 2 : holding ? 6 : 3));
+    const yawStep = (rover ? 0.45 : holding ? 8 : 4) * STEP;
     agent.yawVelocity += Math.max(
       -yawStep,
       Math.min(yawStep, targetYaw - agent.yawVelocity),

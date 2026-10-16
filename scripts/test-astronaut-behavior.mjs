@@ -46,7 +46,7 @@ const advance = (navigation, seconds, fps = 60) => {
 };
 
 test("garden exports actual flower interests with elevated blooms and no extra artwork", () => {
-  assert.equal(interests.length, 2);
+  assert.equal(interests.length, 3);
   for (const point of interests) {
     assert.ok(point.bloom.length() > point.base.length());
     assert.ok(point.bloom.distanceTo(point.base) > 0.02);
@@ -55,12 +55,12 @@ test("garden exports actual flower interests with elevated blooms and no extra a
   }
 });
 
-test("garden graph reaches interior features without crossing plant, lamp or rock footprints", () => {
+test("garden graph protects flowers and lamp while rocks remain walkable", () => {
   const { base, navigation, controller } = fixture();
   const girl = controller.actors[1];
   assert.equal(
     gardenLayout.features.filter((item) => item.kind === "flower").length,
-    2,
+    3,
   );
   assert.equal(
     gardenLayout.features.filter((item) => item.kind === "lamp").length,
@@ -90,7 +90,8 @@ test("garden graph reaches interior features without crossing plant, lamp or roc
     if (start.angleTo(girl.interest.normal) < 0.24)
       reachable.add(girl.views[index].feature.kind);
   }
-  assert.deepEqual([...reachable].sort(), ["flower", "lamp", "rock"]);
+  assert.deepEqual([...reachable].sort(), ["flower", "lamp"]);
+  assert.ok(girl.views.every((point) => point.feature.kind !== "rock"));
   base.dispose();
 });
 
@@ -103,43 +104,61 @@ test("visits change features and viewpoints inside the garden, with close prop i
   for (let tick = 0; tick < 60 * 1800; tick++) {
     navigation.update(1 / 60);
     for (const actor of controller.actors) {
-      if (actor.state === "garden") {
+      if (actor.state === "garden" || actor.state === "showGarden") {
         kinds.add(actor.lastFeature.kind);
         viewpoints.add(actor.lastView);
         assert.ok(navigation.isClear(actor.walker.normal, actor.walker));
-      } else if (actor.state === "rocket" || actor.state === "house") {
+      } else if (
+        actor.state === "rocket" ||
+        actor.state === "house" ||
+        actor.state === "showHouse"
+      ) {
+        const obstacle =
+          actor.state === "showHouse"
+            ? navigation.obstacles.find((item) => item.name === "Habitat")
+            : actor.interest;
         const gap =
-          obstacleGap(actor.walker.normal, actor.interest) -
-          actor.walker.radius;
+          obstacleGap(actor.walker.normal, obstacle) - actor.walker.radius;
         assert.ok(gap > 0 && gap < 0.05, `${actor.state} clearance ${gap}`);
         closeRocket ||= actor.state === "rocket";
-        closeHouse ||= actor.state === "house";
+        closeHouse ||= actor.state === "house" || actor.state === "showHouse";
       }
     }
   }
-  assert.deepEqual([...kinds].sort(), ["flower", "lamp", "rock"]);
-  assert.ok(viewpoints.size >= 5 && closeRocket && closeHouse);
+  assert.deepEqual([...kinds].sort(), ["flower", "lamp"]);
+  assert.ok(
+    viewpoints.size >= 5 && closeRocket && closeHouse,
+    JSON.stringify({
+      views: viewpoints.size,
+      closeRocket,
+      closeHouse,
+      stats: controller.stats,
+    }),
+  );
   base.dispose();
 });
 
-test("longer conversations use quick independent hands and bounded stance changes", () => {
+test("short varied conversations use quick independent hands and readable head gestures", () => {
   const { navigation, controller } = greetingFixture();
   let talkStarted = -1,
     duration = 0,
     sawLeft = false,
     sawRight = false,
-    stance = false;
+    stance = false,
+    boyNods = false,
+    girlShakes = false;
   let gestureFrames = 0,
     longestGesture = 0;
-  for (let tick = 0; tick < 60 * 70; tick++) {
+  for (let tick = 0; tick < 60 * 120; tick++) {
     navigation.update(1 / 60);
     const [boy, girl] = controller.actors;
+    boyNods ||= Math.abs(boy.pose.nod) > 0.1;
+    girlShakes ||= Math.abs(girl.pose.shake) > 0.1;
     if (girl.state === "wave")
       assert.ok(
         girl.until - girl.since >= 3.5 && girl.until - girl.since <= 5.5,
       );
     if (girl.state !== "conversation") {
-      if (talkStarted >= 0) break;
       continue;
     }
     if (talkStarted < 0) {
@@ -155,8 +174,8 @@ test("longer conversations use quick independent hands and bounded stance change
     gestureFrames = girl.pose.hand > 0.25 ? gestureFrames + 1 : 0;
     longestGesture = Math.max(longestGesture, gestureFrames);
   }
-  assert.ok(duration >= 16 && duration <= 28);
-  assert.ok(sawLeft && sawRight && stance);
+  assert.ok(duration >= 3 && duration <= 10);
+  assert.ok(sawLeft && sawRight && stance && boyNods && girlShakes);
   assert.ok(longestGesture > 12 && longestGesture < 100);
   controller.dispose();
 });
@@ -187,6 +206,249 @@ test("house practical is warm, soft, shadowless and scales intensity with area",
   base.dispose();
 });
 
+test("conversation durations include brief exchanges and longer chats", () => {
+  const durations = [];
+  let spread = false;
+  for (const seed of [31, 42, 7]) {
+    const { navigation, controller } = greetingFixture([], true, seed);
+    let previous = -1;
+    for (let tick = 0; tick < 60 * 180; tick++) {
+      navigation.update(1 / 60);
+      const female = controller.actors[1];
+      spread ||= controller.actors.some(
+        (actor) => actor.state === "conversation" && actor.pose.spread > 0.3,
+      );
+      if (female.state === "conversation" && female.since !== previous) {
+        previous = female.since;
+        durations.push(female.until - female.since);
+      }
+    }
+    controller.dispose();
+  }
+  assert.ok(durations.every((duration) => duration >= 3 && duration <= 10));
+  assert.ok(durations.some((duration) => duration <= 6));
+  assert.ok(durations.some((duration) => duration >= 7));
+  assert.ok(spread);
+});
+
+test("an unanswered visible approach becomes a silent calling gesture and a bounded jog", () => {
+  const { navigation, controller, boy, girl } = greetingFixture();
+  const female = controller.actors[1];
+  female.state = "approach";
+  female.approachDistance = boy.normal.angleTo(girl.normal);
+  boy.forward.negate();
+  let hopped = false,
+    spread = false,
+    jogged = false;
+  for (let tick = 0; tick < 60 * 8; tick++) {
+    navigation.update(1 / 60);
+    hopped ||= female.pose.hop > 0.001;
+    spread ||= female.pose.spread > 0.4;
+    jogged ||= boy.speed > controller.actors[0].cruiseSpeed * 1.3;
+    assert.ok(female.pose.hop <= 0.005);
+    assert.ok(
+      boy.normal.angleTo(girl.normal) >= boy.radius + girl.radius - 1e-8,
+    );
+  }
+  assert.equal(controller.stats.calls, 1);
+  assert.ok(hopped && spread && jogged);
+  assert.ok(Math.abs(boy.speed - controller.actors[0].cruiseSpeed) < 0.001);
+  advance(navigation, 20);
+  controller.dispose();
+  assert.equal(boy.speed, controller.actors[0].cruiseSpeed);
+});
+
+test("playful waiting uses both hands and small landed hops; rocks support sitting", () => {
+  const { base, navigation, controller } = fixture();
+  const female = controller.actors[1];
+  for (const actor of controller.actors) {
+    actor.initial = false;
+    actor.state = "waiting";
+    actor.until = 1000;
+    navigation.hold(actor.walker, actor.walker.normal);
+  }
+  female.playfulWait = true;
+  let bothHands = false,
+    hop = false,
+    legs = false;
+  for (let tick = 0; tick < 60 * 6; tick++) {
+    base.update(1 / 60);
+    bothHands ||= female.pose.left > 0.2 && female.pose.right > 0.2;
+    hop ||= female.pose.hop > 0.001;
+    legs ||= female.pose.dance > 0.2;
+    assert.ok(female.pose.hop <= 0.003);
+  }
+  assert.ok(bothHands && hop && legs);
+  assert.equal(female.pose.hop, 0);
+  const rock = female.interest.features.find(
+    (feature) =>
+      feature.kind === "rock" &&
+      navigation.isClear(feature.normal, female.walker),
+  );
+  assert.ok(rock);
+  female.walker.normal.copy(rock.normal);
+  female.walker.target.copy(rock.normal);
+  female.state = "sit";
+  female.since = controller.time;
+  female.playfulWait = false;
+  const head = base.getObjectByName("GirlAstronautHead");
+  const standingHeight = head.position.y;
+  for (let tick = 0; tick < 120; tick++) base.update(1 / 60);
+  assert.ok(female.walker.surfaceLift > 0);
+  assert.ok(female.pose.sit > 0.99);
+  assert.ok(head.position.y < standingHeight - 0.005);
+  assert.ok(female.views.every((point) => point.feature.kind !== "rock"));
+  base.dispose();
+});
+
+test("his subtle height increase preserves her established size and the overall scene scale", () => {
+  const { base } = fixture();
+  base.updateWorldMatrix(true, true);
+  const boy = base.getObjectByName("BoyAstronaut"),
+    girl = base.getObjectByName("GirlAstronaut");
+  const head = new Vector3(),
+    feet = new Vector3();
+  const height = (model) => {
+    model.children[1].getWorldPosition(head);
+    model.parent.getWorldPosition(feet);
+    return head.distanceTo(feet);
+  };
+  assert.ok(Math.abs(height(girl) / height(boy) - 5.7 / (6.2 * 1.018)) < 1e-7);
+  assert.ok(Math.abs((boy.scale.y + girl.scale.y) / 2 - 0.8) < 0.008);
+  base.dispose();
+});
+
+test("walking gloves and boots fit the smaller physical collision footprints", () => {
+  const { base, controller } = fixture();
+  const extremities = base.getObjectByName("AstronautGlovesAndBoots");
+  const matrix = new Matrix4(),
+    point = new Vector3();
+  let samples = 0;
+  for (let tick = 0; tick < 60 * 30; tick++) {
+    base.update(1 / 60);
+    if (tick % 10) continue;
+    controller.actors.forEach((actor, index) => {
+      if (!actor.walker.moving || actor.pose.weight > 0.05) return;
+      for (let part = 0; part < 4; part++) {
+        extremities.getMatrixAt(index * 4 + part, matrix);
+        for (
+          let vertex = 0;
+          vertex < extremities.geometry.attributes.position.count;
+          vertex++
+        ) {
+          point
+            .fromBufferAttribute(
+              extremities.geometry.attributes.position,
+              vertex,
+            )
+            .applyMatrix4(matrix);
+          point.z += 0.4;
+          assert.ok(point.angleTo(actor.walker.normal) < actor.walker.radius);
+        }
+      }
+      samples++;
+    });
+  }
+  assert.ok(samples > 20);
+  base.dispose();
+});
+
+test("managed walking brakes near the destination without a slow-motion tail", () => {
+  const walker = createWalker(new Vector3(0, 0, 1));
+  const navigation = createWanderSimulation([walker], [], 3);
+  const target = new Vector3(Math.sin(0.2), 0, Math.cos(0.2));
+  navigation.arrive(walker, target);
+  let nearAt = -1,
+    arrivedAt = -1;
+  for (let tick = 0; tick < 1800; tick++) {
+    navigation.update(1 / 60);
+    if (nearAt < 0 && walker.normal.angleTo(target) < 0.04) {
+      nearAt = tick / 60;
+      assert.ok(walker.velocity > walker.speed * 0.85);
+    }
+    if (walker.arrived && walker.velocity < 0.001) {
+      arrivedAt = tick / 60;
+      break;
+    }
+  }
+  assert.ok(nearAt >= 0 && arrivedAt > nearAt && arrivedAt - nearAt < 1.8);
+});
+
+test("waves keep travelling, sometimes hop, and always land", () => {
+  let hopping = false,
+    grounded = false,
+    moving = false;
+  for (const seed of [31, 42, 7, 71]) {
+    const { navigation, controller } = greetingFixture([], true, seed);
+    let sawWave = false,
+      hop = false;
+    for (let tick = 0; tick < 60 * 20; tick++) {
+      navigation.update(1 / 60);
+      const girl = controller.actors[1];
+      assert.ok(girl.pose.hop >= 0 && girl.pose.hop <= 0.005);
+      if (girl.state === "wave") {
+        sawWave = true;
+        moving ||= girl.walker.moving && girl.pose.wave > 0.4;
+        hop ||= girl.pose.hop > 0.002;
+      } else if (sawWave) {
+        assert.equal(girl.pose.hop, 0);
+        break;
+      }
+    }
+    hopping ||= hop;
+    grounded ||= sawWave && !hop;
+    controller.dispose();
+  }
+  assert.ok(hopping && grounded && moving);
+});
+
+test("multi-flower visits reach the second bloom before the inspection time budget expires", () => {
+  const { base, navigation, controller } = fixture(71);
+  const blooms = new Set();
+  const places = new Set();
+  for (let tick = 0; tick < 60 * 900; tick++) {
+    navigation.update(1 / 60);
+    const girl = controller.actors[1];
+    if (girl.state === "garden" && girl.lastFeature.kind === "flower") {
+      blooms.add(girl.lastFeature);
+      places.add(girl.lastView);
+      assert.ok(girl.until - girl.since <= 4.5);
+    }
+  }
+  assert.equal(blooms.size, interests.length);
+  assert.ok(places.size >= 3);
+  base.dispose();
+});
+
+test("reduced motion lands an active hop without advancing simulation", () => {
+  const { base, controller } = fixture();
+  const girl = controller.actors[1];
+  girl.pose.hop = 0.005;
+  girl.waveHop = true;
+  base.update(0);
+  const anchor = base.getObjectByName("GirlAstronaut").parent;
+  assert.ok(
+    anchor.position
+      .clone()
+      .add(new Vector3(0, 0, 0.4))
+      .length() > 0.401,
+  );
+  const before = controller.time;
+  base.update(0.05, true);
+  assert.equal(controller.time, before);
+  assert.equal(girl.pose.hop, 0);
+  assert.equal(girl.waveHop, false);
+  assert.ok(
+    Math.abs(
+      anchor.position
+        .clone()
+        .add(new Vector3(0, 0, 0.4))
+        .length() - 0.4,
+    ) < 1e-8,
+  );
+  base.dispose();
+});
+
 test("managed arrival brakes, keeps its destination, and holds a smooth facing", () => {
   const walker = createWalker(new Vector3(0, 0, 1));
   const nav = createWanderSimulation([walker], [], 18);
@@ -205,6 +467,134 @@ test("managed arrival brakes, keeps its destination, and holds a smooth facing",
   nav.wander(walker);
   assert.equal(walker.arrived, false);
   assert.equal(walker.softPartner, null);
+});
+
+test("a stopped astronaut finishes a large inspection turn promptly without sliding", () => {
+  const walker = createWalker(new Vector3(0, 0, 1));
+  const navigation = createWanderSimulation([walker], [], 9);
+  const target = walker.normal
+    .clone()
+    .addScaledVector(walker.forward.clone().negate(), 0.2)
+    .normalize();
+  const start = walker.normal.clone();
+  navigation.hold(walker, target);
+  advance(navigation, 3);
+  const desired = target
+    .clone()
+    .addScaledVector(walker.normal, -target.dot(walker.normal))
+    .normalize();
+  assert.ok(walker.forward.angleTo(desired) < 0.015);
+  assert.equal(walker.normal.distanceTo(start), 0);
+});
+
+test("conversation gaze follows their eye heights while nods stay relative to that gaze", () => {
+  const { base, navigation, controller } = fixture(31);
+  for (const [index, actor] of controller.actors.entries()) {
+    actor.initial = false;
+    actor.until = 1000;
+    actor.since = -5;
+    actor.walker.normal.set(
+      index ? 0.23 : -0.23,
+      -0.55,
+      Math.sqrt(1 - 0.23 ** 2 - 0.55 ** 2),
+    );
+  }
+  for (const actor of controller.actors) {
+    const other = controller.actors.find((item) => item !== actor);
+    actor.walker.forward
+      .copy(other.walker.normal)
+      .addScaledVector(
+        actor.walker.normal,
+        -other.walker.normal.dot(actor.walker.normal),
+      )
+      .normalize();
+    navigation.hold(actor.walker, other.walker.normal);
+  }
+  let checked = false;
+  for (let frame = 0; frame < 60 * 90; frame++) {
+    base.update(1 / 60);
+    const [boy, girl] = controller.actors;
+    if (
+      girl.state !== "conversation" ||
+      controller.time - girl.since < 1 ||
+      Math.abs(boy.pose.nod) > 0.015 ||
+      Math.abs(girl.pose.nod) > 0.015
+    )
+      continue;
+    assert.ok(base.getObjectByName("BoyAstronautHead").rotation.x > 0.02);
+    assert.ok(base.getObjectByName("GirlAstronautHead").rotation.x < -0.005);
+    checked = true;
+    break;
+  }
+  assert.ok(checked);
+  base.dispose();
+});
+
+test("opening activities vary across seeds instead of always starting with the same visits", () => {
+  const openings = new Set();
+  for (const seed of [1, 2, 3, 71, 123, 508]) {
+    const { base, navigation, controller } = fixture(seed);
+    advance(navigation, 12);
+    openings.add(controller.actors.map((actor) => actor.state).join("/"));
+    base.dispose();
+  }
+  assert.ok(openings.size >= 3);
+});
+
+test("garden rocks intersect the Moon surface and flower contact uses real reachable geometry", () => {
+  const original = Math.random;
+  let actualGarden;
+  try {
+    Math.random = createRandom(147);
+    actualGarden = createGarden(0.4, GARDEN_SURFACE_NORMAL);
+  } finally {
+    Math.random = original;
+  }
+  actualGarden.updateWorldMatrix(true, true);
+  const vertex = new Vector3();
+  let rocks = 0;
+  actualGarden.traverse((mesh) => {
+    if (mesh.geometry?.type !== "DodecahedronGeometry") return;
+    let min = Infinity,
+      max = 0;
+    const positions = mesh.geometry.attributes.position;
+    for (let i = 0; i < positions.count; i++) {
+      vertex.fromBufferAttribute(positions, i).applyMatrix4(mesh.matrixWorld);
+      min = Math.min(min, vertex.length());
+      max = Math.max(max, vertex.length());
+    }
+    assert.ok(min < 0.4 && max > 0.4);
+    rocks++;
+  });
+  assert.equal(rocks, 6);
+  actualGarden.dispose();
+  const { base, controller } = fixture(123);
+  const female = controller.actors[1];
+  const gloves = base.getObjectByName("AstronautGlovesAndBoots");
+  const matrix = new Matrix4();
+  let touched = false;
+  for (let tick = 0; tick < 60 * 1800; tick++) {
+    base.update(1 / 60);
+    if (!female.touchActive || female.pose.touch < 0.9) continue;
+    gloves.getMatrixAt(5 + female.touchArm * 2, matrix);
+    vertex.setFromMatrixPosition(matrix);
+    vertex.z += 0.4;
+    const distance = vertex.distanceTo(
+      female.touchTarget.clone().multiplyScalar(0.4),
+    );
+    assert.ok(distance < 0.002);
+    assert.ok(female.walker.velocity < 0.003);
+    assert.ok(
+      base.userData.motion.isClear(female.walker.normal, female.walker),
+    );
+    touched = true;
+    break;
+  }
+  assert.ok(
+    touched,
+    "a reachable flower receives a bounded, gentle glove gesture",
+  );
+  base.dispose();
 });
 
 test("inspection destinations remain outside all colliders and differ between visits", () => {
@@ -226,14 +616,17 @@ test("inspection destinations remain outside all colliders and differ between vi
       ) {
         assert.ok(actor.walker.arrived);
         assert.ok(navigation.isClear(actor.walker.target, actor.walker));
-        assert.ok(actor.walker.target.distanceTo(previousView[index]) > 1e-5);
+        assert.ok(
+          actor.walker.target.distanceTo(previousView[index]) > 1e-5,
+          `${index}: repeated ${actor.state} viewpoint at ${controller.time}`,
+        );
         if (
           completed[index] >= 0 &&
           actor.visitStarted === actor.since &&
           actor.state !== "showGarden" &&
           actor.state !== "gardenGuest"
         )
-          assert.ok(actor.since - completed[index] >= (index ? 15 : 35));
+          assert.ok(actor.since - completed[index] >= (index ? 10 : 15));
         previousView[index].copy(actor.walker.target);
         previousVisit[index] = actor.since;
         inspections++;
@@ -247,7 +640,7 @@ test("inspection destinations remain outside all colliders and differ between vi
   base.dispose();
 });
 
-test("girl initiates; boy responds only nearby; conversation alternates with safe separation", () => {
+test("either partner can initiate; conversation alternates with safe separation", () => {
   const { base, navigation, controller } = fixture();
   let previousGirl = "wander";
   let observed = false;
@@ -257,13 +650,22 @@ test("girl initiates; boy responds only nearby; conversation alternates with saf
     navigation.update(1 / 60);
     const [boy, girl] = controller.actors;
     if (boy.state === "acknowledge" && previousGirl !== "conversation") {
-      assert.ok(girl.state === "approach" || girl.state === "wave");
+      assert.ok(
+        girl.state === "approach" ||
+          girl.state === "wave" ||
+          girl.state === "meeting",
+      );
       assert.ok(boy.walker.normal.angleTo(girl.walker.normal) < 0.66);
     }
     if (girl.state === "conversation") {
       assert.equal(boy.state, "conversation");
-      assert.ok(boy.walker.normal.angleTo(girl.walker.normal) >= 0.085);
-      assert.ok(boy.walker.normal.angleTo(girl.walker.normal) <= 0.105);
+      const clearance = boy.walker.radius + girl.walker.radius;
+      assert.ok(
+        boy.walker.normal.angleTo(girl.walker.normal) >= clearance + 0.004,
+      );
+      assert.ok(
+        boy.walker.normal.angleTo(girl.walker.normal) <= clearance + 0.02,
+      );
       assert.ok(boy.walker.velocity < 0.003 && girl.walker.velocity < 0.003);
       assert.ok(!(boy.pose.hand > 0.3 && girl.pose.hand > 0.3));
       girlGesture ||= girl.pose.hand > 0.3;
@@ -275,20 +677,107 @@ test("girl initiates; boy responds only nearby; conversation alternates with saf
       girl.state !== "conversation" &&
       previousGirl === "conversation"
     ) {
-      if (girl.state === "leadGarden" || girl.state === "inviteGarden") {
+      if (
+        girl.state === "leadGarden" ||
+        girl.state === "inviteGarden" ||
+        girl.state === "acceptHouse"
+      ) {
         assert.equal(boy.walker.softPartner, girl.walker);
         assert.equal(girl.walker.softPartner, boy.walker);
       } else {
         assert.equal(boy.walker.softPartner, null);
         assert.equal(girl.walker.softPartner, null);
       }
-      assert.ok(girl.nextTalkAt - controller.time >= 17.9);
+      assert.ok(girl.nextTalkAt - controller.time >= 7.9);
       break;
     }
     previousGirl = girl.state;
   }
   assert.ok(observed && girlGesture && boyGesture);
   base.dispose();
+});
+
+test("boy approaches, invites, and shows the house with separate safe viewing positions", () => {
+  let shown = 0;
+  let boyApproaches = 0;
+  for (const seed of [123, 71, 508]) {
+    const boy = createWalker(new Vector3(-0.11, 0, Math.sqrt(1 - 0.11 ** 2)));
+    const girl = createWalker(new Vector3(0.11, 0, Math.sqrt(1 - 0.11 ** 2)));
+    const house = {
+      normal: new Vector3(0, 0.25, Math.sqrt(1 - 0.25 ** 2)),
+      radius: 0.06,
+      halfWidth: 0.06,
+      halfDepth: 0.04,
+      axisX: new Vector3(1, 0, 0),
+      axisY: new Vector3(0, Math.sqrt(1 - 0.25 ** 2), -0.25),
+      focuses: [new Vector3(0, 0.25, 1.04)],
+    };
+    const navigation = createWanderSimulation([boy, girl], [house], seed);
+    const controller = createAstronautBehavior({
+      navigation,
+      boy,
+      girl,
+      house,
+      seed,
+    });
+    navigation.beforeStep = controller.step;
+    for (const actor of controller.actors) {
+      actor.initial = false;
+      actor.since = -5;
+      actor.until = 1000;
+      actor.nextTalkAt = 35;
+      navigation.hold(actor.walker, house.normal);
+    }
+    const phases = new Set();
+    let invitationPoint = false;
+    let showingPoint = false;
+    let walkingTalk = false;
+    for (let frame = 0; frame < 60 * 300; frame++) {
+      navigation.update(1 / 60);
+      const [male, female] = controller.actors;
+      phases.add(male.state);
+      walkingTalk ||=
+        male.state === "leadHouse" &&
+        boy.moving &&
+        male.pose.left + male.pose.right > 0.2;
+      invitationPoint ||=
+        male.state === "inviteHouse" &&
+        male.pose.pointLeft + male.pose.pointRight > 0.3;
+      showingPoint ||=
+        male.state === "showHouse" &&
+        male.pose.pointLeft + male.pose.pointRight > 0.3;
+      for (const walker of [boy, girl])
+        assert.ok(obstacleGap(walker.normal, house) >= walker.radius - 1e-8);
+      assert.ok(
+        boy.normal.angleTo(girl.normal) >= boy.radius + girl.radius - 1e-8,
+      );
+      if (male.state === "showHouse") {
+        assert.equal(female.state, "houseGuest");
+        assert.ok(male.goal.angleTo(female.goal) >= 0.085);
+        assert.ok(boy.normal.angleTo(male.goal) < 0.012);
+        assert.ok(girl.normal.angleTo(female.goal) < 0.012);
+      }
+    }
+    boyApproaches += controller.stats.boyApproaches;
+    if (controller.stats.boyApproaches) assert.ok(phases.has("approachGirl"));
+    if (controller.stats.houseTours) {
+      for (const phase of [
+        "conversation",
+        "inviteHouse",
+        "leadHouse",
+        "showHouse",
+      ])
+        assert.ok(phases.has(phase));
+      assert.ok(invitationPoint && showingPoint && walkingTalk);
+      shown++;
+    }
+    const snapshot = boy.normal.clone();
+    controller.dispose();
+    controller.step(1);
+    assert.equal(boy.normal.distanceTo(snapshot), 0);
+  }
+  assert.ok(shown >= 2);
+  assert.ok(boyApproaches >= 2);
 });
 
 test("fixed steps reproduce interaction state and positions at 30, 60, and 120 Hz", () => {
@@ -313,8 +802,9 @@ test("fixed steps reproduce interaction state and positions at 30, 60, and 120 H
   fixtures.forEach(({ base }) => base.dispose());
 });
 
-test("thirty-minute sessions preserve collision safety, diverse activities, and bounded travel", () => {
+test("thirty-minute sessions preserve frequent conversations, diverse activities, and collision safety", () => {
   const conversations = [];
+  const sharedActivities = [];
   for (const seed of [123, 71, 508]) {
     const { base, navigation, controller } = fixture(seed);
     const visitedStates = new Set();
@@ -334,6 +824,10 @@ test("thirty-minute sessions preserve collision safety, diverse activities, and 
           assert.ok(controller.time - actor.since < 90.3);
         if (actor.state === "approach")
           assert.ok(controller.time - actor.since < 20.3);
+        if (actor.state === "conversation")
+          assert.ok(controller.time - actor.since <= 10 + 1e-8);
+        if (actor.state === "travelRest")
+          assert.ok(controller.time < actor.restUntil + 0.3);
       }
       for (let a = 0; a < navigation.agents.length; a++)
         for (let b = a + 1; b < navigation.agents.length; b++)
@@ -351,11 +845,28 @@ test("thirty-minute sessions preserve collision safety, diverse activities, and 
         visitedStates.has("wander"),
     );
     assert.ok(controller.stats.decisions === 9000);
+    assert.ok(controller.stats.gardenVisits >= 8);
+    assert.ok(
+      controller.stats.rocketVisits + controller.stats.houseVisits >= 1,
+    );
+    assert.ok(controller.stats.houseVisits + controller.stats.houseTours >= 1);
+    assert.ok(controller.stats.boyApproaches >= 2);
+    assert.ok(controller.stats.houseTours >= 1);
+    assert.ok(controller.stats.seatedRests >= 1);
     conversations.push(controller.stats.conversations);
+    sharedActivities.push(
+      controller.stats.conversations +
+        controller.stats.gardenTours +
+        controller.stats.houseTours,
+    );
     console.log(`30-minute seed ${seed}: ${JSON.stringify(controller.stats)}`);
     base.dispose();
   }
-  assert.ok(conversations.reduce((sum, count) => sum + count, 0) >= 2);
+  // Preserve frequent ordinary conversations alongside the new guided visits.
+  // The requested breathing room between short chats also applies after tours.
+  assert.ok(conversations.every((count) => count >= 18));
+  assert.ok(sharedActivities.every((count) => count >= 15));
+  assert.ok(new Set(conversations).size > 1);
 });
 
 test("blocked destinations recover or expire; missing garden disables only garden visits", () => {
@@ -407,7 +918,7 @@ test("inaccessible garden interests fall back to wandering without a stuck inspe
   navigation.beforeStep = controller.step;
   advance(navigation, 20);
   assert.equal(controller.stats.gardenVisits, 0);
-  assert.equal(controller.actors[1].state, "wander");
+  assert.ok(!controller.actors[1].state.toLowerCase().includes("garden"));
   controller.dispose();
 });
 
@@ -443,7 +954,7 @@ test("rendered inspection and conversation poses keep boots grounded, head limit
         assert.ok(lowest >= 0.4 - 1e-7);
         planted ||= lowest < 0.4001;
       }
-      assert.ok(planted);
+      assert.ok(planted || actor.pose.hop > 0 || actor.walker.surfaceLift > 0);
       gardenSeen ||= actor.state === "garden";
       rocketSeen ||= actor.state === "rocket";
       talkSeen ||= actor.state === "conversation";
@@ -489,7 +1000,7 @@ test("behavior fixed-step work stays below the CPU budget", () => {
   base.dispose();
 });
 
-function greetingFixture(obstacles = [], facingEachOther = true) {
+function greetingFixture(obstacles = [], facingEachOther = true, seed = 31) {
   const boy = createWalker(new Vector3(-0.23, 0, Math.sqrt(1 - 0.23 ** 2)));
   const girl = createWalker(new Vector3(0.23, 0, Math.sqrt(1 - 0.23 ** 2)));
   const navigation = createWanderSimulation([boy, girl], obstacles, 11);
@@ -512,7 +1023,7 @@ function greetingFixture(obstacles = [], facingEachOther = true) {
     navigation,
     boy,
     girl,
-    seed: 31,
+    seed,
   });
   for (const actor of controller.actors) {
     actor.initial = false;
@@ -543,8 +1054,8 @@ test("a distant wave brings both people to a safe meeting before talking", () =>
   assert.ok(wave && meeting && conversation);
   assert.ok(boyStart.angleTo(boy.normal) > 0.05);
   assert.ok(girlStart.angleTo(girl.normal) > 0.05);
-  assert.ok(boy.normal.angleTo(girl.normal) >= 0.085);
-  assert.ok(boy.normal.angleTo(girl.normal) <= 0.105);
+  assert.ok(boy.normal.angleTo(girl.normal) >= 0.075);
+  assert.ok(boy.normal.angleTo(girl.normal) <= 0.09);
   assert.equal(controller.stats.waves, 1);
   controller.dispose();
 });
@@ -613,7 +1124,11 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
   // separately and must not make this rendered-pose regression depend on luck.
   const navigation = base.userData.motion;
   controller.actors.forEach((actor, index) => {
-    actor.walker.normal.set(index ? 0.23 : -0.23, 0, Math.sqrt(1 - 0.23 ** 2));
+    actor.walker.normal.set(
+      index ? 0.23 : -0.23,
+      -0.55,
+      Math.sqrt(1 - 0.23 ** 2 - 0.55 ** 2),
+    );
     actor.initial = false;
     actor.until = 1000;
     actor.since = -5;

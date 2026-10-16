@@ -6,6 +6,9 @@ import { createGardenRoutes } from "./garden-routes.js";
 // the FSM example at threejs.org/manual/pages/game.html. No independent timers.
 const angle = (a, b) => Math.acos(Math.max(-1, Math.min(1, a.dot(b))));
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
+const eyeRadius = (walker) => 1 + (walker.eyeHeight ?? 0.063);
+const DECISION_STEP = 0.2;
+const MAX_CHAT_SECONDS = 10;
 const INSPECTION = new Set(["garden", "rocket", "house"]);
 const ENGAGED = new Set([
   "conversation",
@@ -22,6 +25,13 @@ const ENGAGED = new Set([
   "gardenGuest",
   "inviteGarden",
   "acceptGarden",
+  "approachGirl",
+  "inviteHouse",
+  "acceptHouse",
+  "leadHouse",
+  "followHouse",
+  "showHouse",
+  "houseGuest",
 ]);
 
 export function createAstronautBehavior({
@@ -35,11 +45,19 @@ export function createAstronautBehavior({
 }) {
   const random = createRandom(seed ^ 0x51e8b39);
   const gestureRandom = createRandom(seed ^ 0x734ab9);
+  const conversationDistance = Math.max(
+    0.064,
+    boy.radius + girl.radius + 0.008,
+  );
   const between = (min, max) => min + random() * (max - min);
   const tangent = new Vector3();
   const lateral = new Vector3();
   const candidate = new Vector3();
   const facing = new Vector3();
+  const touchForward = new Vector3();
+  const touchShoulder = new Vector3();
+  const touchSide = new Vector3();
+  const touchDirection = new Vector3();
   let time = 0;
   let decisionTime = 0;
   let talkStarted = 0;
@@ -51,10 +69,17 @@ export function createAstronautBehavior({
     arm: 0,
     both: false,
     nod: false,
+    spread: false,
   }));
   let disposed = false;
   let nextTourAt = 0;
   let nextOpportunityAt = 0;
+  let nextBoyVisitAt = 35;
+  let boyInitiated = false;
+  let houseTourStarted = 0;
+  let nextHouseTourAt = 0;
+  const houseFocus = new Vector3();
+  const houseDirection = new Vector3();
   let rocketStreak = 0;
   let tourStarted = 0;
   let tourShowingAt = 0;
@@ -76,6 +101,11 @@ export function createAstronautBehavior({
     houseVisits: 0,
     waves: 0,
     gardenTours: 0,
+    houseTours: 0,
+    boyApproaches: 0,
+    calls: 0,
+    seatedRests: 0,
+    flowerTouches: 0,
     conversations: 0,
     aborts: 0,
   };
@@ -83,9 +113,9 @@ export function createAstronautBehavior({
   function views(interest, walker) {
     if (!interest) return [];
     const points = [];
-    const features = interest.features || [
-      { normal: interest.normal, radius: interest.radius },
-    ];
+    const features = interest.features?.filter(
+      (feature) => feature.kind !== "rock",
+    ) || [{ normal: interest.normal, radius: interest.radius }];
     for (const feature of features) {
       tangent
         .set(1, 0, 0)
@@ -108,7 +138,15 @@ export function createAstronautBehavior({
               Math.max(1e-5, Math.abs(candidate.dot(interest.axisY))),
           );
         const radius =
-          boundary + walker.radius + (interest.features ? 0.018 : 0.02);
+          boundary +
+          (feature.touches?.length
+            ? Math.max(walker.radius, boy.radius, girl.radius)
+            : walker.radius) +
+          (feature.touches?.length
+            ? 0.0045
+            : interest.features
+              ? 0.014
+              : 0.012);
         const point = feature.normal
           .clone()
           .multiplyScalar(Math.cos(radius))
@@ -116,6 +154,33 @@ export function createAstronautBehavior({
           .addScaledVector(lateral, Math.sin(radius) * Math.sin(turn))
           .normalize();
         point.feature = feature;
+        point.canTouch = false;
+        if (feature.touches?.length) {
+          const size = (walker.eyeHeight || 0.079 * 0.8) / 0.079;
+          touchDirection.copy(feature.focus).normalize();
+          touchDirection
+            .addScaledVector(point, -touchDirection.dot(point))
+            .normalize();
+          for (let arm = 0; arm < 2; arm++) {
+            touchSide.crossVectors(point, touchDirection).normalize();
+            touchForward
+              .copy(touchDirection)
+              .multiplyScalar(Math.cos(0.6))
+              .addScaledVector(touchSide, (arm ? -1 : 1) * Math.sin(0.6));
+            touchSide.crossVectors(point, touchForward).normalize();
+            touchShoulder
+              .copy(point)
+              .multiplyScalar(1 + 0.063 * Math.cos(0.07) * size)
+              .addScaledVector(touchSide, (arm ? 1 : -1) * 0.018 * size)
+              .addScaledVector(touchForward, 0.063 * Math.sin(0.07) * size);
+            if (
+              feature.touches.some(
+                (touch) => touch.distanceTo(touchShoulder) <= 0.0353 * size,
+              )
+            )
+              point.canTouch = true;
+          }
+        }
         points.push(point);
       }
     }
@@ -134,6 +199,8 @@ export function createAstronautBehavior({
       nextTalkAt: 0,
       lastView: -1,
       previousView: -1,
+      lastInspectedPosition: new Vector3(),
+      hasInspectedPosition: false,
       lastFeature: null,
       route: new Int16Array(128),
       routeLength: 0,
@@ -151,6 +218,17 @@ export function createAstronautBehavior({
       lastFlower: null,
       waveHop: false,
       waveHopAt: 1,
+      calling: false,
+      playfulWait: false,
+      approachDistance: 0,
+      cruiseSpeed: walker.speed,
+      runUntil: 0,
+      restUntil: 0,
+      nextRestAt: between(70, 120),
+      touchActive: false,
+      touchTarget: new Vector3(),
+      touchFacing: new Vector3(),
+      touchArm: 0,
       responded: false,
       goalIndex: -1,
       variant: 0,
@@ -180,22 +258,56 @@ export function createAstronautBehavior({
         stance: 0,
         shake: 0,
         hop: 0,
+        spread: 0,
+        dance: 0,
+        sit: 0,
+        touch: 0,
       },
     };
   }
-  const male = actor(boy, rocket, between(8, 16));
-  const female = actor(girl, garden, between(5, 12));
+  const male = actor(boy, rocket, between(2, 10));
+  const female = actor(girl, garden, between(2, 10));
   const actors = [male, female];
   const rocketViews = male.views;
   const houseViews = views(house, boy);
+  const houseGuestViews = views(house, girl);
   const guestViews = garden?.features ? female.views : views(garden, boy);
   const tourFlowers =
     garden?.features?.filter((feature) => feature.kind === "flower") || [];
+  const gardenActivities =
+    garden?.features?.filter((feature) => feature.kind !== "rock") || [];
+  const seats =
+    garden?.features?.filter(
+      (feature) =>
+        feature.kind === "rock" &&
+        navigation.isStaticClear(feature.normal, boy) &&
+        navigation.isStaticClear(feature.normal, girl),
+    ) || [];
+  const seatNodes = seats.map((seat) => seat.normal);
   const gardenRoutes = garden?.features
-    ? createGardenRoutes(navigation, female.views, garden.normal, boy)
+    ? createGardenRoutes(
+        navigation,
+        [...female.views, ...seatNodes],
+        garden.normal,
+        boy,
+      )
     : null;
 
   function enter(record, state, duration) {
+    record.playfulWait =
+      record === female &&
+      (state === "waiting" ||
+        state === "waitGarden" ||
+        state === "acceptHouse") &&
+      gestureRandom() < 0.4;
+    if (
+      INSPECTION.has(state) ||
+      state === "showGarden" ||
+      state === "gardenGuest"
+    ) {
+      record.lastInspectedPosition.copy(record.walker.target);
+      record.hasInspectedPosition = true;
+    }
     record.state = state;
     record.since = time;
     record.until = time + duration;
@@ -206,13 +318,13 @@ export function createAstronautBehavior({
   }
   function wander(record) {
     navigation.wander(record.walker);
-    // Occasionally wander near a social interest, rather than relying on two
-    // independent broad random walks to happen to meet. The full bounds stay open.
+    // Favor nearby independent walks so social opportunities remain reachable.
+    // Neither partner is held here; inspections and the full bounds stay open.
     const anchor =
-      record === female && random() < 0.75
+      record === female && random() < 0.95
         ? boy.normal
-        : record === male && garden && random() < 0.4
-          ? garden.normal
+        : record === male && random() < 0.9
+          ? girl.normal
           : null;
     if (anchor) {
       tangent.set(0, 0, 1).addScaledVector(anchor, -anchor.z);
@@ -223,7 +335,7 @@ export function createAstronautBehavior({
       for (let i = 0; i < 12; i++) {
         const turn = between(0, Math.PI * 2);
         const radius =
-          record === female ? between(0.16, 0.32) : between(0.35, 0.55);
+          record === female ? between(0.09, 0.16) : between(0.14, 0.24);
         candidate
           .copy(anchor)
           .multiplyScalar(Math.cos(radius))
@@ -241,7 +353,7 @@ export function createAstronautBehavior({
   function endVisit(record) {
     record.completedAt = time;
     record.nextInspectAt =
-      time + (record === female ? between(10, 18) : between(15, 28));
+      time + (record === female ? between(20, 35) : between(25, 40));
     wander(record);
   }
   function inspectDestination(record) {
@@ -254,6 +366,11 @@ export function createAstronautBehavior({
       const index = (start + i) % count;
       if (index === record.lastView || index === record.previousView) continue;
       const point = record.views[index];
+      if (
+        record.hasInspectedPosition &&
+        point.distanceToSquared(record.lastInspectedPosition) < 1e-10
+      )
+        continue;
       if (record.featureCount && !record.visitFeatures.includes(point.feature))
         continue;
       if (pendingFeature(record)) {
@@ -264,7 +381,8 @@ export function createAstronautBehavior({
       const score =
         angle(record.walker.normal, point) +
         i * 0.012 +
-        (point.feature === record.lastFeature ? 0.18 : 0);
+        (point.feature === record.lastFeature ? 0.18 : 0) +
+        (point.feature.touches?.length && !point.canTouch ? 0.12 : 0);
       if (score < best) {
         best = score;
         selected = index;
@@ -286,6 +404,9 @@ export function createAstronautBehavior({
     if (point.feature.focus) record.focus.copy(point.feature.focus);
     record.gazeNormal.copy(record.focus).normalize();
     record.walker.softObstacle = record.interest.normal;
+    record.walker.arrivalRadius = record.lastFeature.touches?.length
+      ? 0.0008
+      : 0.003;
     record.bestRemaining = Infinity;
     record.goal.copy(point);
     record.goalIndex = selected;
@@ -307,21 +428,22 @@ export function createAstronautBehavior({
     }
     return navigation.arrive(record.walker, point, record.gazeNormal);
   }
-  function startInspection(record, first = false) {
+  function startInspection(record) {
     if (record === male && house) {
-      record.interest =
-        !first && (random() < 0.4 || rocketStreak >= 2) ? house : rocket;
+      record.interest = random() < 0.4 || rocketStreak >= 2 ? house : rocket;
       record.views = record.interest === house ? houseViews : rocketViews;
     }
-    record.visitDuration =
-      record === female ? between(18, 35) : between(12, 24);
+    record.visitDuration = record === female ? between(8, 15) : between(5, 10);
     record.stopsRemaining = Math.ceil(record.visitDuration / 4);
     record.visitEnd = Infinity;
     record.featureCount = 0;
     record.visitFeatures.fill(null);
     record.featureSeen.fill(0);
     if (record === female && garden?.features) {
-      record.featureCount = 1 + Math.floor(random() * 4);
+      record.featureCount = Math.min(
+        gardenActivities.length,
+        random() < 0.65 ? 1 : random() < 0.65 ? 2 : 3,
+      );
       if (tourFlowers.length && random() < 0.85) {
         let index = Math.floor(random() * tourFlowers.length);
         if (tourFlowers[index] === record.lastFlower)
@@ -334,12 +456,12 @@ export function createAstronautBehavior({
       for (let slot = 0; slot < record.featureCount; slot++) {
         if (record.visitFeatures[slot]) continue;
         let total = 0;
-        for (const feature of garden.features)
+        for (const feature of gardenActivities)
           if (!record.visitFeatures.includes(feature))
             total +=
               feature.kind === "flower" ? 3 : feature.kind === "lamp" ? 2 : 0.5;
         let roll = random() * total;
-        for (const feature of garden.features) {
+        for (const feature of gardenActivities) {
           if (record.visitFeatures.includes(feature)) continue;
           roll -=
             feature.kind === "flower" ? 3 : feature.kind === "lamp" ? 2 : 0.5;
@@ -350,7 +472,11 @@ export function createAstronautBehavior({
         }
       }
     }
-    record.visitUntil = time + 90;
+    record.stopsRemaining = Math.max(
+      record.stopsRemaining,
+      record.featureCount,
+    );
+    record.visitUntil = time + 60;
     record.visitCounted = false;
     if (!inspectDestination(record)) {
       wander(record);
@@ -364,11 +490,68 @@ export function createAstronautBehavior({
         : record.interest === house
           ? "travelHouse"
           : "travelRocket",
-      90,
+      60,
     );
+  }
+  function prepareTouch(record) {
+    record.touchActive = false;
+    if (
+      record !== female ||
+      !record.lastFeature?.touches?.length ||
+      gestureRandom() > 0.55
+    )
+      return;
+    const scale = (record.walker.eyeHeight || 0.079 * 0.8) / 0.079;
+    lateral
+      .crossVectors(record.walker.normal, record.walker.forward)
+      .normalize();
+    let best = Infinity;
+    for (const point of record.lastFeature.touches) {
+      for (let arm = 0; arm < 2; arm++) {
+        lateral
+          .crossVectors(record.walker.normal, record.walker.forward)
+          .normalize();
+        touchForward
+          .copy(record.walker.forward)
+          .multiplyScalar(Math.cos(0.6))
+          .addScaledVector(lateral, (arm ? -1 : 1) * Math.sin(0.6));
+        lateral.crossVectors(record.walker.normal, touchForward).normalize();
+        tangent
+          .copy(record.walker.normal)
+          .multiplyScalar(1 + 0.063 * Math.cos(0.07) * scale)
+          .addScaledVector(lateral, (arm ? 1 : -1) * 0.018 * scale)
+          .addScaledVector(touchForward, 0.063 * Math.sin(0.07) * scale);
+        candidate.copy(point).sub(tangent).normalize();
+        facing.copy(point).addScaledVector(candidate, -0.0038 * scale);
+        const reach = facing.distanceTo(tangent);
+        if (reach <= 0.0315 * scale && reach < best) {
+          best = reach;
+          record.touchActive = true;
+          record.touchTarget.copy(facing);
+          record.touchFacing.copy(touchForward);
+          record.touchArm = arm;
+        }
+      }
+    }
+    if (record.touchActive) {
+      record.touchFacing
+        .multiplyScalar(0.2)
+        .add(record.walker.normal)
+        .normalize();
+      navigation.hold(record.walker, record.touchFacing);
+      stats.flowerTouches++;
+    }
   }
   function available(record) {
     return !ENGAGED.has(record.state);
+  }
+  function socialAvailable(record) {
+    return (
+      available(record) &&
+      record.state !== "travelRest" &&
+      record.state !== "stand" &&
+      !(record.state === "sit" && time - record.since < 4)
+    );
   }
   function pendingFeature(record) {
     for (let slot = 0; slot < record.featureCount; slot++)
@@ -382,17 +565,16 @@ export function createAstronautBehavior({
       .normalize();
     return walker.forward.dot(facing) > Math.cos((65 * Math.PI) / 180);
   }
-  function mutuallyVisible() {
+  function mutuallyVisible(requireFacing = true) {
     const separation = angle(boy.normal, girl.normal);
     if (
       separation < 0.22 ||
       separation > 0.65 ||
-      !sees(boy, girl.normal) ||
-      !sees(girl, boy.normal)
+      (requireFacing && (!sees(boy, girl.normal) || !sees(girl, boy.normal)))
     )
       return false;
-    eyeA.copy(girl.normal).multiplyScalar(1.063);
-    eyeDelta.copy(boy.normal).multiplyScalar(1.063).sub(eyeA);
+    eyeA.copy(girl.normal).multiplyScalar(eyeRadius(girl));
+    eyeDelta.copy(boy.normal).multiplyScalar(eyeRadius(boy)).sub(eyeA);
     const lengthSq = eyeDelta.lengthSq();
     let t = clamp(-eyeA.dot(eyeDelta) / lengthSq, 0, 1);
     closest.copy(eyeA).addScaledVector(eyeDelta, t);
@@ -418,25 +600,29 @@ export function createAstronautBehavior({
       .normalize();
     meetingGirl
       .copy(facing)
-      .multiplyScalar(Math.cos(0.04))
-      .addScaledVector(tangent, Math.sin(0.04))
+      .multiplyScalar(Math.cos(conversationDistance / 2))
+      .addScaledVector(tangent, Math.sin(conversationDistance / 2))
       .normalize();
     meetingBoy
       .copy(facing)
-      .multiplyScalar(Math.cos(0.04))
-      .addScaledVector(tangent, -Math.sin(0.04))
+      .multiplyScalar(Math.cos(conversationDistance / 2))
+      .addScaledVector(tangent, -Math.sin(conversationDistance / 2))
       .normalize();
     return (
       navigation.isClear(meetingGirl, girl, 0.005) &&
       navigation.isClear(meetingBoy, boy, 0.005)
     );
   }
-  function greeting() {
+  function greeting(insistent = false) {
     if (!reserveMeeting()) return false;
+    boyInitiated = false;
+    female.calling = insistent;
+    male.runUntil = time + between(4, 7);
+    if (insistent) stats.calls++;
     enter(female, "wave", between(3.5, 5.5));
     enter(male, "acknowledge", 30);
     male.acknowledgmentAt = time + between(0.4, 0.9);
-    female.waveHop = gestureRandom() < 0.5;
+    female.waveHop = insistent || gestureRandom() < 0.5;
     female.waveHopAt = 0.8 + gestureRandom() * 1.2;
     male.responded = false;
     navigation.arrive(girl, meetingGirl, boy.normal);
@@ -445,7 +631,11 @@ export function createAstronautBehavior({
     stats.waves++;
     return true;
   }
-  function socialDestination(mover = girl, anchor = boy, spacing = 0.08) {
+  function socialDestination(
+    mover = girl,
+    anchor = boy,
+    spacing = conversationDistance,
+  ) {
     mover.gardenRoute = false;
     mover.arrivalRadius = 0.002;
     tangent
@@ -463,18 +653,34 @@ export function createAstronautBehavior({
         .addScaledVector(tangent, Math.sin(spacing) * Math.cos(turn))
         .addScaledVector(lateral, Math.sin(spacing) * Math.sin(turn))
         .normalize();
-      if (navigation.isClear(candidate, mover, 0.005))
+      if (navigation.isClear(candidate, mover, 0.005)) {
+        mover.softObstacle = anchor.softObstacle;
+        mover.gardenRoute =
+          !!gardenRoutes &&
+          navigation.segmentClear(mover.normal, candidate, mover);
         return navigation.arrive(mover, candidate, anchor.normal);
+      }
     }
     return false;
   }
   function finishSocial(aborted = false) {
     if (aborted) stats.aborts++;
-    const cooldown = aborted ? between(6, 10) : between(10, 18);
+    const cooldown = between(8, 16);
     for (const record of actors) {
       record.nextTalkAt = time + cooldown;
       record.walker.softPartner = null;
+      record.runUntil = 0;
     }
+    const showHouse = boyInitiated || (house && random() < 0.3);
+    boyInitiated = false;
+    if (
+      !aborted &&
+      showHouse &&
+      time >= nextHouseTourAt &&
+      random() < 0.75 &&
+      startHouseTour()
+    )
+      return;
     if (
       !aborted &&
       garden &&
@@ -488,29 +694,59 @@ export function createAstronautBehavior({
       male.state === "waiting" ||
       male.state === "acknowledge" ||
       male.state === "conversation" ||
-      male.state === "meeting"
+      male.state === "meeting" ||
+      male.state === "approachGirl"
     )
       wander(male);
+  }
+  function quietApproach() {
+    if (
+      house &&
+      time >= nextBoyVisitAt &&
+      (female.state !== "garden" || !pendingFeature(female)) &&
+      random() < 0.6 &&
+      reserveMeeting()
+    ) {
+      boyInitiated = true;
+      nextBoyVisitAt = time + between(45, 80);
+      stats.boyApproaches++;
+      enter(male, "approachGirl", 25);
+      enter(female, "acknowledge", 25);
+      female.acknowledgmentAt = time + between(0.4, 0.9);
+      boy.softPartner = girl;
+      girl.softPartner = boy;
+      navigation.hold(girl, boy.normal);
+      navigation.arrive(boy, meetingBoy, girl.normal);
+      return true;
+    }
+    if (!socialDestination()) return false;
+    boyInitiated = false;
+    enter(female, "approach", 20);
+    female.approachDistance = angle(girl.normal, boy.normal);
+    female.nextDestinationAt = time + 0.5;
+    return true;
   }
   function choose(record) {
     if (record.initial) {
       record.initial = false;
-      if (record.interest) {
-        startInspection(record, true);
+      if (record.interest && random() < 0.6) {
+        startInspection(record);
         return;
       }
+      wander(record);
+      return;
     }
     const canInspect = record.interest && time >= record.nextInspectAt;
     const canTalk =
       record === female &&
-      available(male) &&
+      socialAvailable(male) &&
       !male.state.startsWith("travel") &&
       time >= record.nextTalkAt &&
       time >= male.nextTalkAt &&
-      angle(boy.normal, girl.normal) <= 0.75;
-    const inspectionWeight = canInspect ? (record === female ? 0.5 : 0.35) : 0;
-    const socialWeight = canTalk ? 0.8 : 0;
-    const idleWeight = record === male ? 0.1 : 0;
+      angle(boy.normal, girl.normal) <= 0.5;
+    const inspectionWeight = canInspect ? (record === female ? 0.3 : 0.35) : 0;
+    const socialWeight = canTalk ? 2.4 : 0;
+    const idleWeight = seats.length ? (record === male ? 0.02 : 0.015) : 0;
     const roll =
       random() *
       ((record === female ? 0.15 : 0.55) +
@@ -519,13 +755,9 @@ export function createAstronautBehavior({
         idleWeight);
     if (roll < inspectionWeight) startInspection(record);
     else if (roll < inspectionWeight + socialWeight) {
-      if (socialDestination()) {
-        enter(record, "approach", 20);
-        record.nextDestinationAt = time + 0.5;
-      } else wander(record);
+      if (!quietApproach()) wander(record);
     } else if (roll < inspectionWeight + socialWeight + idleWeight) {
-      navigation.hold(record.walker, record.walker.target);
-      enter(record, "rest", between(3, 7));
+      if (!startRest(record)) wander(record);
     } else wander(record);
   }
   function aligned(walker, target) {
@@ -540,16 +772,28 @@ export function createAstronautBehavior({
   function readyToTalk() {
     const separation = angle(girl.normal, boy.normal);
     return (
-      separation >= 0.075 &&
-      separation <= 0.09 &&
+      separation >= conversationDistance - 0.005 &&
+      separation <= conversationDistance + 0.01 &&
       aligned(girl, boy.normal) &&
       aligned(boy, girl.normal)
     );
   }
   function beginTalk() {
     talkStarted = time;
-    talkDuration = between(16, 28);
-    exchanges = Math.min(talkTurns.length, Math.round(talkDuration / 1.5));
+    const length = random();
+    talkDuration =
+      length < 0.4
+        ? between(3, 5)
+        : length < 0.85
+          ? between(5, 8)
+          : between(8, 10);
+    // Leave one decision interval of headroom so the observed state, including
+    // its 5 Hz completion check, also obeys the ten-second limit.
+    talkDuration = Math.min(talkDuration, MAX_CHAT_SECONDS - DECISION_STEP);
+    exchanges = Math.min(
+      talkTurns.length,
+      Math.max(2, Math.round(talkDuration / 1.35)),
+    );
     for (let i = 0; i < exchanges; i++) {
       const turn = talkTurns[i];
       const period = talkDuration / exchanges;
@@ -557,12 +801,198 @@ export function createAstronautBehavior({
       turn.duration = Math.min(period - 0.28, 0.85 + gestureRandom() * 0.35);
       turn.arm = gestureRandom() < 0.5 ? 0 : 1;
       turn.both = gestureRandom() < 0.22;
-      turn.nod = gestureRandom() < 0.5;
+      turn.nod = gestureRandom() < 0.75;
+      turn.spread = gestureRandom() < 0.4;
     }
     for (const record of actors) enter(record, "conversation", talkDuration);
     navigation.hold(girl, boy.normal);
     navigation.hold(boy, girl.normal);
     stats.conversations++;
+  }
+  function startRest(record) {
+    if (!gardenRoutes || !seats.length) return false;
+    const continuing = record.state === "travelRest";
+    if (!continuing) {
+      record.restUntil = time + 60;
+      record.retries = 0;
+    }
+    record.visitEnd = Infinity;
+    const start = Math.floor(random() * seats.length);
+    const partner = record === male ? female : male;
+    for (let offset = 0; offset < seats.length; offset++) {
+      const index = (start + offset) % seats.length;
+      const seat = seats[index];
+      if (angle(record.walker.normal, seat.normal) > 0.6) continue;
+      if (
+        (partner.state === "sit" || partner.state === "travelRest") &&
+        partner.goal.angleTo(seat.normal) < 0.08
+      )
+        continue;
+      if (!navigation.isClear(seat.normal, record.walker, 0.004)) continue;
+      record.goalIndex = female.views.length + index;
+      record.routeLength = gardenRoutes.plan(
+        record.walker.normal,
+        record.goalIndex,
+        record.route,
+      );
+      if (!record.routeLength) continue;
+      record.routeIndex = 0;
+      record.goal.copy(seat.normal);
+      record.focus.copy(garden.focuses[0]);
+      record.gazeNormal.copy(record.focus).normalize();
+      record.walker.gardenRoute = true;
+      record.walker.arrivalRadius = 0.004;
+      if (
+        navigation.arrive(
+          record.walker,
+          gardenRoutes.nodes[record.route[0]],
+          record.gazeNormal,
+        )
+      ) {
+        if (!continuing) record.nextRestAt = time + between(240, 360);
+        enter(record, "travelRest", Math.max(0, record.restUntil - time));
+        return true;
+      }
+    }
+    return false;
+  }
+  function startHouseTour() {
+    if (!house) return false;
+    let selected = -1;
+    let guest = -1;
+    let best = Infinity;
+    for (let i = 0; i < houseViews.length; i++) {
+      const point = houseViews[i];
+      if (!navigation.isClear(point, boy, 0.004)) continue;
+      for (let j = 0; j < houseGuestViews.length; j++) {
+        const other = houseGuestViews[j];
+        const spacing = angle(point, other);
+        if (
+          spacing < 0.085 ||
+          spacing > 0.125 ||
+          !navigation.isClear(other, girl, 0.004) ||
+          !navigation.segmentClear(point, other, boy)
+        )
+          continue;
+        const score = angle(boy.normal, point) + angle(girl.normal, other);
+        if (score < best) {
+          best = score;
+          selected = i;
+          guest = j;
+        }
+      }
+    }
+    if (selected < 0) return false;
+    male.goal.copy(houseViews[selected]);
+    female.goal.copy(houseGuestViews[guest]);
+    // Look at the entrance, window, or porch fixture, not the habitat's center.
+    houseFocus.copy(house.focuses[Math.floor(random() * house.focuses.length)]);
+    houseDirection.copy(houseFocus).normalize();
+    houseTourStarted = time;
+    boy.gardenRoute = girl.gardenRoute = false;
+    boy.softObstacle = girl.softObstacle = house.normal;
+    boy.softPartner = girl;
+    girl.softPartner = boy;
+    for (const record of actors) {
+      record.focus.copy(houseFocus);
+      record.retries = 0;
+      navigation.hold(record.walker, houseDirection);
+    }
+    enter(male, "inviteHouse", between(2.2, 3.2));
+    enter(female, "acceptHouse", 90);
+    return true;
+  }
+  function endHouseTour(aborted = false) {
+    if (aborted) stats.aborts++;
+    nextHouseTourAt = time + between(80, 140);
+    nextBoyVisitAt = time + between(45, 80);
+    boy.softPartner = girl.softPartner = null;
+    for (const record of actors) {
+      record.nextTalkAt = time + between(8, 16);
+      wander(record);
+    }
+  }
+  function updateHouseTour() {
+    if (
+      male.state !== "inviteHouse" &&
+      male.state !== "leadHouse" &&
+      male.state !== "showHouse"
+    )
+      return false;
+    if (male.state !== "showHouse" && time - houseTourStarted > 90) {
+      endHouseTour(true);
+      return true;
+    }
+    if (male.state === "inviteHouse") {
+      if (
+        time >= male.until &&
+        aligned(boy, houseDirection) &&
+        aligned(girl, houseDirection)
+      ) {
+        enter(male, "leadHouse", 90);
+        enter(female, "followHouse", 90);
+        female.nextDestinationAt = time + 0.7;
+        navigation.arrive(boy, male.goal, houseDirection);
+      } else if (time - male.since > 9) endHouseTour(true);
+      return true;
+    }
+    if (male.state === "leadHouse") {
+      for (const record of actors) {
+        if (record.stalled >= 3) {
+          if (record.retries++ >= 2) {
+            endHouseTour(true);
+            return true;
+          }
+          record.stalled = 0;
+          record.bestRemaining = Infinity;
+          navigation.arrive(record.walker, record.goal, houseDirection);
+        }
+      }
+      const separation = angle(boy.normal, girl.normal);
+      const boyTravelling = angle(boy.normal, male.goal) >= 0.012;
+      if (boyTravelling && separation > 0.28 && boy.mode !== "hold")
+        navigation.hold(boy, girl.normal);
+      else if (boyTravelling && separation < 0.19 && boy.mode === "hold")
+        navigation.arrive(boy, male.goal, houseDirection);
+      if (
+        time >= female.nextDestinationAt &&
+        girl.mode === "hold" &&
+        angle(girl.normal, female.goal) > 0.012
+      )
+        navigation.arrive(girl, female.goal, houseDirection);
+      for (const record of actors) {
+        if (
+          angle(record.walker.normal, record.goal) < 0.012 &&
+          record.walker.arrived
+        )
+          navigation.hold(record.walker, houseDirection);
+      }
+      if (
+        angle(boy.normal, male.goal) < 0.012 &&
+        angle(girl.normal, female.goal) < 0.012 &&
+        aligned(boy, houseDirection) &&
+        aligned(girl, houseDirection)
+      ) {
+        const duration = between(5, 8);
+        enter(male, "showHouse", duration);
+        enter(female, "houseGuest", duration);
+        stats.houseTours++;
+      }
+    } else if (time >= male.until) {
+      endHouseTour();
+      return true;
+    }
+    for (const record of actors) {
+      const partner = record === male ? girl : boy;
+      if (
+        male.state === "showHouse" &&
+        time - male.since > 4 &&
+        time - male.since < 5.5
+      )
+        record.focus.copy(partner.normal).multiplyScalar(eyeRadius(partner));
+      else record.focus.copy(houseFocus);
+    }
+    return true;
   }
   function startTour(continuing = false) {
     female.featureCount = 0;
@@ -582,6 +1012,11 @@ export function createAstronautBehavior({
     for (let index = 0; index < guestViews.length; index++) {
       if (index === male.lastView || index === male.previousView) continue;
       const point = guestViews[index];
+      if (
+        male.hasInspectedPosition &&
+        point.distanceToSquared(male.lastInspectedPosition) < 1e-10
+      )
+        continue;
       const spacing = angle(tourGirl, point);
       if (
         spacing < 0.09 ||
@@ -616,7 +1051,7 @@ export function createAstronautBehavior({
     boy.softObstacle = garden.normal;
     female.retries = male.retries = 0;
     if (!continuing) {
-      tourStops = 1 + Math.floor(random() * 3);
+      tourStops = 1 + Math.floor(random() * 2);
       tourCounted = false;
     }
     enter(
@@ -637,6 +1072,7 @@ export function createAstronautBehavior({
     if (aborted) stats.aborts++;
     nextTourAt = time + between(80, 140);
     boy.softPartner = girl.softPartner = null;
+    for (const record of actors) record.nextTalkAt = time + between(8, 16);
     endVisit(female);
     wander(male);
   }
@@ -768,7 +1204,7 @@ export function createAstronautBehavior({
       }
       if (boy.arrived && boy.velocity < 0.003 && !boy.turning) {
         tourShowingAt = time;
-        tourDuration = between(6, 9);
+        tourDuration = between(4, 6);
         enter(female, "showGarden", tourDuration);
         enter(male, "gardenGuest", tourDuration);
         if (!tourCounted) {
@@ -786,7 +1222,7 @@ export function createAstronautBehavior({
       for (const record of actors) {
         const partner = record === female ? boy : girl;
         if (local > 0.55 && local < 0.75)
-          record.focus.copy(partner.normal).multiplyScalar(1.063);
+          record.focus.copy(partner.normal).multiplyScalar(eyeRadius(partner));
         else record.focus.copy(tourFocus);
         record.gazeNormal.copy(record.focus).normalize();
         navigation.hold(record.walker, record.gazeNormal);
@@ -797,36 +1233,75 @@ export function createAstronautBehavior({
   function decisions() {
     stats.decisions++;
     if (female.state === "conversation") {
-      if (time >= talkStarted + talkDuration) finishSocial();
+      if (time + 1e-9 >= talkStarted + talkDuration) finishSocial();
       return;
     }
-    if (updateTour()) return;
+    if (updateHouseTour() || updateTour()) return;
+    for (const record of actors) {
+      if (
+        record.state === "wander" &&
+        !record.initial &&
+        time >= record.nextRestAt
+      ) {
+        record.nextRestAt = time + between(15, 25);
+        startRest(record);
+      }
+    }
+    if (male.state === "approachGirl") {
+      if (time >= male.until || (boy.blocked && male.stalled >= 3)) {
+        finishSocial(true);
+        return;
+      }
+      if (angle(boy.normal, girl.normal) < 0.22 && available(female)) {
+        enter(female, "acknowledge", 20);
+        female.acknowledgmentAt = time + between(0.3, 0.8);
+        boy.softPartner = girl;
+        girl.softPartner = boy;
+      }
+      if (female.state === "acknowledge" && time >= female.acknowledgmentAt) {
+        navigation.arrive(girl, meetingGirl, boy.normal);
+        enter(female, "waiting", 20);
+      }
+      if (female.state === "waiting") girl.lookTarget.copy(boy.normal);
+      if (female.state === "waiting" && readyToTalk()) beginTalk();
+      return;
+    }
     if (
-      ((female.state === "wander" && time - female.since > 3) ||
-        (female.state === "garden" && time - female.since > 5)) &&
-      available(male) &&
+      ((female.state === "wander" && time - female.since > 1.5) ||
+        (female.state === "garden" &&
+          time - female.since > 2.5 &&
+          !pendingFeature(female))) &&
+      socialAvailable(male) &&
       !female.initial &&
       time >= female.nextTalkAt &&
       time >= male.nextTalkAt &&
       time >= nextOpportunityAt
     ) {
-      nextOpportunityAt = time + between(1.5, 3);
-      if (mutuallyVisible() && random() < 0.75 && greeting()) return;
+      nextOpportunityAt = time + between(0.6, 1.2);
+      if (mutuallyVisible() && random() < 0.85 && greeting()) return;
       if (
         female.state === "wander" &&
-        INSPECTION.has(male.state) &&
-        angle(girl.normal, boy.normal) < 0.7 &&
-        random() < 0.5 &&
-        socialDestination()
+        (INSPECTION.has(male.state) ||
+          male.state === "wander" ||
+          male.state === "rest") &&
+        angle(girl.normal, boy.normal) < 0.5 &&
+        random() < 0.85 &&
+        quietApproach()
       ) {
-        enter(female, "approach", 20);
-        female.nextDestinationAt = time + 0.5;
         return;
       }
     }
     if (female.state === "wave" || female.state === "meeting") {
-      if (male.state === "acknowledge" && time >= male.acknowledgmentAt)
-        navigation.hold(boy, girl.normal);
+      if (
+        male.state === "acknowledge" &&
+        time >= male.acknowledgmentAt &&
+        !male.responded
+      ) {
+        navigation.arrive(boy, meetingBoy, girl.normal);
+        male.responded = true;
+      }
+      girl.lookTarget.copy(boy.normal);
+      boy.lookTarget.copy(girl.normal);
       if (female.state === "wave" && time >= female.until) {
         enter(female, "meeting", 30);
         enter(male, "meeting", 30);
@@ -845,10 +1320,21 @@ export function createAstronautBehavior({
       return;
     }
     if (female.state === "approach") {
+      // A visible, unanswered approach becomes one clear silent call instead
+      // of chasing a slightly faster walker until the activity times out.
+      if (
+        time - female.since > 5 &&
+        male.state !== "waiting" &&
+        angle(girl.normal, boy.normal) > female.approachDistance * 0.85 &&
+        mutuallyVisible(false) &&
+        greeting(true)
+      )
+        return;
       if (
         time >= female.until ||
         (girl.blocked && time - female.since > 3 && female.stalled >= 3)
       ) {
+        if (mutuallyVisible(false) && greeting(true)) return;
         finishSocial(true);
         return;
       }
@@ -884,7 +1370,8 @@ export function createAstronautBehavior({
       if (
         record.state === "travelGarden" ||
         record.state === "travelRocket" ||
-        record.state === "travelHouse"
+        record.state === "travelHouse" ||
+        record.state === "travelRest"
       ) {
         if (
           record.walker.arrived &&
@@ -904,6 +1391,16 @@ export function createAstronautBehavior({
             continue;
           }
           navigation.hold(record.walker, record.gazeNormal);
+          if (record.state === "travelRest") {
+            enter(record, "sit", between(5, 12));
+            stats.seatedRests++;
+            continue;
+          }
+          const featureSlot = record.visitFeatures.indexOf(record.lastFeature);
+          prepareTouch(record);
+          if (featureSlot >= 0) record.featureSeen[featureSlot] = 1;
+          if (record.lastFeature?.kind === "flower")
+            record.lastFlower = record.lastFeature;
           if (!record.visitCounted) {
             record.visitStarted = time;
             record.visitEnd = time + record.visitDuration;
@@ -915,7 +1412,10 @@ export function createAstronautBehavior({
               : record.interest === house
                 ? "house"
                 : "rocket",
-            Math.max(0.5, Math.min(between(4, 7), record.visitEnd - time)),
+            Math.max(
+              record.touchActive ? 3 : 1.5,
+              Math.min(between(1.5, 3), record.visitEnd - time),
+            ),
           );
           if (record.visitCounted) continue;
           record.visitCounted = true;
@@ -927,10 +1427,19 @@ export function createAstronautBehavior({
             stats.rocketVisits++;
             rocketStreak++;
           }
-        } else if (time >= record.until || time >= record.visitEnd) {
+        } else if (
+          time >= record.until ||
+          (time >= record.visitEnd && !pendingFeature(record))
+        ) {
           if (time >= record.until) stats.aborts++;
           endVisit(record);
         } else if (record.stalled >= 3) {
+          if (record.state === "travelRest") {
+            const retry = record.retries + 1;
+            if (retry > 2 || !startRest(record)) wander(record);
+            else record.retries = retry;
+            continue;
+          }
           if (record.retries++ >= 2 || !inspectDestination(record)) {
             stats.aborts++;
             endVisit(record);
@@ -938,10 +1447,14 @@ export function createAstronautBehavior({
           record.stalled = 0;
         }
       } else if (time >= record.until) {
+        if (record.state === "sit") {
+          enter(record, "stand", 0.7);
+          continue;
+        }
         if (INSPECTION.has(record.state)) {
           if (
             --record.stopsRemaining > 0 &&
-            time < record.visitEnd - 3 &&
+            (pendingFeature(record) || time < record.visitEnd - 3) &&
             time < record.visitUntil &&
             inspectDestination(record)
           ) {
@@ -963,7 +1476,9 @@ export function createAstronautBehavior({
     const inspecting =
       INSPECTION.has(record.state) ||
       record.state === "showGarden" ||
-      record.state === "gardenGuest";
+      record.state === "gardenGuest" ||
+      record.state === "showHouse" ||
+      record.state === "houseGuest";
     const talking = record.state === "conversation";
     let hand = 0;
     let chest = 0;
@@ -975,15 +1490,30 @@ export function createAstronautBehavior({
       pointRight = 0;
     let shift = 0,
       yaw = 0,
-      stance = 0;
+      stance = 0,
+      shake = 0,
+      hop = 0;
+    let touch = 0;
+    let spread = 0,
+      dance = 0;
     const elapsed = time - record.since;
     const inviting =
-      record.state === "inviteGarden" || record.state === "acceptGarden";
+      record.state === "inviteGarden" ||
+      record.state === "acceptGarden" ||
+      record.state === "inviteHouse" ||
+      record.state === "acceptHouse";
     const walkingTogether =
-      record.state === "leadGarden" || record.state === "followGarden";
+      record.state === "leadGarden" ||
+      record.state === "followGarden" ||
+      record.state === "leadHouse" ||
+      record.state === "followHouse";
+    const visitingHouse =
+      record.state.endsWith("House") || record.state === "houseGuest";
+    const guide = visitingHouse ? male : female;
+    const sharedFocus = visitingHouse ? houseFocus : tourFocus;
     let pointing = false;
     if (record.state === "wave") {
-      record.focus.copy(boy.normal).multiplyScalar(1.063);
+      record.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
       const phase = clamp(
         (time - record.since) / (record.until - record.since),
         0,
@@ -992,6 +1522,9 @@ export function createAstronautBehavior({
       wave =
         Math.min(1, phase * 6, (1 - phase) * 6) *
         (0.88 + 0.12 * Math.cos(phase * Math.PI * 6));
+      const jump = (elapsed - record.waveHopAt) / 0.7;
+      if (record.waveHop && jump > 0 && jump < 1)
+        hop = 4 * jump * (1 - jump) * 0.005;
     } else if (inspecting) {
       const phase = clamp(
         (time - record.since) / (record.until - record.since),
@@ -1001,17 +1534,43 @@ export function createAstronautBehavior({
       const gesturePhase = (phase * 2 + record.variant) % 3;
       hand =
         gesturePhase > 1 && gesturePhase < 2
-          ? Math.sin((gesturePhase - 1) * Math.PI)
+          ? Math.sin((gesturePhase - 1) * Math.PI) *
+            (record === male ? 0.28 : 0.7)
           : 0;
       pointing = record.lastFeature?.kind !== "rock" && hand > 0;
+      if (
+        record === female &&
+        record.touchActive &&
+        record.state === "garden"
+      ) {
+        touch =
+          phase > 0.2 && phase < 0.8
+            ? Math.sin(((phase - 0.2) / 0.6) * Math.PI)
+            : 0;
+        hand = touch;
+        pointing = false;
+      }
       chest =
         record === female && gesturePhase < 1
           ? Math.sin(gesturePhase * Math.PI)
           : 0;
+      if (record.touchActive && record.state === "garden") chest = 0;
+      shift = Math.sin(elapsed * 0.8 + record.variant) * 0.0012;
+      if (record === female) {
+        spread = Math.sin(elapsed * 1.2) ** 2 * 0.3;
+        nod = Math.sin(elapsed * 1.4 + record.variant) * 0.055;
+        yaw = Math.sin(elapsed * 0.9) * 0.045;
+      }
+      if (
+        elapsed > 1.3 &&
+        elapsed < 2.1 &&
+        navigation.isClear(record.walker.normal, record.walker, 0.002)
+      )
+        stance = Math.sin(((elapsed - 1.3) * Math.PI) / 0.8) * 0.0015;
     } else if (talking) {
       record.focus
         .copy(record === female ? boy.normal : girl.normal)
-        .multiplyScalar(1.063);
+        .multiplyScalar(eyeRadius(record === female ? boy : girl));
       for (let i = 0; i < exchanges; i++) {
         const turn = talkTurns[i];
         const local = (time - talkStarted - turn.start) / turn.duration;
@@ -1023,10 +1582,23 @@ export function createAstronautBehavior({
           left = turn.arm === 0 || turn.both ? hand : 0;
           right =
             turn.arm === 1 || turn.both ? hand * (turn.both ? 0.82 : 1) : 0;
-        } else if (turn.nod) nod = Math.sin(local * Math.PI * 2) * 0.045;
+          if (turn.nod) {
+            nod =
+              Math.sin(local * Math.PI * 2) * (record === male ? 0.09 : 0.07);
+            if (record === female)
+              shake = Math.sin(local * Math.PI * 2) * 0.085;
+          }
+          if (turn.spread) spread = envelope;
+        } else if (turn.nod) {
+          nod = Math.sin(local * Math.PI * 2) * (record === male ? 0.17 : 0.12);
+          if (record === female) shake = Math.sin(local * Math.PI * 2) * 0.18;
+        }
       }
       shift = Math.sin(elapsed * 0.48 + record.variant) * 0.0014;
       yaw = Math.sin(elapsed * 0.7 + record.variant) * 0.045;
+      const glance = (elapsed + record.variant * 0.9) % 5.5;
+      if (glance > 4.7)
+        yaw += Math.sin(((glance - 4.7) / 0.8) * Math.PI) * 0.12;
       // A tiny one-foot adjustment, entirely inside the reserved body footprint.
       // It is sparse and phase-offset, rather than an idle walking cycle.
       const adjustment = (elapsed + record.variant * 1.7) % 8;
@@ -1037,8 +1609,11 @@ export function createAstronautBehavior({
       )
         stance = Math.sin(((adjustment - 5.5) * Math.PI) / 0.9) * 0.002;
     }
-    if (record.state === "showGarden") {
-      const local = (time - tourShowingAt) / tourDuration;
+    if (record.state === "showGarden" || record.state === "showHouse") {
+      const local =
+        record.state === "showHouse"
+          ? elapsed / (record.until - record.since)
+          : (time - tourShowingAt) / tourDuration;
       hand =
         local > 0.08 && local < 0.5
           ? Math.sin(((local - 0.08) / 0.42) * Math.PI)
@@ -1046,7 +1621,7 @@ export function createAstronautBehavior({
       pointing = true;
       chest = 0;
     }
-    if (record.state === "gardenGuest") {
+    if (record.state === "gardenGuest" || record.state === "houseGuest") {
       nod =
         elapsed > 2 && elapsed < 2.7
           ? Math.sin(((elapsed - 2) * Math.PI) / 0.7) * 0.06
@@ -1058,13 +1633,13 @@ export function createAstronautBehavior({
       chest = 0;
     }
     if (inviting) {
-      record.focus.copy(tourFocus);
-      const start = record === female ? 0.25 : 1.1;
+      record.focus.copy(sharedFocus);
+      const start = record === guide ? 0.25 : 1.1;
       const local = clamp((elapsed - start) / 1.4, 0, 1);
-      hand = Math.sin(local * Math.PI) * (record === female ? 1 : 0.65);
+      hand = Math.sin(local * Math.PI) * (record === guide ? 1 : 0.65);
       pointing = true;
       nod =
-        record === male && elapsed > 0.8 && elapsed < 1.3
+        record !== guide && elapsed > 0.8 && elapsed < 1.3
           ? Math.sin((elapsed - 0.8) * Math.PI * 2) * 0.05
           : 0;
     }
@@ -1072,12 +1647,65 @@ export function createAstronautBehavior({
       if ((elapsed + (record === male ? 2 : 0)) % 7 > 5.8)
         record.focus
           .copy(record === female ? boy.normal : girl.normal)
-          .multiplyScalar(1.063);
-      else record.focus.copy(tourFocus);
+          .multiplyScalar(eyeRadius(record === female ? boy : girl));
+      else record.focus.copy(sharedFocus);
+      const local =
+        (time - (visitingHouse ? houseTourStarted : tourStarted)) % 2.2;
+      const speaker =
+        Math.floor(
+          (time - (visitingHouse ? houseTourStarted : tourStarted)) / 2.2,
+        ) %
+          2 ===
+        (record === female ? 0 : 1);
+      if (local > 0.3 && local < 1.45) {
+        const stroke = Math.sin(((local - 0.3) / 1.15) * Math.PI);
+        if (speaker) {
+          hand = stroke * 0.65;
+          spread = record.variant === 1 ? stroke * 0.7 : 0;
+        } else nod = stroke * 0.1;
+        record.focus
+          .copy(record === female ? boy.normal : girl.normal)
+          .multiplyScalar(eyeRadius(record === female ? boy : girl));
+      }
+    }
+    if (record.state === "wave" && record.calling) {
+      hand = Math.sin((Math.min(1, elapsed / 0.7) * Math.PI) / 2) * 0.8;
+      spread = 0.85;
+      shake = Math.sin(elapsed * 5) * 0.17;
+    }
+    if (
+      record.playfulWait &&
+      record.walker.mode === "hold" &&
+      record.walker.velocity < 0.003 &&
+      elapsed > 1.3 &&
+      elapsed < 4.5
+    ) {
+      const local = elapsed - 1.3;
+      const envelope = Math.min(1, local * 3, (3.2 - local) * 3);
+      dance = envelope * (0.5 + Math.sin(local * 3) * 0.15);
+      hand = envelope * (0.55 + Math.sin(local * 5) * 0.18);
+      spread = dance;
+      shake = Math.sin(local * 3.5) * 0.13 * envelope;
+      nod = Math.sin(local * 4) * 0.08 * envelope;
+      const bounce = local % 1.4;
+      if (bounce < 0.5)
+        hop = Math.sin((bounce * Math.PI) / 0.5) * 0.003 * envelope;
+    }
+    if (record.state === "sit") {
+      chest = 0.35;
+      hand = 0.12;
     }
     if (!talking) {
       left = record.variant % 2 === 0 ? hand : 0;
       right = record.variant % 2 === 1 ? hand : 0;
+      if (dance > 0 || (record.state === "wave" && record.calling)) {
+        left = hand;
+        right = hand * 0.82;
+      }
+      if (touch > 0) {
+        left = record.touchArm === 0 ? hand : 0;
+        right = record.touchArm === 1 ? hand : 0;
+      }
     }
     if (pointing) {
       pointLeft = left;
@@ -1088,7 +1716,9 @@ export function createAstronautBehavior({
       talking ||
       inviting ||
       walkingTogether ||
-      record.state === "wave";
+      record.state === "wave" ||
+      dance > 0 ||
+      record.state === "sit";
     const blend = 1 - Math.exp(-dt / (talking ? 0.09 : 0.16));
     const output = record.pose;
     output.weight += ((active ? 1 : 0) - output.weight) * blend;
@@ -1109,6 +1739,13 @@ export function createAstronautBehavior({
     output.shift += (shift - output.shift) * blend;
     output.yaw += (yaw - output.yaw) * blend;
     output.stance += (stance - output.stance) * blend;
+    output.shake += (shake - output.shake) * blend;
+    output.spread += (spread - output.spread) * blend;
+    output.dance += (dance - output.dance) * blend;
+    output.sit += ((record.state === "sit" ? 1 : 0) - output.sit) * blend;
+    output.touch += (touch - output.touch) * blend;
+    // A bounded ballistic hop has a definite landing, without a floating tail.
+    output.hop = hop;
   }
   return {
     actors,
@@ -1120,10 +1757,15 @@ export function createAstronautBehavior({
       if (disposed) return;
       time += dt;
       for (const record of actors) {
+        const targetSpeed =
+          record.cruiseSpeed * (time < record.runUntil ? 1.5 : 1);
+        record.walker.speed +=
+          (targetSpeed - record.walker.speed) * (1 - Math.exp(-dt * 6));
         if (
           record.state === "travelGarden" ||
           record.state === "travelRocket" ||
           record.state === "travelHouse" ||
+          record.state === "travelRest" ||
           record.state === "joinGarden" ||
           record.state === "leadGarden"
         ) {
@@ -1145,14 +1787,18 @@ export function createAstronautBehavior({
         record.progress = record.walker.distance;
       }
       decisionTime += dt;
-      if (decisionTime + 1e-10 >= 0.2) {
-        decisionTime -= 0.2;
+      if (decisionTime + 1e-10 >= DECISION_STEP) {
+        decisionTime -= DECISION_STEP;
         decisions();
       }
       for (const record of actors) pose(record, dt);
     },
     dispose() {
       disposed = true;
+      for (const record of actors) {
+        record.runUntil = 0;
+        record.walker.speed = record.cruiseSpeed;
+      }
       boy.softPartner = girl.softPartner = null;
       boy.softObstacle = girl.softObstacle = null;
     },
