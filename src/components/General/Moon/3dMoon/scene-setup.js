@@ -76,7 +76,7 @@ const HEMI_INTENSITY = 0.04;
 const PHASE_LIGHT_RADIUS = 5;
 
 // Animation & interaction speeds
-const AUTO_ROTATION_SPEED = 0.004;
+const AUTO_ROTATION_SPEED = 0.003;
 
 // Intro handoff: ease from slightly undersized into moonBaseScale as the loader fades.
 const INTRO_SCALE_FROM = 0.9;
