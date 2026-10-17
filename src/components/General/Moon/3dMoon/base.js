@@ -79,6 +79,7 @@ export function createMoonBase(
     seed = Math.floor(Math.random() * 0xffffffff),
     gardenInterestPoints = [],
     gardenLayout = null,
+    flagInterest = null,
   } = {},
 ) {
   const group = new Group();
@@ -348,7 +349,7 @@ export function createMoonBase(
         "box",
         COLORS.suit,
         [
-          name === "GirlAstronaut" ? 0.028 : 0.031,
+          name === "GirlAstronaut" ? 0.0278 : 0.0315,
           0.034,
           name === "GirlAstronaut" ? 0.022 : 0.0226,
         ],
@@ -365,7 +366,11 @@ export function createMoonBase(
     ]);
     model.add(torso);
     const head = assembly([
-      part("sphere", COLORS.suit, [0.017, 0.018, 0.016]),
+      part("sphere", COLORS.suit, [
+        name === "GirlAstronaut" ? 0.0168 : 0.0173,
+        0.018,
+        0.016,
+      ]),
       part("sphere", COLORS.dark, [0.013, 0.011, 0.005], [0, 0.002, 0.014]),
     ]);
     head.name = `${name}Head`;
@@ -540,6 +545,7 @@ export function createMoonBase(
         .normalize()
         .applyQuaternion(inverseFrame),
       radius: 0.34,
+      roverOnly: true,
     },
     {
       name: "Garden",
@@ -548,6 +554,14 @@ export function createMoonBase(
       roverOnly: !!gardenLayout,
     },
   ];
+  const flagObstacle = {
+    name: "FlagPole",
+    normal: obstacles[2].normal,
+    // Pole plus the low ground lamp; the cloth is safely above helmet height.
+    radius: 0.105,
+    peopleOnly: true,
+  };
+  obstacles.push(flagObstacle);
   if (gardenLayout) {
     for (const collider of gardenLayout.colliders) {
       // Pebbles support footsteps and seated rests; they do not seal garden exits.
@@ -610,6 +624,17 @@ export function createMoonBase(
     navigation: simulation,
     boy: boy.walker,
     girl: girl.walker,
+    flag: flagInterest
+      ? {
+          ...flagObstacle,
+          focuses: [
+            flagInterest.focus
+              .clone()
+              .applyQuaternion(inverseFrame)
+              .divideScalar(r),
+          ],
+        }
+      : null,
     garden: gardenFocuses.length
       ? { ...gardenObstacle, focuses: gardenFocuses, features: gardenFeatures }
       : null,
@@ -740,6 +765,15 @@ export function createMoonBase(
       }
       walker.surfaceLift = surfaceLift;
       const seated = pose.sit || 0;
+      const jog = clamp(
+        (walker.velocity / activity.cruiseSpeed - 1) / 0.8,
+        0,
+        1,
+      );
+      const turningStep =
+        clamp(Math.abs(walker.yawVelocity) / 2, 0, 1) *
+        (1 - person.strideBlend);
+      const turnLead = clamp(walker.yawVelocity * 0.08, -0.14, 0.14);
       placeWalker(
         person.anchor,
         walker,
@@ -773,19 +807,27 @@ export function createMoonBase(
         );
       person.torso.position.x = weightShift * r;
       person.torso.position.y = (bob - seatDrop) * r;
-      person.torso.rotation.x = pose.lean * poseWeight;
+      person.torso.rotation.x = pose.lean * poseWeight + jog * 0.035;
       person.torso.rotation.z =
         Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend;
-      person.torso.rotation.y = pose.yaw * poseWeight;
+      person.torso.rotation.y =
+        pose.yaw * poseWeight -
+        turnLead * 0.35 +
+        Math.sin(gait) * (index === 1 ? 0.026 : 0.017) * person.strideBlend;
       person.head.position.x = weightShift * r;
       person.head.position.y =
         (0.079 * Math.cos(person.torso.rotation.x) + bob - seatDrop) * r;
       person.head.position.z = Math.sin(person.torso.rotation.x) * 0.079 * r;
       person.head.rotation.y =
+        turnLead +
         Math.sin(time * 0.65 + index * 2.1) * (walker.moving ? 0.16 : 0.3);
       person.head.rotation.x = Math.sin(gait) * 0.055 * person.gaitBlend;
       person.head.rotation.z = 0;
       if (gazeWeight > 1e-5) {
+        const upwardLimit =
+          activity.state === "flag" || activity.state === "flagGuest"
+            ? -Math.PI / 4
+            : (-20 * Math.PI) / 180;
         attention.copy(activity.focus).sub(walker.normal).multiplyScalar(r);
         attentionRotation.copy(person.anchor.quaternion).invert();
         attention.applyQuaternion(attentionRotation);
@@ -798,7 +840,7 @@ export function createMoonBase(
         );
         const gazePitch = clamp(
           -Math.atan2(attention.y, Math.hypot(attention.x, attention.z)),
-          (-20 * Math.PI) / 180,
+          upwardLimit,
           (20 * Math.PI) / 180,
         );
         const gazeBlend = 1 - Math.exp(-Math.max(0, deltaSeconds) / 0.18);
@@ -816,13 +858,18 @@ export function createMoonBase(
           (clamp(
             person.gazePitch +
               pose.nod * (activity.state === "conversation" ? 0.7 : 1),
-            (-20 * Math.PI) / 180,
+            upwardLimit,
             (20 * Math.PI) / 180,
           ) -
             person.head.rotation.x) *
           gazeWeight;
         person.head.rotation.z = pose.tilt * gazeWeight;
       }
+      person.head.rotation.y = clamp(
+        person.head.rotation.y,
+        (-25 * Math.PI) / 180,
+        (25 * Math.PI) / 180,
+      );
       person.anchor.updateMatrix();
       person.model.updateMatrix();
       person.frame.multiplyMatrices(person.anchor.matrix, person.model.matrix);
@@ -834,9 +881,12 @@ export function createMoonBase(
           phase < 0.5 ? 0.015 * (1 - phase * 4) : -0.015 + 0.03 * smooth(swing);
         const footZ =
           stride * (person.stride / 0.015) * person.strideBlend +
+          stride * turningStep * 0.2 +
           (sideIndex === activity.variant % 2 ? pose.stance * poseWeight : 0) +
           seated * 0.03;
-        const footX = side * (0.009 + (pose.dance || 0) * 0.003);
+        const footX =
+          side * ((index === 0 ? 0.0093 : 0.0088) + (pose.dance || 0) * 0.003) +
+          Math.sin(gait) * turningStep * 0.001;
         const bootWidth = index === 0 ? 0.0125 : 0.0115;
         const bootHeight = index === 0 ? 0.0102 : 0.0095;
         const bootDepth = index === 0 ? 0.023 : 0.021;
@@ -851,8 +901,10 @@ export function createMoonBase(
             bodyScale +
           0.00002;
         const lift =
-          Math.sin(swing * Math.PI) ** 2 * 0.006 * person.gaitBlend +
-          (sideIndex === activity.variant % 2
+          Math.sin(swing * Math.PI) ** 2 *
+            (0.006 + jog * 0.008) *
+            person.gaitBlend +
+          (sideIndex === activity.variant % 2 && person.gaitBlend < 0.01
             ? Math.abs(pose.stance) * 0.2 * poseWeight
             : 0);
         const ankleY = ground + bootHeight / 2 + lift;
@@ -897,20 +949,25 @@ export function createMoonBase(
           bootDepth,
         );
         const armSwing =
-          (-footZ / person.stride) * 0.36 * person.carriage * (1 - seated);
+          (-footZ / person.stride) *
+          (0.36 + jog * 0.0355) *
+          person.carriage *
+          (1 - seated);
         const shoulderY =
           0.063 * Math.cos(person.torso.rotation.x) + bob - seatDrop;
         const shoulderZ = 0.063 * Math.sin(person.torso.rotation.x);
+        const elbowBend = 0.2 + jog * 0.65;
         let elbowY = shoulderY - Math.cos(armSwing) * 0.017;
         let elbowZ = shoulderZ + Math.sin(armSwing) * 0.017;
-        let handY = elbowY - Math.cos(armSwing + 0.2) * 0.015;
-        let handZ = elbowZ + Math.sin(armSwing + 0.2) * 0.015;
+        let handY = elbowY - Math.cos(armSwing + elbowBend) * 0.015;
+        let handZ = elbowZ + Math.sin(armSwing + elbowBend) * 0.015;
         let elbowX = side * 0.023;
         let handX = side * 0.024;
         const gesture = sideIndex === 0 ? pose.left : pose.right;
         const point =
           (sideIndex === 0 ? pose.pointLeft : pose.pointRight) * poseWeight;
         const wave = sideIndex === activity.variant % 2 ? pose.wave : 0;
+        const salute = sideIndex === 1 ? pose.salute * poseWeight : 0;
         const touch =
           sideIndex === activity.touchArm ? pose.touch * poseWeight : 0;
         const action = Math.max(
@@ -918,6 +975,7 @@ export function createMoonBase(
           pose.chest * poseWeight,
           wave * pose.weight,
           touch,
+          salute,
         );
         if (action > 1e-5) {
           const chest = pose.chest > gesture;
@@ -957,6 +1015,11 @@ export function createMoonBase(
             desiredHandX = touchLocal.x;
             desiredHandY = touchLocal.y;
             desiredHandZ = touchLocal.z;
+          }
+          if (salute > 0.01) {
+            desiredHandX = 0.016;
+            desiredHandY = 0.087 + bob;
+            desiredHandZ = 0.013;
           }
           handX += (desiredHandX - handX) * action;
           handY += (desiredHandY - handY) * action;

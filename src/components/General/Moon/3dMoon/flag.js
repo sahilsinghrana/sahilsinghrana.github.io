@@ -312,6 +312,11 @@ export function createFlag() {
   // Apply the surface frame first, then the small physical lean.
   group.quaternion.multiplyQuaternions(TMP_TILT_QUAT, TMP_FRAME_QUAT);
   group.position.copy(anchorPoint).addScaledVector(normal, -EMBED_DEPTH);
+  group.updateMatrixWorld(true);
+  group.userData.interest = {
+    base: anchorPoint.clone(),
+    focus: new Vector3().setFromMatrixPosition(cloth.matrixWorld),
+  };
 
   // --- Local ground lamp --------------------------------------------------
   // A small, understated practical light near the base - not a stage

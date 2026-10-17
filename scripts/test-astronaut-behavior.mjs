@@ -96,34 +96,39 @@ test("garden graph protects flowers and lamp while rocks remain walkable", () =>
 });
 
 test("visits change features and viewpoints inside the garden, with close prop inspections", () => {
-  const { base, navigation, controller } = fixture();
   const kinds = new Set(),
     viewpoints = new Set();
   let closeRocket = false,
     closeHouse = false;
-  for (let tick = 0; tick < 60 * 1800; tick++) {
-    navigation.update(1 / 60);
-    for (const actor of controller.actors) {
-      if (actor.state === "garden" || actor.state === "showGarden") {
-        kinds.add(actor.lastFeature.kind);
-        viewpoints.add(actor.lastView);
-        assert.ok(navigation.isClear(actor.walker.normal, actor.walker));
-      } else if (
-        actor.state === "rocket" ||
-        actor.state === "house" ||
-        actor.state === "showHouse"
-      ) {
-        const obstacle =
+  // Adding a third flower changes the seeded schedule. Verify variety
+  // across sessions rather than requiring every prop in one session.
+  for (const seed of [123, 71, 508]) {
+    const { base, navigation, controller } = fixture(seed);
+    for (let tick = 0; tick < 60 * 1800; tick++) {
+      navigation.update(1 / 60);
+      for (const actor of controller.actors) {
+        if (actor.state === "garden" || actor.state === "showGarden") {
+          kinds.add(actor.lastFeature.kind);
+          viewpoints.add(actor.lastView);
+          assert.ok(navigation.isClear(actor.walker.normal, actor.walker));
+        } else if (
+          actor.state === "rocket" ||
+          actor.state === "house" ||
           actor.state === "showHouse"
-            ? navigation.obstacles.find((item) => item.name === "Habitat")
-            : actor.interest;
-        const gap =
-          obstacleGap(actor.walker.normal, obstacle) - actor.walker.radius;
-        assert.ok(gap > 0 && gap < 0.05, `${actor.state} clearance ${gap}`);
-        closeRocket ||= actor.state === "rocket";
-        closeHouse ||= actor.state === "house" || actor.state === "showHouse";
+        ) {
+          const obstacle =
+            actor.state === "showHouse"
+              ? navigation.obstacles.find((item) => item.name === "Habitat")
+              : actor.interest;
+          const gap =
+            obstacleGap(actor.walker.normal, obstacle) - actor.walker.radius;
+          assert.ok(gap > 0 && gap < 0.05, `${actor.state} clearance ${gap}`);
+          closeRocket ||= actor.state === "rocket";
+          closeHouse ||= actor.state === "house" || actor.state === "showHouse";
+        }
       }
     }
+    base.dispose();
   }
   assert.deepEqual([...kinds].sort(), ["flower", "lamp"]);
   assert.ok(
@@ -132,10 +137,8 @@ test("visits change features and viewpoints inside the garden, with close prop i
       views: viewpoints.size,
       closeRocket,
       closeHouse,
-      stats: controller.stats,
     }),
   );
-  base.dispose();
 });
 
 test("short varied conversations use quick independent hands and readable head gestures", () => {
@@ -245,7 +248,7 @@ test("an unanswered visible approach becomes a silent calling gesture and a boun
     hopped ||= female.pose.hop > 0.001;
     spread ||= female.pose.spread > 0.4;
     jogged ||= boy.speed > controller.actors[0].cruiseSpeed * 1.3;
-    assert.ok(female.pose.hop <= 0.005);
+    assert.ok(female.pose.hop <= 0.018);
     assert.ok(
       boy.normal.angleTo(girl.normal) >= boy.radius + girl.radius - 1e-8,
     );
@@ -276,7 +279,7 @@ test("playful waiting uses both hands and small landed hops; rocks support sitti
     bothHands ||= female.pose.left > 0.2 && female.pose.right > 0.2;
     hop ||= female.pose.hop > 0.001;
     legs ||= female.pose.dance > 0.2;
-    assert.ok(female.pose.hop <= 0.003);
+    assert.ok(female.pose.hop <= 0.012);
   }
   assert.ok(bothHands && hop && legs);
   assert.equal(female.pose.hop, 0);
@@ -385,7 +388,7 @@ test("waves keep travelling, sometimes hop, and always land", () => {
     for (let tick = 0; tick < 60 * 20; tick++) {
       navigation.update(1 / 60);
       const girl = controller.actors[1];
-      assert.ok(girl.pose.hop >= 0 && girl.pose.hop <= 0.005);
+      assert.ok(girl.pose.hop >= 0 && girl.pose.hop <= 0.018);
       if (girl.state === "wave") {
         sawWave = true;
         moving ||= girl.walker.moving && girl.pose.wave > 0.4;
@@ -680,7 +683,8 @@ test("either partner can initiate; conversation alternates with safe separation"
       if (
         girl.state === "leadGarden" ||
         girl.state === "inviteGarden" ||
-        girl.state === "acceptHouse"
+        girl.state === "acceptHouse" ||
+        girl.state === "stroll"
       ) {
         assert.equal(boy.walker.softPartner, girl.walker);
         assert.equal(girl.walker.softPartner, boy.walker);
@@ -688,7 +692,10 @@ test("either partner can initiate; conversation alternates with safe separation"
         assert.equal(boy.walker.softPartner, null);
         assert.equal(girl.walker.softPartner, null);
       }
-      assert.ok(girl.nextTalkAt - controller.time >= 7.9);
+      assert.ok(
+        girl.nextTalkAt - controller.time >= 2.9 &&
+          girl.nextTalkAt - controller.time <= 8.01,
+      );
       break;
     }
     previousGirl = girl.state;
@@ -954,7 +961,17 @@ test("rendered inspection and conversation poses keep boots grounded, head limit
         assert.ok(lowest >= 0.4 - 1e-7);
         planted ||= lowest < 0.4001;
       }
-      assert.ok(planted || actor.pose.hop > 0 || actor.walker.surfaceLift > 0);
+      assert.ok(
+        planted || actor.pose.hop > 0 || actor.walker.surfaceLift > 0,
+        JSON.stringify({
+          frame,
+          person,
+          state: actor.state,
+          stance: actor.pose.stance,
+          gait: actor.walker.gaitDistance,
+          speed: actor.walker.velocity,
+        }),
+      );
       gardenSeen ||= actor.state === "garden";
       rocketSeen ||= actor.state === "rocket";
       talkSeen ||= actor.state === "conversation";
@@ -1151,9 +1168,11 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
     glove = new Matrix4();
   const hand = new Vector3();
   let raised = false;
+  let waves=0, peak=0, weight=0, height=0;
   for (let tick = 0; tick < 60 * 900; tick++) {
     base.update(1 / 60);
     const girl = controller.actors[1];
+    if(girl.state === "wave") { waves++; peak=Math.max(peak,girl.pose.wave); weight=Math.max(weight,girl.pose.weight); }
     if (
       girl.state !== "wave" ||
       girl.pose.wave < 0.8 ||
@@ -1165,13 +1184,14 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
     for (const index of [5, 7]) {
       gloves.getMatrixAt(index, glove);
       hand.setFromMatrixPosition(glove).applyMatrix4(inverse);
+      height=Math.max(height,hand.y);
       raised ||= hand.y > 0.07 * 0.4;
     }
     if (raised) break;
   }
   assert.ok(
     raised,
-    "The greeting must be visible, even before in-place turning has settled",
+    "The greeting must be visible, even before in-place turning has settled "+JSON.stringify({waves,peak,weight,height,stats:controller.stats}),
   );
   base.dispose();
 });

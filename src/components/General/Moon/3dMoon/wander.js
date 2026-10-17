@@ -1,4 +1,5 @@
 import { Quaternion, Vector3 } from "three";
+import { createPropRoutes } from "./prop-routes.js";
 
 // Analytic spherical steering; fixed steps make seeded runs independent of refresh
 // rate. Three.js vector/scene-graph patterns: threejs.org/manual/pages/scenegraph.html.
@@ -51,6 +52,13 @@ export function createWalker(
     retargetIn: 0,
     collisions: 0,
     blocked: false,
+    propRoute: new Int16Array(128),
+    propRouteLength: 0,
+    propRouteIndex: 0,
+    routeValidated: false,
+    blockedSeconds: 0,
+    recoveryActive: false,
+    recoveryTarget: up.clone(),
   };
 }
 
@@ -86,8 +94,12 @@ export function createWanderSimulation(agents, obstacles, seed) {
   const side = new Vector3();
   const rotation = new Quaternion();
   const routeSample = new Vector3();
+  const recoverySide = new Vector3();
+  const recoveryPoint = new Vector3();
+  const recoveryBest = new Vector3();
   let accumulator = 0;
   const STEP = 1 / 60;
+  let propRoutes;
 
   function clear(normal, agent, margin = 0, allowEscape = false) {
     if (
@@ -151,6 +163,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     for (const obstacle of blockers) {
       if (obstacle === agent || obstacle === agent.softPartner) continue;
       if (!applies(obstacle, agent)) continue;
+      if (agent.routeValidated && obstacles.includes(obstacle)) continue;
       // The prevalidated garden graph supplies clearance through narrow gaps;
       // soft personal-space buffers must not seal those gaps. Hard checks stay.
       if (agent.gardenRoute && obstacle.peopleOnly) continue;
@@ -222,8 +235,25 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.turning = false;
       return;
     }
+    if (
+      agent.propRouteIndex < agent.propRouteLength &&
+      agent.normal.angleTo(
+        propRoutes.nodes[agent.propRoute[agent.propRouteIndex]],
+      ) < 0.012
+    )
+      agent.propRouteIndex++;
+    if (
+      agent.recoveryActive &&
+      agent.normal.angleTo(agent.recoveryTarget) < 0.008
+    )
+      agent.recoveryActive = false;
+    const routePoint = agent.recoveryActive
+      ? agent.recoveryTarget
+      : agent.propRouteIndex < agent.propRouteLength
+        ? propRoutes.nodes[agent.propRoute[agent.propRouteIndex]]
+        : agent.target;
     const remaining = Math.acos(
-      Math.max(-1, Math.min(1, agent.normal.dot(agent.target))),
+      Math.max(-1, Math.min(1, agent.normal.dot(routePoint))),
     );
     if (agent.mode === "wander" && remaining < 0.035) {
       agent.pause = 0.8 + random() * 2;
@@ -232,14 +262,18 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.turning = false;
       return;
     }
-    if (agent.mode === "arrive" && remaining < agent.arrivalRadius)
+    if (
+      agent.mode === "arrive" &&
+      routePoint === agent.target &&
+      remaining < agent.arrivalRadius
+    )
       agent.arrived = true;
     const holding = agent.mode === "hold" || agent.arrived;
-    const aim = holding ? agent.lookTarget : agent.target;
+    const aim = holding ? agent.lookTarget : routePoint;
     desired.copy(aim).addScaledVector(agent.normal, -aim.dot(agent.normal));
     if (desired.lengthSq() < 1e-10) desired.copy(agent.forward);
     desired.normalize();
-    if (!holding) avoid(agent);
+    if (!holding && !agent.recoveryActive) avoid(agent);
     if (
       !holding &&
       !(agent.mode === "arrive" && remaining < 0.16) &&
@@ -261,7 +295,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     side.crossVectors(agent.forward, desired);
     const sign = side.dot(agent.normal) >= 0 ? 1 : -1;
     const rover = agent.radius > 0.06;
-    const maxYaw = rover ? 0.26 : holding ? 2.2 : 1.4;
+    const maxYaw = rover ? 0.26 : holding ? 2.8 : 1.8;
     const targetYaw =
       sign * Math.min(maxYaw, turn * (rover ? 2 : holding ? 6 : 3));
     const yawStep = (rover ? 0.45 : holding ? 8 : 4) * STEP;
@@ -308,7 +342,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
       (holding
         ? 0
         : agent.mode === "arrive"
-          ? Math.min(0.008, remaining)
+          ? Math.min(0.008, Math.max(0, remaining - agent.arrivalRadius))
           : 0.012);
     lookahead
       .copy(agent.normal)
@@ -323,6 +357,39 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.blocked = true;
       agent.moving = false;
       agent.velocity = 0;
+      agent.blockedSeconds += STEP;
+      if (!rover && !holding && agent.blockedSeconds >= 0.8) {
+        agent.blockedSeconds = 0;
+        recoverySide.crossVectors(agent.normal, agent.forward).normalize();
+        let best = Infinity;
+        // A bounded, event-driven local sidestep. Never teleport, relax hard
+        // collisions, or replace the activity's final destination.
+        for (let i = 0; i < 16; i++) {
+          const turn = (i * Math.PI) / 8;
+          recoveryPoint
+            .copy(agent.normal)
+            .multiplyScalar(Math.cos(0.055))
+            .addScaledVector(agent.forward, Math.sin(0.055) * Math.cos(turn))
+            .addScaledVector(recoverySide, Math.sin(0.055) * Math.sin(turn))
+            .normalize();
+          if (
+            !clear(recoveryPoint, agent, 0.003) ||
+            !simulation.segmentClear(agent.normal, recoveryPoint, agent)
+          )
+            continue;
+          const score =
+            recoveryPoint.angleTo(agent.target) +
+            Math.abs(turn - Math.PI) * 0.0005;
+          if (score < best) {
+            best = score;
+            recoveryBest.copy(recoveryPoint);
+          }
+        }
+        if (best < Infinity) {
+          agent.recoveryTarget.copy(recoveryBest);
+          agent.recoveryActive = true;
+        }
+      }
       if (agent.turning) agent.gaitDistance += 0.02 * STEP;
       if (agent.mode === "wander" && agent.retargetIn === 0) {
         chooseTarget(agent);
@@ -334,22 +401,24 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.forward.applyQuaternion(rotation).normalize();
     agent.normal.copy(candidate);
     agent.distance += angle;
-    agent.gaitDistance += angle;
+    agent.gaitDistance +=
+      angle + (!rover && angle < 0.0001 ? Math.abs(yaw) * 0.012 : 0);
     agent.moving = angle > 1e-7;
     agent.blocked = false;
+    agent.blockedSeconds = 0;
   }
   const simulation = {
     agents,
     obstacles,
     beforeStep: null,
     isClear: clear,
-    isStaticClear(normal, agent) {
+    isStaticClear(normal, agent, margin = 0.004) {
       return (
         normal.z >= agent.boundCos &&
         obstacles.every(
           (obstacle) =>
             !applies(obstacle, agent) ||
-            obstacleGap(normal, obstacle) >= agent.radius + 0.004,
+            obstacleGap(normal, obstacle) >= agent.radius + margin - 1e-10,
         )
       );
     },
@@ -361,12 +430,36 @@ export function createWanderSimulation(agents, obstacles, seed) {
           .copy(from)
           .lerp(to, i / count)
           .normalize();
-        if (!simulation.isStaticClear(routeSample, agent)) return false;
+        // Inspection endpoints can be closer than the preferred route margin.
+        // Retain hard body clearance, expanding the buffer along the segment.
+        const margin =
+          0.004 *
+          Math.min(
+            1,
+            (distance * i) / count / 0.025,
+            (distance * (count - i)) / count / 0.025,
+          );
+        if (!simulation.isStaticClear(routeSample, agent, margin)) return false;
       }
       return true;
     },
     arrive(agent, normal, facing = normal) {
       if (!clear(normal, agent)) return false;
+      if (
+        agent.radius < 0.06 &&
+        (agent.mode !== "arrive" || agent.target.angleTo(normal) > 0.008)
+      ) {
+        const length = propRoutes.plan(
+          agent.normal,
+          normal,
+          agent,
+          agent.propRoute,
+        );
+        if (length < 0) return false;
+        agent.propRouteLength = length;
+        agent.propRouteIndex = 0;
+        agent.routeValidated = true;
+      }
       agent.mode = "arrive";
       agent.target.copy(normal);
       agent.lookTarget.copy(facing);
@@ -375,11 +468,17 @@ export function createWanderSimulation(agents, obstacles, seed) {
       return true;
     },
     hold(agent, facing) {
+      agent.recoveryActive = false;
+      agent.propRouteLength = 0;
+      agent.routeValidated = false;
       agent.mode = "hold";
       agent.lookTarget.copy(facing);
       agent.pause = 0;
     },
     wander(agent) {
+      agent.recoveryActive = false;
+      agent.propRouteLength = 0;
+      agent.routeValidated = false;
       agent.mode = "wander";
       agent.arrived = false;
       agent.softPartner = null;
@@ -397,5 +496,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
       }
     },
   };
+  const people = agents.filter((agent) => agent.radius < 0.06);
+  if (people.length)
+    propRoutes = createPropRoutes(
+      simulation,
+      obstacles,
+      people.reduce((largest, agent) =>
+        agent.radius > largest.radius ? agent : largest,
+      ),
+    );
   return simulation;
 }

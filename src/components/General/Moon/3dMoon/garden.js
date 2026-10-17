@@ -437,11 +437,11 @@ function createSunflower() {
     const length = 0.0051 + Math.sin(petal * 2.3) * 0.0002;
     surface(
       petals,
-      3,
+      5,
       2,
       (t, u) => {
         const radius = 0.0037 + length * t;
-        const across = (u * 2 - 1) * 0.00125 * Math.sin(Math.PI * t) ** 0.7;
+        const across = (u * 2 - 1) * 0.001 * Math.sin(Math.PI * t) ** 0.7;
         return headPoint(
           Math.cos(angle) * radius - Math.sin(angle) * across,
           Math.sin(angle) * radius + Math.cos(angle) * across,
@@ -454,7 +454,7 @@ function createSunflower() {
       (t) => goldBase.clone().lerp(gold, 0.35 + t * 0.65),
     );
   }
-  const brown = new THREE.Color(0x594126);
+  const brown = new THREE.Color(0x3f2d1a);
   surface(
     center,
     3,

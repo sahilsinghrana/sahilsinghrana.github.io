@@ -78,7 +78,7 @@ const server = await createServer({
             ).searchParams.get("name");
             if (
               request.method !== "POST" ||
-              !/^(?:(?:moon-(?:0|0\.25|0\.5)-(?:mobile|desktop)-(?:base|baseline)|astronaut-(?:garden|rocket|house|conversation|wave|showGarden|showHouse|sit|waiting|call)-(?:mobile|desktop))(?:-before|-after)?\.png|astronaut-motion-(?:mobile|desktop)-(?:before|after)\.webm)$/.test(
+              !/^(?:(?:moon-(?:0|0\.25|0\.5)-(?:mobile|desktop)-(?:base|baseline)|astronaut-(?:garden|rocket|house|conversation|wave|showGarden|showHouse|sit|waiting|call|flag|stroll)-(?:mobile|desktop))(?:-before|-after)?\.png|astronaut-motion-(?:mobile|desktop)-(?:before|after)\.webm)$/.test(
                 name || "",
               )
             ) {

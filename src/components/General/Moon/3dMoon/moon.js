@@ -181,6 +181,7 @@ export class Moon {
         this._base = createMoonBase(radius, {
           gardenInterestPoints: this._garden?.userData.interestPoints,
           gardenLayout: this._garden?.userData.navigation,
+          flagInterest: this._flag?.userData.interest,
         });
         this.mesh.add(this._base);
       } catch (err) {

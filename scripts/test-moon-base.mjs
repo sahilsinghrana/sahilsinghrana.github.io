@@ -162,8 +162,14 @@ test("random wandering explores beyond the plaza and avoids every stationary obj
     if (rover.position.z < -0.7) backReached = true;
     for (const agent of simulation.agents) {
       assert.ok(agent.normal.z >= agent.boundCos - 1e-8);
-      for (const obstacle of simulation.obstacles)
+      for (const obstacle of simulation.obstacles) {
+        if (
+          (obstacle.roverOnly && agent.radius < 0.06) ||
+          (obstacle.peopleOnly && agent.radius >= 0.06)
+        )
+          continue;
         assert.ok(obstacleGap(agent.normal, obstacle) >= agent.radius - 1e-8);
+      }
       for (const other of simulation.agents)
         if (agent !== other)
           assert.ok(

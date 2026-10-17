@@ -126,6 +126,7 @@ function createMoon() {
       seed: interactionSeed,
       gardenInterestPoints: moon._garden?.userData.interestPoints,
       gardenLayout: moon._garden?.userData.navigation,
+      flagInterest: moon._flag?.userData.interest,
     });
     moon.mesh.add(moon._base);
     moon.mesh.rotation.y = 0.68;
@@ -164,9 +165,11 @@ function render(timestamp) {
             item.pose.weight > 0.99 &&
             (previewTarget === "wave" || previewTarget === "call"
               ? item.pose.wave > 0.8
-              : previewTarget === "sit"
-                ? item.pose.sit > 0.99
-                : Math.max(item.pose.hand, item.pose.chest) > 0.35),
+              : previewTarget === "flag"
+                ? item.pose.salute > 0.9
+                : previewTarget === "sit"
+                  ? item.pose.sit > 0.99
+                  : Math.max(item.pose.hand, item.pose.chest) > 0.35),
         );
         if (actor) {
           capturedActivity = previewTarget;
@@ -255,6 +258,7 @@ function render(timestamp) {
       if (sample.label === "baseline") {
         baseVisible = true;
         if (comparison === "behavior") setBehaviorRunning(true);
+        if (comparison === "sunflower") setSunflowerVisible(true);
         sample = {
           label: "base",
           warmup: 60,
@@ -280,9 +284,11 @@ function render(timestamp) {
           );
         } else {
           report.comparison =
-            comparison === "behavior"
-              ? "Same base: behavior controller off / on"
-              : "Base hidden / visible";
+            comparison === "sunflower"
+              ? "Same paused scene: sunflower hidden / visible (including shadow passes)"
+              : comparison === "behavior"
+                ? "Same base: behavior controller off / on"
+                : "Base hidden / visible";
           report.viewport = {
             width: innerWidth,
             height: innerHeight,
@@ -301,6 +307,68 @@ function render(timestamp) {
   frameId = requestAnimationFrame(render);
 }
 frameId = requestAnimationFrame(render);
+
+function setSunflowerVisible(visible) {
+  for (const name of ["Sunflower", "SunflowerRootShadow"])
+    moon._garden.getObjectByName(name).visible = visible;
+}
+function focusSunflower(close) {
+  if (!ready || sample) return;
+  previewTarget = null;
+  capturedActivity = null;
+  paused = true;
+  document.querySelector("#motion").textContent = "Resume motion";
+  moon.updateGarden(0);
+  setSunflowerVisible(true);
+  moon.mesh.updateWorldMatrix(true, true);
+  const flower = moon._garden.getObjectByName("Sunflower");
+  const target = close
+    ? flower.localToWorld(new Vector3(0, 0.037, 0))
+    : moon._garden.localToWorld(new Vector3(0, 0.025, 0));
+  const direction = new Vector3(
+    0,
+    Math.sin((35 * Math.PI) / 180),
+    Math.cos((35 * Math.PI) / 180),
+  ).applyQuaternion(flower.getWorldQuaternion(new Quaternion()));
+  camera.up
+    .set(0, 1, 0)
+    .applyQuaternion(moon._garden.getWorldQuaternion(new Quaternion()));
+  camera.near = 0.005;
+  camera.updateProjectionMatrix();
+  controls.minDistance = 0.03;
+  controls.target.copy(target);
+  camera.position.copy(target).addScaledVector(direction, close ? 0.065 : 0.33);
+  controls.update();
+}
+for (const [label, action] of [
+  ["Sunflower close view", () => focusSunflower(true)],
+  ["Garden overview", () => focusSunflower(false)],
+  [
+    "Measure sunflower",
+    () => {
+      if (!ready || sample) return;
+      focusSunflower(false);
+      comparison = "sunflower";
+      baseVisible = true;
+      setSunflowerVisible(false);
+      report.baseline = report.base = null;
+      sample = {
+        label: "baseline",
+        warmup: 60,
+        previous: performance.now(),
+        cpu: [],
+        frames: [],
+      };
+      results.textContent =
+        "Measuring the identical paused scene with and without the sunflower, including shadow passes.";
+    },
+  ],
+]) {
+  const button = document.createElement("button");
+  button.textContent = label;
+  button.onclick = action;
+  document.querySelector("#phase").before(button);
+}
 document.querySelector("#revisionCompare").onclick = () => {
   if (!ready || sample) return;
   moon._base.dispose();
@@ -308,6 +376,7 @@ document.querySelector("#revisionCompare").onclick = () => {
     seed: 123,
     gardenInterestPoints: moon._garden.userData.interestPoints,
     gardenLayout: moon._garden.userData.navigation,
+    flagInterest: moon._flag?.userData.interest,
   });
   moon.mesh.add(moon._base);
   moon._base.setReveal(1);
@@ -361,8 +430,16 @@ function focusActivity(actor) {
   const normal = actor.walker.normal.clone().applyQuaternion(frame);
   const forward = actor.walker.forward.clone().applyQuaternion(frame);
   let distance = 0.28;
+  if (capturedActivity === "flag") {
+    const flagFocus = moon._flag.userData.interest.focus.clone();
+    moon.mesh.localToWorld(flagFocus);
+    target.lerp(flagFocus, 0.45);
+    distance = 0.5;
+    forward.crossVectors(normal, forward).normalize();
+  }
   if (
     capturedActivity === "conversation" ||
+    capturedActivity === "stroll" ||
     capturedActivity === "wave" ||
     capturedActivity === "call" ||
     capturedActivity === "showGarden" ||
@@ -510,3 +587,22 @@ window.addEventListener("pagehide", () => {
   renderer.dispose();
   renderer.forceContextLoss();
 });
+
+// Local review controls for the new activities; absent from the deployed site.
+for (const [activity, label] of [
+  ["flag", "Preview flag salute"],
+  ["stroll", "Preview talking stroll"],
+]) {
+  const button = document.createElement("button");
+  button.textContent = label;
+  document.getElementById("capture").parentElement.append(button);
+  button.addEventListener("click", () => {
+    if (!ready || sample) return;
+    setBehaviorRunning(true);
+    capturedActivity = null;
+    previewTarget = activity;
+    previewLimit = moon._base.userData.behavior.time + 1800;
+    results.textContent = `Advancing to ${activity}...`;
+    paused = false;
+  });
+}

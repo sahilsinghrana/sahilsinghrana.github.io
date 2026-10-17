@@ -12,6 +12,11 @@ const MAX_CHAT_SECONDS = 10;
 const INSPECTION = new Set(["garden", "rocket", "house"]);
 const ENGAGED = new Set([
   "conversation",
+  "travelFlag",
+  "flag",
+  "joinFlag",
+  "flagGuest",
+  "stroll",
   "approach",
   "acknowledge",
   "waiting",
@@ -41,9 +46,11 @@ export function createAstronautBehavior({
   garden,
   rocket,
   house,
+  flag,
   seed,
 }) {
   const random = createRandom(seed ^ 0x51e8b39);
+  const flagRandom = createRandom(seed ^ 0x431fc9);
   const gestureRandom = createRandom(seed ^ 0x734ab9);
   const conversationDistance = Math.max(
     0.064,
@@ -74,7 +81,11 @@ export function createAstronautBehavior({
   let disposed = false;
   let nextTourAt = 0;
   let nextOpportunityAt = 0;
-  let nextBoyVisitAt = 35;
+  let nextBoyVisitAt = 12;
+  let nextFlagAt = 15 + flagRandom() * 20;
+  let flagJoined = false;
+  let flagStarted = 0;
+  const flagFacing = flag?.focuses[0].clone().normalize();
   let boyInitiated = false;
   let houseTourStarted = 0;
   let nextHouseTourAt = 0;
@@ -106,6 +117,9 @@ export function createAstronautBehavior({
     calls: 0,
     seatedRests: 0,
     flowerTouches: 0,
+    flagVisits: 0,
+    flagCompanions: 0,
+    strolls: 0,
     conversations: 0,
     aborts: 0,
   };
@@ -220,6 +234,7 @@ export function createAstronautBehavior({
       waveHopAt: 1,
       calling: false,
       playfulWait: false,
+      nextPlayAt: 18,
       approachDistance: 0,
       cruiseSpeed: walker.speed,
       runUntil: 0,
@@ -262,12 +277,14 @@ export function createAstronautBehavior({
         dance: 0,
         sit: 0,
         touch: 0,
+        salute: 0,
       },
     };
   }
   const male = actor(boy, rocket, between(2, 10));
   const female = actor(girl, garden, between(2, 10));
   const actors = [male, female];
+  const flagViews = views(flag ? { ...flag, radius: 0.15 } : null, girl);
   const rocketViews = male.views;
   const houseViews = views(house, boy);
   const houseGuestViews = views(house, girl);
@@ -299,7 +316,7 @@ export function createAstronautBehavior({
       (state === "waiting" ||
         state === "waitGarden" ||
         state === "acceptHouse") &&
-      gestureRandom() < 0.4;
+      gestureRandom() < 0.75;
     if (
       INSPECTION.has(state) ||
       state === "showGarden" ||
@@ -665,7 +682,7 @@ export function createAstronautBehavior({
   }
   function finishSocial(aborted = false) {
     if (aborted) stats.aborts++;
-    const cooldown = between(8, 16);
+    const cooldown = between(3, 8);
     for (const record of actors) {
       record.nextTalkAt = time + cooldown;
       record.walker.softPartner = null;
@@ -689,6 +706,7 @@ export function createAstronautBehavior({
       startTour()
     )
       return;
+    if (!aborted && random() < 0.35 && startStroll()) return;
     wander(female);
     if (
       male.state === "waiting" ||
@@ -701,15 +719,16 @@ export function createAstronautBehavior({
   }
   function quietApproach() {
     if (
-      house &&
       time >= nextBoyVisitAt &&
       (female.state !== "garden" || !pendingFeature(female)) &&
-      random() < 0.6 &&
+      random() < 0.8 &&
       reserveMeeting()
     ) {
       boyInitiated = true;
-      nextBoyVisitAt = time + between(45, 80);
+      nextBoyVisitAt = time + between(18, 32);
       stats.boyApproaches++;
+      if (angle(boy.normal, girl.normal) > 0.18)
+        male.runUntil = time + between(5, 9);
       enter(male, "approachGirl", 25);
       enter(female, "acknowledge", 25);
       female.acknowledgmentAt = time + between(0.4, 0.9);
@@ -905,10 +924,10 @@ export function createAstronautBehavior({
   function endHouseTour(aborted = false) {
     if (aborted) stats.aborts++;
     nextHouseTourAt = time + between(80, 140);
-    nextBoyVisitAt = time + between(45, 80);
+    nextBoyVisitAt = time + between(18, 32);
     boy.softPartner = girl.softPartner = null;
     for (const record of actors) {
-      record.nextTalkAt = time + between(8, 16);
+      record.nextTalkAt = time + between(3, 8);
       wander(record);
     }
   }
@@ -1072,7 +1091,7 @@ export function createAstronautBehavior({
     if (aborted) stats.aborts++;
     nextTourAt = time + between(80, 140);
     boy.softPartner = girl.softPartner = null;
-    for (const record of actors) record.nextTalkAt = time + between(8, 16);
+    for (const record of actors) record.nextTalkAt = time + between(3, 8);
     endVisit(female);
     wander(male);
   }
@@ -1230,13 +1249,182 @@ export function createAstronautBehavior({
     }
     return true;
   }
+  function startStroll() {
+    // Parallel short destinations preserve personal space and keep the pair
+    // side by side. Reject a blocked corridor before starting either walker.
+    tangent.copy(girl.forward).add(boy.forward);
+    tangent.addScaledVector(girl.normal, -tangent.dot(girl.normal));
+    if (tangent.lengthSq() < 1e-6)
+      tangent.crossVectors(girl.normal, boy.normal);
+    tangent.normalize();
+    for (let attempt = 0; attempt < 6; attempt++) {
+      const turn = (attempt * Math.PI) / 3;
+      lateral.crossVectors(girl.normal, tangent).normalize();
+      facing
+        .copy(tangent)
+        .multiplyScalar(Math.cos(turn))
+        .addScaledVector(lateral, Math.sin(turn));
+      meetingGirl.copy(girl.normal).addScaledVector(facing, 0.16).normalize();
+      meetingBoy.copy(boy.normal).addScaledVector(facing, 0.16).normalize();
+      if (
+        !navigation.isClear(meetingGirl, girl) ||
+        !navigation.isClear(meetingBoy, boy) ||
+        !navigation.segmentClear(girl.normal, meetingGirl, girl) ||
+        !navigation.segmentClear(boy.normal, meetingBoy, boy)
+      )
+        continue;
+      const duration = between(3, 5);
+      boy.softPartner = girl;
+      girl.softPartner = boy;
+      if (
+        !navigation.arrive(girl, meetingGirl) ||
+        !navigation.arrive(boy, meetingBoy)
+      )
+        continue;
+      for (const record of actors) enter(record, "stroll", duration);
+      stats.strolls++;
+      return true;
+    }
+    return false;
+  }
+  function startFlag() {
+    const start = Math.floor(random() * flagViews.length);
+    for (let i = 0; i < flagViews.length; i++) {
+      const point = flagViews[(start + i) % flagViews.length];
+      if (!navigation.isClear(point, girl, 0.006)) continue;
+      girl.arrivalRadius = 0.004;
+      if (!navigation.arrive(girl, point, flagFacing)) continue;
+      female.goal.copy(point);
+      female.focus.copy(flag.focuses[0]);
+      enter(female, "travelFlag", 60);
+      flagStarted = time;
+      nextFlagAt = time + between(65, 100);
+      flagJoined =
+        socialAvailable(male) &&
+        angle(boy.normal, girl.normal) < 0.8 &&
+        random() < 0.65;
+      if (flagJoined) {
+        enter(male, "joinFlag", 60);
+        male.nextDestinationAt = 0;
+        boy.softPartner = girl;
+        girl.softPartner = boy;
+        stats.flagCompanions++;
+      }
+      return true;
+    }
+    nextFlagAt = time + between(8, 15);
+    return false;
+  }
+  function endFlag() {
+    if (
+      flagJoined &&
+      time >= male.nextTalkAt &&
+      time >= female.nextTalkAt &&
+      random() < 0.6 &&
+      reserveMeeting()
+    ) {
+      flagJoined = false;
+      male.runUntil = 0;
+      enter(female, "meeting", 20);
+      enter(male, "meeting", 20);
+      navigation.arrive(girl, meetingGirl, boy.normal);
+      navigation.arrive(boy, meetingBoy, girl.normal);
+      return;
+    }
+    wander(female);
+    if (flagJoined) {
+      male.runUntil = 0;
+      wander(male);
+    }
+    flagJoined = false;
+  }
+  function updateFlag() {
+    if (female.state !== "travelFlag" && female.state !== "flag") return false;
+    if (
+      time - flagStarted > 60 ||
+      female.stalled > 4 ||
+      (female.state === "flag" && time >= female.until)
+    ) {
+      endFlag();
+      return false;
+    }
+    const separation = angle(boy.normal, girl.normal);
+    if (flagJoined && male.state === "joinFlag") {
+      // Catch up to the guide first. Only jog while separated; braking and the
+      // planted-foot gait still use measured travel distance.
+      male.runUntil = separation > 0.18 ? time + 0.5 : 0;
+      if (time >= male.nextDestinationAt) {
+        if (!socialDestination(boy, girl, 0.085) && boy.blocked)
+          male.stalled += DECISION_STEP;
+        male.nextDestinationAt = time + 0.75;
+      }
+      male.focus.copy(female.state === "flag" ? flag.focuses[0] : girl.normal);
+      if (female.state !== "flag") male.focus.multiplyScalar(eyeRadius(girl));
+      if (female.state === "flag" && separation < 0.12) {
+        navigation.hold(boy, flagFacing);
+        male.runUntil = 0;
+        enter(male, "flagGuest", Math.max(1, female.until - time));
+      }
+      if (male.stalled > 4) {
+        flagJoined = false;
+        wander(male);
+      }
+    }
+    if (female.state === "travelFlag") {
+      // Give a joining partner a brief catch-up opportunity, then keep leading.
+      if (flagJoined && separation > 0.23 && time - flagStarted < 8)
+        navigation.hold(girl, boy.normal);
+      else if (girl.mode === "hold")
+        navigation.arrive(girl, female.goal, flagFacing);
+      if (girl.arrived && girl.velocity < 0.003) {
+        navigation.hold(girl, flagFacing);
+        enter(female, "flag", between(4, 7));
+        stats.flagVisits++;
+      }
+    }
+    return flagJoined;
+  }
   function decisions() {
     stats.decisions++;
+    if (female.state === "stroll") {
+      if (
+        time >= female.until ||
+        boy.blocked ||
+        girl.blocked ||
+        angle(boy.normal, girl.normal) > 0.17
+      ) {
+        for (const record of actors) {
+          record.nextTalkAt = time + between(3, 8);
+          wander(record);
+        }
+      }
+      return;
+    }
+    if (updateFlag()) return;
+    if (
+      flag &&
+      female.state === "wander" &&
+      !female.initial &&
+      time >= nextFlagAt &&
+      startFlag()
+    )
+      return;
     if (female.state === "conversation") {
       if (time + 1e-9 >= talkStarted + talkDuration) finishSocial();
       return;
     }
     if (updateHouseTour() || updateTour()) return;
+    if (
+      female.state === "wander" &&
+      time >= female.nextPlayAt &&
+      navigation.isClear(girl.normal, girl, 0.012)
+    ) {
+      female.nextPlayAt = time + 25 + gestureRandom() * 20;
+      navigation.hold(girl, boy.normal);
+      female.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
+      enter(female, "playful", 3.5 + gestureRandom() * 0.7);
+      female.playfulWait = true;
+    }
     for (const record of actors) {
       if (
         record.state === "wander" &&
@@ -1262,6 +1450,7 @@ export function createAstronautBehavior({
         navigation.arrive(girl, meetingGirl, boy.normal);
         enter(female, "waiting", 20);
       }
+      if (angle(boy.normal, girl.normal) > 0.16) male.runUntil = time + 0.5;
       if (female.state === "waiting") girl.lookTarget.copy(boy.normal);
       if (female.state === "waiting" && readyToTalk()) beginTalk();
       return;
@@ -1284,7 +1473,7 @@ export function createAstronautBehavior({
         (INSPECTION.has(male.state) ||
           male.state === "wander" ||
           male.state === "rest") &&
-        angle(girl.normal, boy.normal) < 0.5 &&
+        angle(girl.normal, boy.normal) < 0.7 &&
         random() < 0.85 &&
         quietApproach()
       ) {
@@ -1480,6 +1669,7 @@ export function createAstronautBehavior({
       record.state === "showHouse" ||
       record.state === "houseGuest";
     const talking = record.state === "conversation";
+    const atFlag = record.state === "flag" || record.state === "flagGuest";
     let hand = 0;
     let chest = 0;
     let nod = 0;
@@ -1494,6 +1684,7 @@ export function createAstronautBehavior({
       shake = 0,
       hop = 0;
     let touch = 0;
+    let salute = 0;
     let spread = 0,
       dance = 0;
     const elapsed = time - record.since;
@@ -1503,6 +1694,8 @@ export function createAstronautBehavior({
       record.state === "inviteHouse" ||
       record.state === "acceptHouse";
     const walkingTogether =
+      record.state === "stroll" ||
+      record.state === "joinFlag" ||
       record.state === "leadGarden" ||
       record.state === "followGarden" ||
       record.state === "leadHouse" ||
@@ -1522,9 +1715,9 @@ export function createAstronautBehavior({
       wave =
         Math.min(1, phase * 6, (1 - phase) * 6) *
         (0.88 + 0.12 * Math.cos(phase * Math.PI * 6));
-      const jump = (elapsed - record.waveHopAt) / 0.7;
+      const jump = (elapsed - record.waveHopAt) / 0.85;
       if (record.waveHop && jump > 0 && jump < 1)
-        hop = 4 * jump * (1 - jump) * 0.005;
+        hop = 4 * jump * (1 - jump) * 0.018;
     } else if (inspecting) {
       const phase = clamp(
         (time - record.since) / (record.until - record.since),
@@ -1644,7 +1837,11 @@ export function createAstronautBehavior({
           : 0;
     }
     if (walkingTogether) {
-      if ((elapsed + (record === male ? 2 : 0)) % 7 > 5.8)
+      if (
+        record.state === "stroll" ||
+        record.state === "joinFlag" ||
+        (elapsed + (record === male ? 2 : 0)) % 7 > 5.8
+      )
         record.focus
           .copy(record === female ? boy.normal : girl.normal)
           .multiplyScalar(eyeRadius(record === female ? boy : girl));
@@ -1668,6 +1865,18 @@ export function createAstronautBehavior({
           .multiplyScalar(eyeRadius(record === female ? boy : girl));
       }
     }
+    if (atFlag) {
+      record.focus.copy(flag.focuses[0]);
+      salute =
+        record === female
+          ? Math.min(
+              1,
+              Math.max(0, elapsed - 0.5) * 2,
+              Math.max(0, record.until - time) * 2,
+            )
+          : 0;
+      nod = record === male ? Math.sin(elapsed * 2) * 0.045 : 0;
+    }
     if (record.state === "wave" && record.calling) {
       hand = Math.sin((Math.min(1, elapsed / 0.7) * Math.PI) / 2) * 0.8;
       spread = 0.85;
@@ -1677,19 +1886,19 @@ export function createAstronautBehavior({
       record.playfulWait &&
       record.walker.mode === "hold" &&
       record.walker.velocity < 0.003 &&
-      elapsed > 1.3 &&
-      elapsed < 4.5
+      elapsed > 0.4 &&
+      elapsed < 3.6
     ) {
-      const local = elapsed - 1.3;
+      const local = elapsed - 0.4;
       const envelope = Math.min(1, local * 3, (3.2 - local) * 3);
-      dance = envelope * (0.5 + Math.sin(local * 3) * 0.15);
-      hand = envelope * (0.55 + Math.sin(local * 5) * 0.18);
+      dance = envelope * (0.75 + Math.sin(local * 3) * 0.15);
+      hand = envelope * (0.72 + Math.sin(local * 5) * 0.18);
       spread = dance;
       shake = Math.sin(local * 3.5) * 0.13 * envelope;
       nod = Math.sin(local * 4) * 0.08 * envelope;
       const bounce = local % 1.4;
       if (bounce < 0.5)
-        hop = Math.sin((bounce * Math.PI) / 0.5) * 0.003 * envelope;
+        hop = Math.sin((bounce * Math.PI) / 0.5) * 0.012 * envelope;
     }
     if (record.state === "sit") {
       chest = 0.35;
@@ -1712,6 +1921,8 @@ export function createAstronautBehavior({
       pointRight = right;
     }
     const active =
+      atFlag ||
+      record.state === "travelFlag" ||
       inspecting ||
       talking ||
       inviting ||
@@ -1744,6 +1955,7 @@ export function createAstronautBehavior({
     output.dance += (dance - output.dance) * blend;
     output.sit += ((record.state === "sit" ? 1 : 0) - output.sit) * blend;
     output.touch += (touch - output.touch) * blend;
+    output.salute += (salute - output.salute) * blend;
     // A bounded ballistic hop has a definite landing, without a floating tail.
     output.hop = hop;
   }
@@ -1758,7 +1970,7 @@ export function createAstronautBehavior({
       time += dt;
       for (const record of actors) {
         const targetSpeed =
-          record.cruiseSpeed * (time < record.runUntil ? 1.5 : 1);
+          record.cruiseSpeed * (time < record.runUntil ? 1.95 : 1);
         record.walker.speed +=
           (targetSpeed - record.walker.speed) * (1 - Math.exp(-dt * 6));
         if (
