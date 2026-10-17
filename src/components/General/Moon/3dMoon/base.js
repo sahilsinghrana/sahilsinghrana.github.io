@@ -41,10 +41,12 @@ import { GARDEN_SURFACE_NORMAL } from "./garden.js";
 export const BASE_REVEAL_SECONDS = 0.4;
 const COLORS = {
   suit: 0xc9c9bf,
+  white: 0xe8e7df,
   hull: 0x999b96,
   dark: 0x252a30,
   metal: 0x77736b,
   blue: 0x8392a4,
+  helmetBlue: 0x527fad,
   rose: 0x9f5266,
   warm: 0xffd9a0,
 };
@@ -281,6 +283,19 @@ export function createMoonBase(
     ROCKET_POSITION.y,
     -0.25,
   );
+  const rocketBeacons = assembly(
+    [
+      part("box", COLORS.warm, [0.009, 0.004, 0.003], [0, 0.135, 0.027]),
+      part("box", COLORS.warm, [0.006, 0.004, 0.006], [0, 0.062, 0.038]),
+      part("box", COLORS.warm, [0.006, 0.004, 0.006], [0.033, 0.062, -0.019]),
+      part("box", COLORS.warm, [0.006, 0.004, 0.006], [-0.033, 0.062, -0.019]),
+    ],
+    glow,
+  );
+  rocketBeacons.name = "RocketBeacons";
+  rocketBeacons.geometry.scale(ROCKET_SCALE, ROCKET_SCALE, ROCKET_SCALE);
+  rocketAnchor.add(rocketBeacons);
+  reveals.push(rocketBeacons);
 
   const rover = new Group();
   rover.name = "LunarRover";
@@ -355,7 +370,12 @@ export function createMoonBase(
         ],
         [0, 0.052, 0],
       ),
-      part("box", tint, [0.017, 0.013, 0.003], [0, 0.055, 0.013]),
+      part(
+        "box",
+        name === "BoyAstronaut" ? COLORS.white : tint,
+        [0.017, 0.013, 0.003],
+        [0, 0.055, 0.013],
+      ),
       part("box", tint, [0.026, 0.03, 0.013], [0, 0.052, -0.017]),
       part(
         "box",
@@ -363,14 +383,15 @@ export function createMoonBase(
         [name === "GirlAstronaut" ? 0.03 : 0.029, 0.008, 0.022],
         [0, 0.037, 0],
       ),
+      part("box", COLORS.dark, [0.008, 0.009, 0.009], [0.009, 0.061, 0.015]),
     ]);
     model.add(torso);
     const head = assembly([
-      part("sphere", COLORS.suit, [
-        name === "GirlAstronaut" ? 0.0168 : 0.0173,
-        0.018,
-        0.016,
-      ]),
+      part(
+        "sphere",
+        name === "GirlAstronaut" ? COLORS.helmetBlue : COLORS.suit,
+        [name === "GirlAstronaut" ? 0.0168 : 0.0173, 0.018, 0.016],
+      ),
       part("sphere", COLORS.dark, [0.013, 0.011, 0.005], [0, 0.002, 0.014]),
     ]);
     head.name = `${name}Head`;
@@ -383,18 +404,68 @@ export function createMoonBase(
       frame: new Matrix4(),
       gaitBlend: 0,
       strideBlend: 0,
+      gaitPhase: 0,
+      lastGaitDistance: 0,
       gazeYaw: 0,
       gazePitch: 0,
       stride: name === "GirlAstronaut" ? 0.0146 : 0.0154,
       carriage: name === "GirlAstronaut" ? 0.96 : 1.04,
     };
   }
-  const boy = astronaut(COLORS.blue, "BoyAstronaut");
+  const boy = astronaut(COLORS.dark, "BoyAstronaut");
   const girl = astronaut(COLORS.rose, "GirlAstronaut");
   boy.anchor = mount(boy.model, -0.12, -0.175, 0.7);
   girl.anchor = mount(girl.model, 0.18, -0.03, -0.7);
   boy.model.userData.revealScale = ASTRONAUT_SCALES.boy;
   girl.model.userData.revealScale = ASTRONAUT_SCALES.girl;
+
+  // A chest torch leaves both hands available for the existing gestures.
+  function createTorch(person, name, size) {
+    const torchLensMaterial = new MeshStandardMaterial({
+      color: COLORS.dark,
+      emissive: COLORS.warm,
+      emissiveIntensity: 0,
+      roughness: 0.5,
+    });
+    materials.add(torchLensMaterial);
+    const torchLens = assembly(
+      [part("box", 0xffffff, [0.006, 0.006, 0.001], [0.009, 0.061, 0.02])],
+      torchLensMaterial,
+    );
+    torchLens.name = `${name}TorchLens`;
+    person.torso.add(torchLens);
+    const torch = new SpotLight(0xffe5bf, 0, r * 0.4, Math.PI / 7, 0.85, 2);
+    torch.name = `${name}Torch`;
+    torch.userData.astronautTorch = true;
+    torch.castShadow = false;
+    torch.position.set(0.009 * r, 0.061 * r, 0.021 * r);
+    const torchTarget = new Group();
+    torchTarget.position.set(0.009 * r, -0.02 * r, 0.16 * r);
+    torch.target = torchTarget;
+    person.torso.add(torch, torchTarget);
+    return {
+      person,
+      size,
+      light: torch,
+      material: torchLensMaterial,
+      on: false,
+      fade: 0,
+    };
+  }
+  const torches = [
+    createTorch(boy, "Boy", ASTRONAUT_SCALES.boy),
+    createTorch(girl, "Girl", ASTRONAUT_SCALES.girl),
+  ];
+  const torchDarkColor = new Color(COLORS.dark);
+  const torchWarmColor = new Color(COLORS.warm);
+  const illuminationLights = [];
+  const torchUp = new Vector3();
+  const torchSample = new Vector3();
+  const sourcePosition = new Vector3();
+  const sourceTarget = new Vector3();
+  const lightDirection = new Vector3();
+  const lightToSample = new Vector3();
+  let lightingRoot = null;
 
   // All articulated arm/leg segments and gloves/boots share two draw calls.
   const limbGeometry = part("cylinder", 0xffffff, [1, 1, 1]);
@@ -765,11 +836,31 @@ export function createMoonBase(
       }
       walker.surfaceLift = surfaceLift;
       const seated = pose.sit || 0;
-      const jog = clamp(
-        (walker.velocity / activity.cruiseSpeed - 1) / 0.8,
-        0,
-        1,
-      );
+      const jog = motionReduced
+        ? 0
+        : clamp((walker.velocity / activity.cruiseSpeed - 1) / 0.8, 0, 1);
+      // Integrate distance into phase so blending to a longer running stride
+      // cannot reset the feet or make them slide at a speed transition.
+      person.gaitPhase =
+        (person.gaitPhase +
+          ((walker.gaitDistance - person.lastGaitDistance) /
+            (person.stride *
+              4 *
+              person.model.userData.revealScale *
+              (1 + jog * 0.12))) *
+            TAU) %
+        TAU;
+      person.lastGaitDistance = walker.gaitDistance;
+      const gait = person.gaitPhase;
+      const stridePhase = (((gait / TAU) % 0.5) + 0.5) % 0.5;
+      const stanceDuty = 0.5 - jog * 0.08;
+      const flightPhase =
+        (stridePhase - stanceDuty) / Math.max(0.001, 0.5 - stanceDuty);
+      walker.jogFlight =
+        jog *
+        (flightPhase > 0 && flightPhase < 1
+          ? Math.sin(flightPhase * Math.PI) * 0.0028
+          : 0);
       const turningStep =
         clamp(Math.abs(walker.yawVelocity) / 2, 0, 1) *
         (1 - person.strideBlend);
@@ -778,7 +869,7 @@ export function createMoonBase(
         person.anchor,
         walker,
         false,
-        (pose.hop + surfaceLift * (1 - seated)) * r,
+        (pose.hop + walker.jogFlight + surfaceLift * (1 - seated)) * r,
       );
       person.gaitBlend +=
         ((walker.moving || walker.turning ? 1 : 0) - person.gaitBlend) *
@@ -787,12 +878,10 @@ export function createMoonBase(
         ((walker.moving ? 1 : 0) - person.strideBlend) *
         (1 - Math.exp(-12 * deltaSeconds));
       // Stance moves each boot back by exactly the body's traveled distance.
-      const gait =
-        (walker.gaitDistance /
-          (person.stride * 4 * person.model.userData.revealScale)) *
-        TAU;
       const bob =
-        Math.cos(gait * 2) * (index === 1 ? 0.0007 : 0.0005) * person.gaitBlend;
+        Math.cos(gait * 2) *
+        ((index === 1 ? 0.0007 : 0.0005) + jog * 0.0007) *
+        person.gaitBlend;
       const weightShift = pose.shift * poseWeight;
       // Seat the bottom of the existing hip armor on the rock. Boots stay on
       // the Moon instead of raising the entire bent-leg rig above the seat.
@@ -807,7 +896,7 @@ export function createMoonBase(
         );
       person.torso.position.x = weightShift * r;
       person.torso.position.y = (bob - seatDrop) * r;
-      person.torso.rotation.x = pose.lean * poseWeight + jog * 0.035;
+      person.torso.rotation.x = pose.lean * poseWeight + jog * 0.085;
       person.torso.rotation.z =
         Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend;
       person.torso.rotation.y =
@@ -876,14 +965,19 @@ export function createMoonBase(
       for (let sideIndex = 0; sideIndex < 2; sideIndex++) {
         const side = sideIndex === 0 ? -1 : 1;
         const phase = (((gait / TAU + sideIndex * 0.5) % 1) + 1) % 1;
-        const swing = phase < 0.5 ? 0 : (phase - 0.5) * 2;
+        const swing =
+          phase < stanceDuty ? 0 : (phase - stanceDuty) / (1 - stanceDuty);
         const stride =
-          phase < 0.5 ? 0.015 * (1 - phase * 4) : -0.015 + 0.03 * smooth(swing);
-        const footZ =
+          (phase < stanceDuty
+            ? 0.015 * (1 - (2 * phase) / stanceDuty)
+            : -0.015 + 0.03 * smooth(swing)) *
+          (1 + jog * 0.12);
+        let footZ =
           stride * (person.stride / 0.015) * person.strideBlend +
           stride * turningStep * 0.2 +
           (sideIndex === activity.variant % 2 ? pose.stance * poseWeight : 0) +
-          seated * 0.03;
+          seated * 0.03 +
+          side * pose.danceStep * 0.004;
         const footX =
           side * ((index === 0 ? 0.0093 : 0.0088) + (pose.dance || 0) * 0.003) +
           Math.sin(gait) * turningStep * 0.001;
@@ -891,6 +985,13 @@ export function createMoonBase(
         const bootHeight = index === 0 ? 0.0102 : 0.0095;
         const bootDepth = index === 0 ? 0.023 : 0.021;
         const bodyScale = Math.max(person.model.scale.x, 1e-5);
+        const bootEnvelope = Math.sin(walker.radius) / bodyScale - 0.0004;
+        const bootSide = Math.abs(footX) + bootWidth / 2;
+        const maxBootZ =
+          Math.sqrt(Math.max(0, bootEnvelope ** 2 - bootSide ** 2)) -
+          bootDepth / 2;
+        if (seated < 0.01)
+          footZ = clamp(footZ, -maxBootZ - 0.003, maxBootZ - 0.003);
         const supportX = Math.max(0, Math.abs(footX) - bootWidth / 2);
         const supportZ = Math.max(0, Math.abs(footZ + 0.003) - bootDepth / 2);
         const ground =
@@ -906,7 +1007,8 @@ export function createMoonBase(
             person.gaitBlend +
           (sideIndex === activity.variant % 2 && person.gaitBlend < 0.01
             ? Math.abs(pose.stance) * 0.2 * poseWeight
-            : 0);
+            : 0) +
+          Math.max(0, side * pose.danceStep) * 0.003;
         const ankleY = ground + bootHeight / 2 + lift;
         const hipY = 0.037 + bob - seatDrop;
         // Two equal leg links solve ankle reach; the knee bends forward.
@@ -956,18 +1058,28 @@ export function createMoonBase(
         const shoulderY =
           0.063 * Math.cos(person.torso.rotation.x) + bob - seatDrop;
         const shoulderZ = 0.063 * Math.sin(person.torso.rotation.x);
-        const elbowBend = 0.2 + jog * 0.65;
+        const elbowBend = 0.2 + jog * 0.95;
         let elbowY = shoulderY - Math.cos(armSwing) * 0.017;
         let elbowZ = shoulderZ + Math.sin(armSwing) * 0.017;
         let handY = elbowY - Math.cos(armSwing + elbowBend) * 0.015;
         let handZ = elbowZ + Math.sin(armSwing + elbowBend) * 0.015;
         let elbowX = side * 0.023;
         let handX = side * 0.024;
+        // Running bends the forearm forward. Keep the entire rotating glove
+        // inside the same body footprint used by collision/navigation checks.
+        const handClearance = walker.radius / bodyScale - 0.007;
+        const handPlanar = Math.hypot(handX, handZ);
+        if (jog > 0 && handPlanar > handClearance) {
+          handX *= handClearance / handPlanar;
+          handZ *= handClearance / handPlanar;
+        }
         const gesture = sideIndex === 0 ? pose.left : pose.right;
         const point =
           (sideIndex === 0 ? pose.pointLeft : pose.pointRight) * poseWeight;
         const wave = sideIndex === activity.variant % 2 ? pose.wave : 0;
         const salute = sideIndex === 1 ? pose.salute * poseWeight : 0;
+        const clap = pose.clap * poseWeight;
+        const push = pose.push * poseWeight;
         const touch =
           sideIndex === activity.touchArm ? pose.touch * poseWeight : 0;
         const action = Math.max(
@@ -976,6 +1088,8 @@ export function createMoonBase(
           wave * pose.weight,
           touch,
           salute,
+          clap,
+          push,
         );
         if (action > 1e-5) {
           const chest = pose.chest > gesture;
@@ -999,6 +1113,14 @@ export function createMoonBase(
               : chest
                 ? 0.022
                 : shoulderZ + 0.028 - (pose.spread || 0) * 0.016;
+          if (wave < 0.01 && salute < 0.01 && point < 0.01 && touch < 0.01) {
+            const expressiveness = index === 1 ? 1 : 0.65;
+            const arc = pose.arc * expressiveness;
+            desiredHandX += side * arc * 0.005;
+            desiredHandY +=
+              Math.sin(arc * Math.PI + sideIndex * 0.7) * 0.004 * gesture;
+            desiredHandZ += arc * side * 0.004;
+          }
           if (point > 0.01) {
             direction.copy(attention).normalize();
             desiredHandX =
@@ -1020,6 +1142,18 @@ export function createMoonBase(
             desiredHandX = 0.016;
             desiredHandY = 0.087 + bob;
             desiredHandZ = 0.013;
+          }
+          if (push > 0.01) {
+            desiredHandX = side * 0.012;
+            desiredHandY = shoulderY - 0.003;
+            desiredHandZ =
+              shoulderZ + 0.025 + Math.sin((push * Math.PI) / 2) * 0.006;
+          } else if (clap > 0.01) {
+            const opening = 0.5 + 0.5 * Math.cos(behavior.time * 8);
+            desiredHandX = side * (0.0045 + opening * 0.009);
+            desiredHandY =
+              shoulderY - 0.002 + Math.sin(behavior.time * 8) * 0.001;
+            desiredHandZ = shoulderZ + 0.021;
           }
           handX += (desiredHandX - handX) * action;
           handY += (desiredHandY - handY) * action;
@@ -1082,7 +1216,7 @@ export function createMoonBase(
           0.008,
           0.009,
           0.008,
-          armSwing,
+          armSwing + pose.wrist * action * (index === 1 ? 0.7 : 0.45),
           point > 0.01 ? direction : null,
         );
         // One shared four-instance batch; a folded index collapses into its glove.
@@ -1103,7 +1237,7 @@ export function createMoonBase(
     fingers.instanceMatrix.needsUpdate = true;
   }
 
-  group.updateLighting = () => {
+  group.updateLighting = (deltaSeconds = 1 / 60) => {
     if (disposed) return;
     group.getWorldScale(worldScale);
     const size = worldScale.x * ROVER_SCALE;
@@ -1111,6 +1245,80 @@ export function createMoonBase(
     headlight.intensity = HEADLIGHT_INTENSITY * size * size * smooth(reveal);
     houseLight.distance = r * 0.7 * worldScale.x;
     houseLight.intensity = 0.065 * worldScale.x * worldScale.x * smooth(reveal);
+
+    // Discover existing illumination once per attachment, never per-frame.
+    let root = group;
+    while (root.parent) root = root.parent;
+    if (root !== lightingRoot) {
+      lightingRoot = root;
+      illuminationLights.length = 0;
+      root.traverse((object) => {
+        if (
+          !object.userData.astronautTorch &&
+          (object.isDirectionalLight ||
+            object.isSpotLight ||
+            object.isPointLight)
+        )
+          illuminationLights.push(object);
+      });
+    }
+    for (const entry of torches) {
+      entry.person.anchor.getWorldPosition(torchSample);
+      torchUp.set(0, 1, 0).transformDirection(entry.person.anchor.matrixWorld);
+      const personSize = worldScale.x * entry.size;
+      torchSample.addScaledVector(torchUp, 0.05 * r * personSize);
+      let illumination = 0;
+      for (const light of illuminationLights) {
+        if (!light.visible || light.intensity <= 0) continue;
+        light.getWorldPosition(sourcePosition);
+        if (light.isDirectionalLight) {
+          light.target.getWorldPosition(sourceTarget);
+          lightDirection.subVectors(sourcePosition, sourceTarget).normalize();
+          illumination +=
+            light.intensity * Math.max(0, torchUp.dot(lightDirection));
+          continue;
+        }
+        lightToSample.subVectors(torchSample, sourcePosition);
+        const distance = lightToSample.length();
+        if (light.distance > 0 && distance >= light.distance) continue;
+        lightToSample.normalize();
+        let attenuation = Math.max(0, -torchUp.dot(lightToSample));
+        if (light.isSpotLight) {
+          light.target.getWorldPosition(sourceTarget);
+          lightDirection.subVectors(sourceTarget, sourcePosition).normalize();
+          const cosine = lightDirection.dot(lightToSample);
+          const outer = Math.cos(light.angle);
+          const inner = Math.cos(light.angle * (1 - light.penumbra));
+          attenuation *= smooth(
+            Math.max(
+              0,
+              Math.min(1, (cosine - outer) / Math.max(1e-6, inner - outer)),
+            ),
+          );
+        }
+        if (light.distance > 0)
+          attenuation *= Math.max(0, 1 - (distance / light.distance) ** 4) ** 2;
+        illumination +=
+          (light.intensity * attenuation) /
+          Math.max(1e-6, distance ** light.decay);
+      }
+      // Hysteresis prevents flicker at the terminator or the edge of a lamp pool.
+      if (illumination < 0.18) entry.on = true;
+      else if (illumination > 0.32) entry.on = false;
+      const dt = Math.max(0, Math.min(0.05, deltaSeconds));
+      entry.fade += ((entry.on ? 1 : 0) - entry.fade) * (1 - Math.exp(-dt * 7));
+      entry.light.distance = r * 0.4 * personSize;
+      entry.light.intensity =
+        0.0042 * personSize * personSize * entry.fade * smooth(reveal);
+      entry.material.emissiveIntensity = entry.fade * 0.8;
+      entry.material.color.lerpColors(
+        torchDarkColor,
+        torchWarmColor,
+        entry.fade,
+      );
+      entry.light.userData.illumination = illumination;
+      entry.light.userData.on = entry.on;
+    }
   };
 
   group.setReveal = (progress) => {
@@ -1154,6 +1362,10 @@ export function createMoonBase(
     fingers.dispose();
     houseLight.dispose();
     headlight.dispose();
+    for (const entry of torches) entry.light.dispose();
+    torches.length = 0;
+    illuminationLights.length = 0;
+    lightingRoot = null;
     geometries.forEach((geometry) => geometry.dispose());
     materials.forEach((material) => material.dispose());
     geometries.clear();

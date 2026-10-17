@@ -148,7 +148,7 @@ function render(timestamp) {
   const delta = clock.tick(timestamp);
   if (ready) {
     if (previewTarget) {
-      for (let i = 0; i < 120 && previewTarget; i++) {
+      for (let i = 0; i < 600 && previewTarget; i++) {
         moon._base.update(1 / 60);
         const actor = moon._base.userData.behavior.actors.find(
           (item) =>
@@ -187,8 +187,10 @@ function render(timestamp) {
         }
       }
     }
-    if (!sample)
-      activityStatus.textContent = `${moon._base.userData.behavior.time.toFixed(1)}s | ${moon._base.userData.behavior.actors.map((actor) => actor.state).join(" / ")}`;
+    if (!sample) {
+      const torch = moon._base.getObjectByName("BoyTorch");
+      activityStatus.textContent = `${moon._base.userData.behavior.time.toFixed(1)}s | ${moon._base.userData.behavior.actors.map((actor) => actor.state).join(" / ")} | torch ${torch?.userData.on ? "on" : "off"}, illumination ${torch?.userData.illumination?.toFixed(2) ?? "pending"}`;
+    }
     if (!paused && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
       elapsed += delta;
       moon.updateFlag(elapsed * 1000);
@@ -440,6 +442,7 @@ function focusActivity(actor) {
   if (
     capturedActivity === "conversation" ||
     capturedActivity === "stroll" ||
+    capturedActivity === "gardenDance" ||
     capturedActivity === "wave" ||
     capturedActivity === "call" ||
     capturedActivity === "showGarden" ||
@@ -592,6 +595,7 @@ window.addEventListener("pagehide", () => {
 for (const [activity, label] of [
   ["flag", "Preview flag salute"],
   ["stroll", "Preview talking stroll"],
+  ["gardenDance", "Preview garden dance"],
 ]) {
   const button = document.createElement("button");
   button.textContent = label;

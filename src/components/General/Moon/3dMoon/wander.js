@@ -46,6 +46,7 @@ export function createWalker(
     avoidance: null,
     avoidanceSide: 1,
     gaitDistance: 0,
+    jogFlight: 0,
     turning: false,
     moving: false,
     pause: 0.5,
@@ -58,6 +59,7 @@ export function createWalker(
     routeValidated: false,
     blockedSeconds: 0,
     recoveryActive: false,
+    routeReplans: 0,
     recoveryTarget: up.clone(),
   };
 }
@@ -239,7 +241,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.propRouteIndex < agent.propRouteLength &&
       agent.normal.angleTo(
         propRoutes.nodes[agent.propRoute[agent.propRouteIndex]],
-      ) < 0.012
+      ) < Math.max(0.012, agent.arrivalRadius + 0.004)
     )
       agent.propRouteIndex++;
     if (
@@ -265,7 +267,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     if (
       agent.mode === "arrive" &&
       routePoint === agent.target &&
-      remaining < agent.arrivalRadius
+      remaining <= agent.arrivalRadius + 1e-7
     )
       agent.arrived = true;
     const holding = agent.mode === "hold" || agent.arrived;
@@ -276,6 +278,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     if (!holding && !agent.recoveryActive) avoid(agent);
     if (
       !holding &&
+      !(agent.mode === "arrive" && agent.routeValidated) &&
       !(agent.mode === "arrive" && remaining < 0.16) &&
       agent.normal.z < agent.boundCos + 0.08
     ) {
@@ -360,6 +363,20 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.blockedSeconds += STEP;
       if (!rover && !holding && agent.blockedSeconds >= 0.8) {
         agent.blockedSeconds = 0;
+        if (agent.mode === "arrive" && agent.routeValidated) {
+          const length = propRoutes.plan(
+            agent.normal,
+            agent.target,
+            agent,
+            agent.propRoute,
+          );
+          if (length >= 0) {
+            agent.propRouteLength = length;
+            agent.propRouteIndex = 0;
+            agent.recoveryActive = false;
+            if (agent.routeReplans++ === 0) return;
+          }
+        }
         recoverySide.crossVectors(agent.normal, agent.forward).normalize();
         let best = Infinity;
         // A bounded, event-driven local sidestep. Never teleport, relax hard
@@ -374,7 +391,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
             .normalize();
           if (
             !clear(recoveryPoint, agent, 0.003) ||
-            !simulation.segmentClear(agent.normal, recoveryPoint, agent)
+            !simulation.segmentClear(agent.normal, recoveryPoint, agent, true)
           )
             continue;
           const score =
@@ -422,7 +439,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
         )
       );
     },
-    segmentClear(from, to, agent) {
+    segmentClear(from, to, agent, includeMovers = false) {
       const distance = Math.acos(Math.max(-1, Math.min(1, from.dot(to))));
       const count = Math.max(1, Math.ceil(distance / 0.012));
       for (let i = 0; i <= count; i++) {
@@ -440,15 +457,15 @@ export function createWanderSimulation(agents, obstacles, seed) {
             (distance * (count - i)) / count / 0.025,
           );
         if (!simulation.isStaticClear(routeSample, agent, margin)) return false;
+        if (includeMovers && !clear(routeSample, agent)) return false;
       }
       return true;
     },
     arrive(agent, normal, facing = normal) {
       if (!clear(normal, agent)) return false;
-      if (
-        agent.radius < 0.06 &&
-        (agent.mode !== "arrive" || agent.target.angleTo(normal) > 0.008)
-      ) {
+      const changed =
+        agent.mode !== "arrive" || agent.target.angleTo(normal) > 0.008;
+      if (agent.radius < 0.06 && changed) {
         const length = propRoutes.plan(
           agent.normal,
           normal,
@@ -459,6 +476,12 @@ export function createWanderSimulation(agents, obstacles, seed) {
         agent.propRouteLength = length;
         agent.propRouteIndex = 0;
         agent.routeValidated = true;
+      }
+      // Recovery belongs to the previous destination, never the next activity.
+      if (changed) {
+        agent.recoveryActive = false;
+        agent.blockedSeconds = 0;
+        agent.routeReplans = 0;
       }
       agent.mode = "arrive";
       agent.target.copy(normal);

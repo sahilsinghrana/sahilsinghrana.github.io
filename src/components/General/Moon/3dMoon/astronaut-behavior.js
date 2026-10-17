@@ -9,9 +9,15 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const eyeRadius = (walker) => 1 + (walker.eyeHeight ?? 0.063);
 const DECISION_STEP = 0.2;
 const MAX_CHAT_SECONDS = 10;
+const SOCIAL_IDLE = new Set(["wander", "rest", "sit"]);
+const FEMALE_SOCIAL_IDLE = new Set(["wander", "rest", "sit", "playful"]);
 const INSPECTION = new Set(["garden", "rocket", "house"]);
 const ENGAGED = new Set([
   "conversation",
+  "gardenCall",
+  "travelDance",
+  "gardenDance",
+  "gardenClap",
   "travelFlag",
   "flag",
   "joinFlag",
@@ -50,6 +56,7 @@ export function createAstronautBehavior({
   seed,
 }) {
   const random = createRandom(seed ^ 0x51e8b39);
+  const performanceRandom = createRandom(seed ^ 0x1e8c79);
   const flagRandom = createRandom(seed ^ 0x431fc9);
   const gestureRandom = createRandom(seed ^ 0x734ab9);
   const conversationDistance = Math.max(
@@ -66,6 +73,9 @@ export function createAstronautBehavior({
   const touchSide = new Vector3();
   const touchDirection = new Vector3();
   let time = 0;
+  let playBlockedUntil = 0;
+  let lastChatAt = -Infinity;
+  let nextPlayOpportunity = 0;
   let decisionTime = 0;
   let talkStarted = 0;
   let talkDuration = 0;
@@ -77,12 +87,36 @@ export function createAstronautBehavior({
     both: false,
     nod: false,
     spread: false,
+    style: 0,
   }));
   let disposed = false;
   let nextTourAt = 0;
   let nextOpportunityAt = 0;
-  let nextBoyVisitAt = 12;
-  let nextFlagAt = 15 + flagRandom() * 20;
+  let nextMaleOpportunity = 0;
+  let nextWaveAt = 8;
+  let yieldPhase = "none";
+  let yieldStarted = 0;
+  let nextYieldAt = 0;
+  let obstructedFor = 0;
+  const yieldSpot = new Vector3();
+  const yieldResume = Array.from({ length: 2 }, () => ({
+    mode: "hold",
+    target: new Vector3(),
+    facing: new Vector3(),
+    focus: new Vector3(),
+  }));
+  let performancePhase = "none";
+  let performanceStarted = 0;
+  let performanceSawFlowersAt = -1;
+  let nextPerformanceAt = 30;
+  let nextPerformanceCheck = 0;
+  const danceSpot = new Vector3();
+  const performanceFlowerFocus = new Vector3();
+  const lampInterest = garden?.features?.find(
+    (feature) => feature.kind === "lamp",
+  );
+  let nextBoyVisitAt = 6;
+  let nextFlagAt = 45 + flagRandom() * 35;
   let flagJoined = false;
   let flagStarted = 0;
   const flagFacing = flag?.focuses[0].clone().normalize();
@@ -114,6 +148,9 @@ export function createAstronautBehavior({
     gardenTours: 0,
     houseTours: 0,
     boyApproaches: 0,
+    distantBoyApproaches: 0,
+    gardenCalls: 0,
+    gardenPerformances: 0,
     calls: 0,
     seatedRests: 0,
     flowerTouches: 0,
@@ -230,11 +267,20 @@ export function createAstronautBehavior({
       featureCount: 0,
       featureSeen: new Uint8Array(4),
       lastFlower: null,
+      featureVisits: new Map(
+        (interest?.features || []).map((feature) => [feature, 0]),
+      ),
+      lastSeat: -1,
+      previousSeat: -1,
+      selectedSeat: -1,
+      longApproach: false,
       waveHop: false,
       waveHopAt: 1,
       calling: false,
       playfulWait: false,
       nextPlayAt: 18,
+      playVariant: 0,
+      gestureStyle: 0,
       approachDistance: 0,
       cruiseSpeed: walker.speed,
       runUntil: 0,
@@ -275,9 +321,14 @@ export function createAstronautBehavior({
         hop: 0,
         spread: 0,
         dance: 0,
+        danceStep: 0,
         sit: 0,
         touch: 0,
         salute: 0,
+        clap: 0,
+        push: 0,
+        arc: 0,
+        wrist: 0,
       },
     };
   }
@@ -301,18 +352,73 @@ export function createAstronautBehavior({
         navigation.isStaticClear(feature.normal, girl),
     ) || [];
   const seatNodes = seats.map((seat) => seat.normal);
+  // Reserve clear stage choices around the actual central lamp, not the seat.
+  const danceViews = [];
+  if (lampInterest) {
+    const forward = new Vector3(1, 0, 0)
+      .addScaledVector(lampInterest.normal, -lampInterest.normal.x)
+      .normalize();
+    const side = new Vector3()
+      .crossVectors(lampInterest.normal, forward)
+      .normalize();
+    for (let i = 0; i < 16; i++) {
+      const turn = (i * Math.PI) / 8;
+      const radius = i % 2 ? 0.12 : 0.09;
+      const point = lampInterest.normal
+        .clone()
+        .multiplyScalar(Math.cos(radius))
+        .addScaledVector(forward, Math.sin(radius) * Math.cos(turn))
+        .addScaledVector(side, Math.sin(radius) * Math.sin(turn))
+        .normalize();
+      if (navigation.isStaticClear(point, girl, 0.012)) danceViews.push(point);
+    }
+  }
+  const danceNodeOffset = female.views.length + seatNodes.length;
+  const stageRoute = new Int16Array(128);
+  let danceViewIndex = -1;
   const gardenRoutes = garden?.features
     ? createGardenRoutes(
         navigation,
-        [...female.views, ...seatNodes],
+        [...female.views, ...seatNodes, ...danceViews],
         garden.normal,
         boy,
       )
     : null;
 
+  function playContext() {
+    if (performancePhase !== "none" && performancePhase !== "dance")
+      return false;
+    if (
+      time < playBlockedUntil ||
+      (flag && angle(girl.normal, flag.normal) < 0.38)
+    )
+      return false;
+    const nearBoy =
+      angle(girl.normal, boy.normal) < 0.28 &&
+      navigation.segmentClear(girl.normal, boy.normal, girl);
+    const inGarden = garden && angle(girl.normal, garden.normal) < 0.31;
+    return nearBoy || inGarden;
+  }
+  function startPlay() {
+    if (
+      time < female.nextPlayAt ||
+      !playContext() ||
+      !navigation.isClear(girl.normal, girl, 0.006)
+    )
+      return false;
+    female.nextPlayAt = time + 25 + gestureRandom() * 20;
+    female.playVariant =
+      (female.playVariant + 1 + Math.floor(gestureRandom() * 2)) % 3;
+    navigation.hold(girl, boy.normal);
+    female.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
+    enter(female, "playful", 3.5 + gestureRandom() * 0.7);
+    female.playfulWait = true;
+    return true;
+  }
   function enter(record, state, duration) {
     record.playfulWait =
       record === female &&
+      playContext() &&
       (state === "waiting" ||
         state === "waitGarden" ||
         state === "acceptHouse") &&
@@ -324,6 +430,20 @@ export function createAstronautBehavior({
     ) {
       record.lastInspectedPosition.copy(record.walker.target);
       record.hasInspectedPosition = true;
+    }
+    record.gestureStyle =
+      (record.gestureStyle + 1 + Math.floor(gestureRandom() * 3)) % 4;
+    if (
+      (state === "garden" ||
+        state === "showGarden" ||
+        state === "gardenGuest") &&
+      record.lastFeature?.kind === "flower"
+    ) {
+      record.lastFlower = record.lastFeature;
+      record.featureVisits.set(
+        record.lastFeature,
+        (record.featureVisits.get(record.lastFeature) || 0) + 1,
+      );
     }
     record.state = state;
     record.since = time;
@@ -379,6 +499,7 @@ export function createAstronautBehavior({
     const start = Math.floor(random() * count);
     let selected = -1;
     let best = Infinity;
+    record.routeLength = 0;
     for (let i = 0; i < count; i++) {
       const index = (start + i) % count;
       if (index === record.lastView || index === record.previousView) continue;
@@ -399,8 +520,18 @@ export function createAstronautBehavior({
         angle(record.walker.normal, point) +
         i * 0.012 +
         (point.feature === record.lastFeature ? 0.18 : 0) +
+        (record.featureVisits.get(point.feature) || 0) * 0.08 +
         (point.feature.touches?.length && !point.canTouch ? 0.12 : 0);
       if (score < best) {
+        if (record === female && record.interest === garden && gardenRoutes) {
+          const length = gardenRoutes.plan(
+            record.walker.normal,
+            index,
+            record.route,
+          );
+          if (!length) continue;
+          record.routeLength = length;
+        }
         best = score;
         selected = index;
       }
@@ -428,13 +559,7 @@ export function createAstronautBehavior({
     record.goal.copy(point);
     record.goalIndex = selected;
     record.routeIndex = 0;
-    record.routeLength = 0;
     if (record === female && record.interest === garden && gardenRoutes) {
-      record.routeLength = gardenRoutes.plan(
-        record.walker.normal,
-        selected,
-        record.route,
-      );
       if (!record.routeLength) return false;
       record.walker.gardenRoute = true;
       return navigation.arrive(
@@ -462,9 +587,18 @@ export function createAstronautBehavior({
         random() < 0.65 ? 1 : random() < 0.65 ? 2 : 3,
       );
       if (tourFlowers.length && random() < 0.85) {
-        let index = Math.floor(random() * tourFlowers.length);
-        if (tourFlowers[index] === record.lastFlower)
-          index = (index + 1) % tourFlowers.length;
+        let total = 0;
+        for (const flower of tourFlowers)
+          if (tourFlowers.length === 1 || flower !== record.lastFlower)
+            total += 1 / (1 + (record.featureVisits.get(flower) || 0)) ** 2;
+        let pick = random() * total,
+          index = 0;
+        for (; index < tourFlowers.length - 1; index++) {
+          const flower = tourFlowers[index];
+          if (tourFlowers.length > 1 && flower === record.lastFlower) continue;
+          pick -= 1 / (1 + (record.featureVisits.get(flower) || 0)) ** 2;
+          if (pick <= 0) break;
+        }
         record.visitFeatures[0] = tourFlowers[index];
         if (record.featureCount > 1 && tourFlowers.length > 1 && random() < 0.8)
           record.visitFeatures[1] =
@@ -563,6 +697,7 @@ export function createAstronautBehavior({
     return !ENGAGED.has(record.state);
   }
   function socialAvailable(record) {
+    if (performancePhase !== "none") return false;
     return (
       available(record) &&
       record.state !== "travelRest" &&
@@ -681,12 +816,18 @@ export function createAstronautBehavior({
     return false;
   }
   function finishSocial(aborted = false) {
+    if (!aborted) lastChatAt = time;
     if (aborted) stats.aborts++;
     const cooldown = between(3, 8);
     for (const record of actors) {
       record.nextTalkAt = time + cooldown;
       record.walker.softPartner = null;
       record.runUntil = 0;
+    }
+    if (!aborted && gestureRandom() < 0.45 && startPlay()) {
+      boyInitiated = false;
+      wander(male);
+      return;
     }
     const showHouse = boyInitiated || (house && random() < 0.3);
     boyInitiated = false;
@@ -717,15 +858,33 @@ export function createAstronautBehavior({
     )
       wander(male);
   }
-  function quietApproach() {
+  function quietApproach(preferBoy = false) {
+    const separation = angle(boy.normal, girl.normal);
+    if (
+      preferBoy &&
+      separation > 0.35 &&
+      separation < 1.3 &&
+      socialDestination(boy, girl)
+    ) {
+      boyInitiated = true;
+      male.longApproach = true;
+      male.nextDestinationAt = time + 0.8;
+      nextBoyVisitAt = time + between(8, 16);
+      male.runUntil = time + 1;
+      enter(male, "approachGirl", 50);
+      stats.boyApproaches++;
+      stats.distantBoyApproaches++;
+      return true;
+    }
     if (
       time >= nextBoyVisitAt &&
       (female.state !== "garden" || !pendingFeature(female)) &&
-      random() < 0.8 &&
+      (preferBoy || random() < 0.8) &&
       reserveMeeting()
     ) {
       boyInitiated = true;
-      nextBoyVisitAt = time + between(18, 32);
+      male.longApproach = false;
+      nextBoyVisitAt = time + between(8, 16);
       stats.boyApproaches++;
       if (angle(boy.normal, girl.normal) > 0.18)
         male.runUntil = time + between(5, 9);
@@ -822,13 +981,14 @@ export function createAstronautBehavior({
       turn.both = gestureRandom() < 0.22;
       turn.nod = gestureRandom() < 0.75;
       turn.spread = gestureRandom() < 0.4;
+      turn.style = Math.floor(gestureRandom() * 4);
     }
     for (const record of actors) enter(record, "conversation", talkDuration);
     navigation.hold(girl, boy.normal);
     navigation.hold(boy, girl.normal);
     stats.conversations++;
   }
-  function startRest(record) {
+  function startRest(record, near = null) {
     if (!gardenRoutes || !seats.length) return false;
     const continuing = record.state === "travelRest";
     if (!continuing) {
@@ -837,10 +997,19 @@ export function createAstronautBehavior({
     }
     record.visitEnd = Infinity;
     const start = Math.floor(random() * seats.length);
+    const avoidPrevious = random() < 0.5;
     const partner = record === male ? female : male;
-    for (let offset = 0; offset < seats.length; offset++) {
+    for (let offset = 0; offset < seats.length * 2; offset++) {
       const index = (start + offset) % seats.length;
+      if (
+        offset < seats.length &&
+        seats.length > 1 &&
+        (index === record.lastSeat ||
+          (avoidPrevious && seats.length > 2 && index === record.previousSeat))
+      )
+        continue;
       const seat = seats[index];
+      if (near && angle(seat.normal, near) > 0.32) continue;
       if (angle(record.walker.normal, seat.normal) > 0.6) continue;
       if (
         (partner.state === "sit" || partner.state === "travelRest") &&
@@ -848,6 +1017,7 @@ export function createAstronautBehavior({
       )
         continue;
       if (!navigation.isClear(seat.normal, record.walker, 0.004)) continue;
+      record.selectedSeat = index;
       record.goalIndex = female.views.length + index;
       record.routeLength = gardenRoutes.plan(
         record.walker.normal,
@@ -882,9 +1052,19 @@ export function createAstronautBehavior({
     let best = Infinity;
     for (let i = 0; i < houseViews.length; i++) {
       const point = houseViews[i];
+      if (
+        house.axisY &&
+        point.dot(house.axisY) - house.normal.dot(house.axisY) < 0.045
+      )
+        continue;
       if (!navigation.isClear(point, boy, 0.004)) continue;
       for (let j = 0; j < houseGuestViews.length; j++) {
         const other = houseGuestViews[j];
+        if (
+          house.axisY &&
+          other.dot(house.axisY) - house.normal.dot(house.axisY) < 0.045
+        )
+          continue;
         const spacing = angle(point, other);
         if (
           spacing < 0.085 ||
@@ -924,7 +1104,7 @@ export function createAstronautBehavior({
   function endHouseTour(aborted = false) {
     if (aborted) stats.aborts++;
     nextHouseTourAt = time + between(80, 140);
-    nextBoyVisitAt = time + between(18, 32);
+    nextBoyVisitAt = time + between(8, 16);
     boy.softPartner = girl.softPartner = null;
     for (const record of actors) {
       record.nextTalkAt = time + between(3, 8);
@@ -968,7 +1148,7 @@ export function createAstronautBehavior({
         }
       }
       const separation = angle(boy.normal, girl.normal);
-      const boyTravelling = angle(boy.normal, male.goal) >= 0.012;
+      const boyTravelling = angle(boy.normal, male.goal) >= 0.006;
       if (boyTravelling && separation > 0.28 && boy.mode !== "hold")
         navigation.hold(boy, girl.normal);
       else if (boyTravelling && separation < 0.19 && boy.mode === "hold")
@@ -976,25 +1156,27 @@ export function createAstronautBehavior({
       if (
         time >= female.nextDestinationAt &&
         girl.mode === "hold" &&
-        angle(girl.normal, female.goal) > 0.012
+        angle(girl.normal, female.goal) > 0.006
       )
         navigation.arrive(girl, female.goal, houseDirection);
       for (const record of actors) {
         if (
-          angle(record.walker.normal, record.goal) < 0.012 &&
+          angle(record.walker.normal, record.goal) < 0.006 &&
           record.walker.arrived
         )
           navigation.hold(record.walker, houseDirection);
       }
       if (
-        angle(boy.normal, male.goal) < 0.012 &&
-        angle(girl.normal, female.goal) < 0.012 &&
+        angle(boy.normal, male.goal) < 0.006 &&
+        angle(girl.normal, female.goal) < 0.006 &&
         aligned(boy, houseDirection) &&
         aligned(girl, houseDirection)
       ) {
         const duration = between(5, 8);
         enter(male, "showHouse", duration);
         enter(female, "houseGuest", duration);
+        navigation.hold(boy, houseDirection);
+        navigation.hold(girl, houseDirection);
         stats.houseTours++;
       }
     } else if (time >= male.until) {
@@ -1298,7 +1480,7 @@ export function createAstronautBehavior({
       female.focus.copy(flag.focuses[0]);
       enter(female, "travelFlag", 60);
       flagStarted = time;
-      nextFlagAt = time + between(65, 100);
+      nextFlagAt = time + between(140, 210);
       flagJoined =
         socialAvailable(male) &&
         angle(boy.normal, girl.normal) < 0.8 &&
@@ -1316,6 +1498,7 @@ export function createAstronautBehavior({
     return false;
   }
   function endFlag() {
+    playBlockedUntil = time + 25;
     if (
       flagJoined &&
       time >= male.nextTalkAt &&
@@ -1384,8 +1567,321 @@ export function createAstronautBehavior({
     }
     return flagJoined;
   }
+  function endPerformance(aborted = false) {
+    if (aborted) {
+      stats.aborts++;
+      stats.lastPerformanceAbort = `${performancePhase}:${male.state}:${female.state}:${male.stalled.toFixed(1)}:${female.stalled.toFixed(1)}:${(time - performanceStarted).toFixed(1)}`;
+    }
+    performancePhase = "none";
+    nextPerformanceAt = time + 100 + performanceRandom() * 70;
+    for (const record of actors) {
+      record.runUntil = 0;
+      record.nextTalkAt = time + between(3, 8);
+      wander(record);
+    }
+  }
+  function startPerformance() {
+    if (
+      !lampInterest ||
+      !gardenRoutes ||
+      !seats.length ||
+      !socialAvailable(male) ||
+      female.lastFeature?.kind !== "flower" ||
+      angle(boy.normal, garden.normal) < 0.5 ||
+      angle(girl.normal, lampInterest.normal) > 0.24 ||
+      angle(boy.normal, girl.normal) > 1.15 ||
+      !navigation.isClear(girl.normal, girl, 0.006) ||
+      (flag && angle(girl.normal, flag.normal) < 0.38) ||
+      time < playBlockedUntil
+    )
+      return false;
+    if (!danceViews.length || !startRest(male, lampInterest.normal))
+      return false;
+    // Keep the stage in the lamp's central clearing, with the rock as audience.
+    const seat = male.goal;
+    let found = false;
+    const offset = Math.floor(performanceRandom() * danceViews.length);
+    for (let i = 0; i < danceViews.length; i++) {
+      const index = (offset + i) % danceViews.length;
+      candidate.copy(danceViews[index]);
+      if (
+        angle(candidate, seat) > 0.12 &&
+        angle(candidate, seat) < 0.32 &&
+        navigation.isClear(candidate, girl, 0.012) &&
+        gardenRoutes.plan(girl.normal, danceNodeOffset + index, stageRoute) >
+          0 &&
+        (!flag || angle(candidate, flag.normal) > 0.38)
+      ) {
+        danceSpot.copy(candidate);
+        danceViewIndex = danceNodeOffset + index;
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      wander(male);
+      return false;
+    }
+    performancePhase = "call";
+    boy.softPartner = girl;
+    girl.softPartner = boy;
+    performanceStarted = time;
+    performanceSawFlowersAt = -1;
+    male.runUntil = time + 1;
+    performanceFlowerFocus.copy(female.focus);
+    enter(female, "gardenCall", 3.5 + performanceRandom() * 1.5);
+    female.waveHop = performanceRandom() < 0.6;
+    female.waveHopAt = 0.9;
+    stats.gardenCalls++;
+    return true;
+  }
+  function updatePerformance() {
+    if (performancePhase === "none") return false;
+    boy.softPartner = girl;
+    girl.softPartner = boy;
+    if (
+      time - performanceStarted > 90 ||
+      male.stalled > 5 ||
+      female.stalled > 5
+    ) {
+      endPerformance(true);
+      return true;
+    }
+    if (performancePhase === "call") {
+      if (time >= female.until) {
+        female.focus.copy(performanceFlowerFocus);
+        enter(female, "travelGarden", Math.max(1, female.visitUntil - time));
+        performancePhase = "wait";
+      }
+    }
+    if (
+      performancePhase === "wait" &&
+      female.state === "garden" &&
+      performanceSawFlowersAt < 0
+    )
+      performanceSawFlowersAt = time;
+    if (performancePhase === "wait" && female.state === "wander")
+      startInspection(female);
+    if (performancePhase === "call" || performancePhase === "wait") {
+      male.runUntil = boy.normal.angleTo(male.goal) > 0.15 ? time + 0.8 : 0;
+      if (male.state === "sit") {
+        male.until = time + 25;
+        if (
+          performancePhase === "wait" &&
+          performanceSawFlowersAt >= 0 &&
+          time - performanceSawFlowersAt >= 1.2
+        ) {
+          girl.arrivalRadius = 0.004;
+          female.routeLength = gardenRoutes.plan(
+            girl.normal,
+            danceViewIndex,
+            female.route,
+          );
+          female.routeIndex = 0;
+          girl.gardenRoute = true;
+          if (
+            !female.routeLength ||
+            !navigation.isClear(danceSpot, girl, 0.012) ||
+            !navigation.arrive(
+              girl,
+              gardenRoutes.nodes[female.route[0]],
+              boy.normal,
+            )
+          ) {
+            endPerformance(true);
+            return true;
+          }
+          female.goal.copy(danceSpot);
+          enter(female, "travelDance", 35);
+          performancePhase = "travel";
+        }
+      } else if (male.state !== "travelRest") {
+        endPerformance(true);
+        return true;
+      }
+      return false;
+    }
+    if (performancePhase === "travel") {
+      male.until = time + 20;
+      if (time >= female.until) {
+        endPerformance(true);
+        return true;
+      }
+      if (girl.arrived && girl.velocity < 0.003) {
+        if (female.routeIndex + 1 < female.routeLength) {
+          female.routeIndex++;
+          if (
+            !navigation.arrive(
+              girl,
+              gardenRoutes.nodes[female.route[female.routeIndex]],
+              boy.normal,
+            )
+          )
+            endPerformance(true);
+          return true;
+        }
+        navigation.hold(girl, boy.normal);
+        navigation.hold(boy, girl.normal);
+        const duration = 5 + performanceRandom() * 3.8;
+        female.playVariant =
+          (female.playVariant + 1 + Math.floor(performanceRandom() * 3)) % 4;
+        enter(female, "gardenDance", duration);
+        enter(male, "gardenClap", duration);
+        performancePhase = "dance";
+        stats.gardenPerformances++;
+      }
+      return true;
+    }
+    if (performancePhase === "dance") {
+      if (time >= female.until) endPerformance();
+      return true;
+    }
+    return false;
+  }
+  function finishYield() {
+    const duration = time - yieldStarted;
+    yieldPhase = "none";
+    nextYieldAt = time + 12;
+    boy.softPartner = girl.softPartner = null;
+    for (let i = 0; i < actors.length; i++) {
+      const record = actors[i],
+        saved = yieldResume[i];
+      record.since += duration;
+      record.until += duration;
+      record.visitUntil += duration;
+      if (Number.isFinite(record.visitEnd)) record.visitEnd += duration;
+      record.stalled = 0;
+      record.bestRemaining = Infinity;
+      record.focus.copy(saved.focus);
+      if (saved.mode === "hold") navigation.hold(record.walker, saved.facing);
+      else if (saved.mode === "arrive") {
+        if (!navigation.arrive(record.walker, saved.target, saved.facing))
+          wander(record);
+      } else {
+        navigation.wander(record.walker);
+        record.walker.target.copy(saved.target);
+      }
+    }
+  }
+  function updateYield() {
+    if (yieldPhase !== "none") {
+      if (time - yieldStarted > 5) {
+        finishYield();
+        return true;
+      }
+      boy.softPartner = girl;
+      girl.softPartner = boy;
+      if (yieldPhase === "gesture" && time - yieldStarted >= 0.55) {
+        if (!navigation.arrive(boy, yieldSpot, girl.normal)) finishYield();
+        else yieldPhase = "step";
+      } else if (yieldPhase === "step" && boy.arrived && boy.velocity < 0.003)
+        finishYield();
+      return true;
+    }
+    if (
+      time < nextYieldAt ||
+      performancePhase !== "none" ||
+      !available(male) ||
+      !(
+        female.state === "wander" ||
+        female.state === "travelGarden" ||
+        female.state === "travelFlag"
+      ) ||
+      girl.mode === "hold"
+    ) {
+      obstructedFor = 0;
+      return false;
+    }
+    // Let ordinary moving pedestrians pass naturally; reserve this interruption
+    // for a persistent blockage by a nearly stationary boy.
+    if (boy.velocity > 0.008 || time - female.since < 1) {
+      obstructedFor = 0;
+      return false;
+    }
+    const distance = angle(boy.normal, girl.normal);
+    facing
+      .copy(boy.normal)
+      .addScaledVector(girl.normal, -boy.normal.dot(girl.normal))
+      .normalize();
+    if (
+      distance > boy.radius + girl.radius + 0.045 ||
+      distance < 0.001 ||
+      facing.dot(girl.forward) < 0.75 ||
+      (!girl.blocked && girl.velocity > girl.speed * 0.65)
+    ) {
+      obstructedFor = 0;
+      return false;
+    }
+    obstructedFor += DECISION_STEP;
+    if (obstructedFor < 1.2) return false;
+    obstructedFor = 0;
+    lateral.crossVectors(boy.normal, girl.forward).normalize();
+    let found = false;
+    for (let i = 0; i < 6; i++) {
+      const side = i % 2 ? -1 : 1;
+      const offset = 0.06 + Math.floor(i / 2) * 0.025;
+      candidate
+        .copy(boy.normal)
+        .multiplyScalar(Math.cos(offset))
+        .addScaledVector(lateral, side * Math.sin(offset))
+        .normalize();
+      if (
+        navigation.isClear(candidate, boy, 0.006) &&
+        navigation.segmentClear(boy.normal, candidate, boy, true)
+      ) {
+        yieldSpot.copy(candidate);
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      nextYieldAt = time + 3;
+      return false;
+    }
+    for (let i = 0; i < actors.length; i++) {
+      const walker = actors[i].walker,
+        saved = yieldResume[i];
+      saved.mode = walker.mode;
+      saved.target.copy(walker.target);
+      saved.facing.copy(walker.lookTarget);
+      saved.focus.copy(actors[i].focus);
+    }
+    yieldStarted = time;
+    yieldPhase = "gesture";
+    stats.girlPasses = (stats.girlPasses || 0) + 1;
+    navigation.hold(girl, boy.normal);
+    navigation.hold(boy, girl.normal);
+    return true;
+  }
   function decisions() {
     stats.decisions++;
+    if (updateYield()) return;
+    if (updatePerformance()) return;
+    if (
+      performancePhase === "none" &&
+      lampInterest &&
+      female.state === "travelGarden" &&
+      time >= nextPerformanceAt &&
+      time >= nextPerformanceCheck
+    ) {
+      nextPerformanceCheck = time + 3;
+      if (performanceRandom() < 0.45 && startPerformance()) return;
+    }
+    if (
+      performancePhase === "none" &&
+      time >= nextWaveAt &&
+      !(time >= nextBoyVisitAt && angle(boy.normal, girl.normal) > 0.45) &&
+      socialAvailable(male) &&
+      socialAvailable(female) &&
+      !female.initial &&
+      !male.initial &&
+      time >= female.nextTalkAt &&
+      time >= male.nextTalkAt
+    ) {
+      nextWaveAt = time + 8 + performanceRandom() * 6;
+      if (mutuallyVisible(false) && performanceRandom() < 0.7 && greeting())
+        return;
+    }
     if (female.state === "stroll") {
       if (
         time >= female.until ||
@@ -1402,6 +1898,7 @@ export function createAstronautBehavior({
     }
     if (updateFlag()) return;
     if (
+      performancePhase === "none" &&
       flag &&
       female.state === "wander" &&
       !female.initial &&
@@ -1414,16 +1911,21 @@ export function createAstronautBehavior({
       return;
     }
     if (updateHouseTour() || updateTour()) return;
+    if (female.state === "playful" && !playContext()) wander(female);
     if (
       female.state === "wander" &&
       time >= female.nextPlayAt &&
-      navigation.isClear(girl.normal, girl, 0.012)
+      time >= nextPlayOpportunity
     ) {
-      female.nextPlayAt = time + 25 + gestureRandom() * 20;
-      navigation.hold(girl, boy.normal);
-      female.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
-      enter(female, "playful", 3.5 + gestureRandom() * 0.7);
-      female.playfulWait = true;
+      nextPlayOpportunity = time + 2 + gestureRandom() * 3;
+      const chance = time - lastChatAt < 12 ? 0.7 : 0.45;
+      if (
+        playContext() &&
+        gestureRandom() < chance &&
+        navigation.isClear(girl.normal, girl, 0.006)
+      ) {
+        startPlay();
+      }
     }
     for (const record of actors) {
       if (
@@ -1436,11 +1938,32 @@ export function createAstronautBehavior({
       }
     }
     if (male.state === "approachGirl") {
-      if (time >= male.until || (boy.blocked && male.stalled >= 3)) {
+      if (time >= male.until || (boy.blocked && male.stalled >= 5)) {
+        if (male.longApproach) {
+          male.longApproach = false;
+          male.runUntil = 0;
+          male.nextTalkAt = time + between(3, 8);
+          stats.aborts++;
+          wander(male);
+          return;
+        }
         finishSocial(true);
         return;
       }
-      if (angle(boy.normal, girl.normal) < 0.22 && available(female)) {
+      if (male.longApproach && time >= male.nextDestinationAt) {
+        socialDestination(boy, girl);
+        male.nextDestinationAt = time + 0.8;
+      }
+      if (
+        angle(boy.normal, girl.normal) < 0.22 &&
+        available(female) &&
+        (!male.longApproach || reserveMeeting())
+      ) {
+        if (male.longApproach) {
+          male.longApproach = false;
+          navigation.arrive(boy, meetingBoy, girl.normal);
+          navigation.hold(girl, boy.normal);
+        }
         enter(female, "acknowledge", 20);
         female.acknowledgmentAt = time + between(0.3, 0.8);
         boy.softPartner = girl;
@@ -1453,7 +1976,32 @@ export function createAstronautBehavior({
       if (angle(boy.normal, girl.normal) > 0.16) male.runUntil = time + 0.5;
       if (female.state === "waiting") girl.lookTarget.copy(boy.normal);
       if (female.state === "waiting" && readyToTalk()) beginTalk();
-      return;
+      if (!male.longApproach) return;
+    }
+    if (
+      time >= nextBoyVisitAt &&
+      time >= nextMaleOpportunity &&
+      socialAvailable(male) &&
+      socialAvailable(female) &&
+      (SOCIAL_IDLE.has(male.state) ||
+        (INSPECTION.has(male.state) && time - male.since > 2.5)) &&
+      (FEMALE_SOCIAL_IDLE.has(female.state) ||
+        (female.state === "garden" &&
+          time - female.since > 2.5 &&
+          !pendingFeature(female))) &&
+      (female.state !== "playful" || time - female.since > 2) &&
+      !male.initial &&
+      !female.initial &&
+      time >= male.nextTalkAt &&
+      time >= female.nextTalkAt &&
+      angle(boy.normal, girl.normal) < 1.3
+    ) {
+      nextMaleOpportunity = time + between(2, 4);
+      if (
+        random() < (angle(boy.normal, girl.normal) > 0.35 ? 0.95 : 0.55) &&
+        quietApproach(true)
+      )
+        return;
     }
     if (
       ((female.state === "wander" && time - female.since > 1.5) ||
@@ -1581,6 +2129,8 @@ export function createAstronautBehavior({
           }
           navigation.hold(record.walker, record.gazeNormal);
           if (record.state === "travelRest") {
+            record.previousSeat = record.lastSeat;
+            record.lastSeat = record.selectedSeat;
             enter(record, "sit", between(5, 12));
             stats.seatedRests++;
             continue;
@@ -1683,6 +2233,10 @@ export function createAstronautBehavior({
       stance = 0,
       shake = 0,
       hop = 0;
+    let clap = 0;
+    let push = 0;
+    let arc = 0,
+      wrist = 0;
     let touch = 0;
     let salute = 0;
     let spread = 0,
@@ -1705,7 +2259,7 @@ export function createAstronautBehavior({
     const guide = visitingHouse ? male : female;
     const sharedFocus = visitingHouse ? houseFocus : tourFocus;
     let pointing = false;
-    if (record.state === "wave") {
+    if (record.state === "wave" || record.state === "gardenCall") {
       record.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
       const phase = clamp(
         (time - record.since) / (record.until - record.since),
@@ -1782,6 +2336,14 @@ export function createAstronautBehavior({
               shake = Math.sin(local * Math.PI * 2) * 0.085;
           }
           if (turn.spread) spread = envelope;
+          arc = Math.sin(local * Math.PI * 2) * (record === female ? 1 : 0.6);
+          wrist = Math.sin(local * Math.PI) * (turn.style % 2 ? 0.65 : -0.45);
+          // Different destinations and curved paths for beats, open palms,
+          // close-to-chest explanation, and outward invitation gestures.
+          if (turn.style === 0) chest = envelope * 0.65;
+          if (turn.style === 1)
+            spread = envelope * (record === female ? 0.85 : 0.5);
+          if (turn.style === 2) arc *= -1;
         } else if (turn.nod) {
           nod = Math.sin(local * Math.PI * 2) * (record === male ? 0.17 : 0.12);
           if (record === female) shake = Math.sin(local * Math.PI * 2) * 0.18;
@@ -1883,33 +2445,94 @@ export function createAstronautBehavior({
       shake = Math.sin(elapsed * 5) * 0.17;
     }
     if (
-      record.playfulWait &&
+      (record.playfulWait || record.state === "gardenDance") &&
+      playContext() &&
       record.walker.mode === "hold" &&
       record.walker.velocity < 0.003 &&
-      elapsed > 0.4 &&
-      elapsed < 3.6
+      elapsed > (record.state === "gardenDance" ? 0 : 0.4) &&
+      elapsed <
+        (record.state === "gardenDance" ? record.until - record.since : 3.6)
     ) {
-      const local = elapsed - 0.4;
-      const envelope = Math.min(1, local * 3, (3.2 - local) * 3);
-      dance = envelope * (0.75 + Math.sin(local * 3) * 0.15);
-      hand = envelope * (0.72 + Math.sin(local * 5) * 0.18);
-      spread = dance;
+      const local = elapsed - (record.state === "gardenDance" ? 0 : 0.4);
+      const envelope = Math.min(
+        1,
+        local * 3,
+        ((record.state === "gardenDance" ? record.until - record.since : 3.2) -
+          local) *
+          3,
+      );
+      const variant = record.playVariant;
+      dance =
+        envelope * (0.65 + Math.sin(local * (variant === 1 ? 4 : 3)) * 0.15);
+      hand = envelope * (0.65 + Math.sin(local * 5) * 0.18);
+      spread =
+        variant === 0
+          ? dance
+          : variant === 1
+            ? envelope * 0.35
+            : envelope * 0.8;
+      arc = Math.sin(local * (variant === 2 ? 4 : 3)) * envelope;
+      wrist = Math.sin(local * 4 + variant) * envelope * 0.6;
       shake = Math.sin(local * 3.5) * 0.13 * envelope;
       nod = Math.sin(local * 4) * 0.08 * envelope;
-      const bounce = local % 1.4;
-      if (bounce < 0.5)
-        hop = Math.sin((bounce * Math.PI) / 0.5) * 0.012 * envelope;
+      yaw = Math.sin(local * (variant === 1 ? 3.5 : 2)) * envelope * 0.09;
+      const bounce = local % (variant === 1 ? 1.3 : 1.6);
+      if (variant !== 2 && bounce < 0.5)
+        hop =
+          Math.sin((bounce * Math.PI) / 0.5) *
+          (variant === 1 ? 0.014 : 0.01) *
+          envelope;
+      if (variant === 2) chest = envelope * (0.4 + 0.25 * Math.sin(local * 4));
+      if (record.state === "gardenDance") {
+        // Four readable phrases: side-step, springy greeting, open-arm sway,
+        // and alternating toe taps. Phrases vary within a performance as well.
+        const phrase = (variant + Math.floor(local / 2.4)) % 4;
+        spread = envelope * (phrase === 2 ? 0.9 : phrase === 1 ? 0.35 : 0.65);
+        chest = phrase === 1 ? envelope * 0.3 : 0;
+        arc =
+          Math.sin(local * 3.5 + variant) *
+          envelope *
+          (phrase === 0 ? 1 : 0.65);
+        shift =
+          Math.sin(local * 3.5) * envelope * (variant === 2 ? 0.0025 : 0.0015);
+        yaw = Math.sin(local * 2.8) * envelope * (phrase === 2 ? 0.16 : 0.08);
+        nod = Math.sin(local * 3.5 + 0.5) * envelope * 0.11;
+        if (variant === 3) hop = 0;
+      }
     }
-    if (record.state === "sit") {
-      chest = 0.35;
-      hand = 0.12;
+    if (record.state === "gardenDance")
+      record.focus
+        .copy(boy.normal)
+        .multiplyScalar(eyeRadius(boy) - male.pose.sit * 0.024);
+    if (record.state === "gardenClap") {
+      record.focus.copy(girl.normal).multiplyScalar(eyeRadius(girl));
+      clap = Math.min(1, elapsed * 4, (record.until - time) * 4);
+      nod = Math.sin(elapsed * 2.5) * 0.07;
+    }
+    if (record.state === "sit" || record.state === "gardenClap") {
+      chest = record === male ? 0.2 : 0.35;
+      hand = record === male ? 0.08 : 0.14;
+      arc = Math.sin(elapsed * (record === male ? 0.7 : 1.1)) * 0.18;
+    }
+    if (INSPECTION.has(record.state) && !record.touchActive) {
+      arc =
+        Math.sin(elapsed * 1.7 + record.gestureStyle) *
+        (record === male ? 0.3 : 0.55);
+      wrist =
+        Math.sin(elapsed * 1.2 + record.gestureStyle) *
+        (record === male ? 0.2 : 0.4);
+      if (record.gestureStyle === 1) {
+        pointing = false;
+        chest = hand * 0.6;
+      }
     }
     if (!talking) {
       left = record.variant % 2 === 0 ? hand : 0;
       right = record.variant % 2 === 1 ? hand : 0;
       if (dance > 0 || (record.state === "wave" && record.calling)) {
         left = hand;
-        right = hand * 0.82;
+        right =
+          hand * (0.65 + 0.2 * Math.cos(elapsed * 3 + record.playVariant));
       }
       if (touch > 0) {
         left = record.touchArm === 0 ? hand : 0;
@@ -1920,7 +2543,21 @@ export function createAstronautBehavior({
       pointLeft = left;
       pointRight = right;
     }
+    if (yieldPhase !== "none") {
+      record.focus
+        .copy(record === female ? boy.normal : girl.normal)
+        .multiplyScalar(eyeRadius(record === female ? boy : girl));
+      push =
+        record === female
+          ? Math.sin(Math.min(1, (time - yieldStarted) / 1.1) * Math.PI)
+          : 0;
+      left = right = hand = push * 0.8;
+      pointLeft = pointRight = touch = wave = salute = 0;
+      nod = record === male ? Math.sin((time - yieldStarted) * 5) * 0.09 : 0;
+      spread = 0;
+    }
     const active =
+      yieldPhase !== "none" ||
       atFlag ||
       record.state === "travelFlag" ||
       inspecting ||
@@ -1928,6 +2565,8 @@ export function createAstronautBehavior({
       inviting ||
       walkingTogether ||
       record.state === "wave" ||
+      record.state === "gardenCall" ||
+      record.state === "gardenClap" ||
       dance > 0 ||
       record.state === "sit";
     const blend = 1 - Math.exp(-dt / (talking ? 0.09 : 0.16));
@@ -1953,9 +2592,21 @@ export function createAstronautBehavior({
     output.shake += (shake - output.shake) * blend;
     output.spread += (spread - output.spread) * blend;
     output.dance += (dance - output.dance) * blend;
-    output.sit += ((record.state === "sit" ? 1 : 0) - output.sit) * blend;
+    const danceStep =
+      record.state === "gardenDance"
+        ? Math.sin(elapsed * (record.playVariant === 3 ? 5 : 3.5)) * dance
+        : 0;
+    output.danceStep += (danceStep - output.danceStep) * blend;
+    output.sit +=
+      ((record.state === "sit" || record.state === "gardenClap" ? 1 : 0) -
+        output.sit) *
+      blend;
     output.touch += (touch - output.touch) * blend;
     output.salute += (salute - output.salute) * blend;
+    output.clap += (clap - output.clap) * blend;
+    output.push += (push - output.push) * blend;
+    output.arc += (arc - output.arc) * blend;
+    output.wrist += (wrist - output.wrist) * blend;
     // A bounded ballistic hop has a definite landing, without a floating tail.
     output.hop = hop;
   }

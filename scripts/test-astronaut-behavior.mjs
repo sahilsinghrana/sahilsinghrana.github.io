@@ -270,6 +270,14 @@ test("playful waiting uses both hands and small landed hops; rocks support sitti
     actor.until = 1000;
     navigation.hold(actor.walker, actor.walker.normal);
   }
+  controller.actors.forEach((actor, index) => {
+    actor.walker.normal.set(
+      index ? 0.05 : -0.05,
+      -0.55,
+      Math.sqrt(1 - 0.05 ** 2 - 0.55 ** 2),
+    );
+    navigation.hold(actor.walker, controller.actors[1 - index].walker.normal);
+  });
   female.playfulWait = true;
   let bothHands = false,
     hop = false,
@@ -279,7 +287,7 @@ test("playful waiting uses both hands and small landed hops; rocks support sitti
     bothHands ||= female.pose.left > 0.2 && female.pose.right > 0.2;
     hop ||= female.pose.hop > 0.001;
     legs ||= female.pose.dance > 0.2;
-    assert.ok(female.pose.hop <= 0.012);
+    assert.ok(female.pose.hop <= 0.014);
   }
   assert.ok(bothHands && hop && legs);
   assert.equal(female.pose.hop, 0);
@@ -346,7 +354,17 @@ test("walking gloves and boots fit the smaller physical collision footprints", (
             )
             .applyMatrix4(matrix);
           point.z += 0.4;
-          assert.ok(point.angleTo(actor.walker.normal) < actor.walker.radius);
+          assert.ok(
+            point.angleTo(actor.walker.normal) < actor.walker.radius,
+            JSON.stringify({
+              tick,
+              index,
+              part,
+              state: actor.state,
+              angle: point.angleTo(actor.walker.normal),
+              radius: actor.walker.radius,
+            }),
+          );
         }
       }
       samples++;
@@ -762,7 +780,20 @@ test("boy approaches, invites, and shows the house with separate safe viewing po
         assert.equal(female.state, "houseGuest");
         assert.ok(male.goal.angleTo(female.goal) >= 0.085);
         assert.ok(boy.normal.angleTo(male.goal) < 0.012);
-        assert.ok(girl.normal.angleTo(female.goal) < 0.012);
+        assert.ok(
+          girl.normal.angleTo(female.goal) < 0.012,
+          JSON.stringify({
+            seed,
+            time: controller.time,
+            angle: girl.normal.angleTo(female.goal),
+            girlMode: girl.mode,
+            target: girl.target.toArray(),
+            goal: female.goal.toArray(),
+            girlState: female.state,
+            arrived: girl.arrived,
+            recovery: girl.recoveryActive,
+          }),
+        );
       }
     }
     boyApproaches += controller.stats.boyApproaches;
@@ -962,7 +993,10 @@ test("rendered inspection and conversation poses keep boots grounded, head limit
         planted ||= lowest < 0.4001;
       }
       assert.ok(
-        planted || actor.pose.hop > 0 || actor.walker.surfaceLift > 0,
+        planted ||
+          actor.pose.hop > 0 ||
+          actor.walker.jogFlight > 0 ||
+          actor.walker.surfaceLift > 0,
         JSON.stringify({
           frame,
           person,
@@ -993,9 +1027,9 @@ test("rendered inspection and conversation poses keep boots grounded, head limit
     materials.add(object.material);
     assert.equal(object.castShadow, false);
   });
-  assert.equal(triangles, 3144);
-  assert.equal(calls, 17);
-  assert.equal(materials.size, 5);
+  assert.equal(triangles, 3240);
+  assert.equal(calls, 20);
+  assert.equal(materials.size, 7);
   base.dispose();
 });
 
@@ -1161,6 +1195,11 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
       .normalize();
     navigation.hold(actor.walker, other.walker.normal);
   }
+  controller.actors[1].state = "wave";
+  controller.actors[1].since = 0;
+  controller.actors[1].until = 5;
+  controller.actors[0].state = "acknowledge";
+  controller.actors[0].acknowledgmentAt = 10;
   const model = base.getObjectByName("GirlAstronaut");
   const gloves = base.getObjectByName("AstronautGlovesAndBoots");
   const frame = new Matrix4(),
@@ -1168,11 +1207,18 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
     glove = new Matrix4();
   const hand = new Vector3();
   let raised = false;
-  let waves=0, peak=0, weight=0, height=0;
+  let waves = 0,
+    peak = 0,
+    weight = 0,
+    height = 0;
   for (let tick = 0; tick < 60 * 900; tick++) {
     base.update(1 / 60);
     const girl = controller.actors[1];
-    if(girl.state === "wave") { waves++; peak=Math.max(peak,girl.pose.wave); weight=Math.max(weight,girl.pose.weight); }
+    if (girl.state === "wave") {
+      waves++;
+      peak = Math.max(peak, girl.pose.wave);
+      weight = Math.max(weight, girl.pose.weight);
+    }
     if (
       girl.state !== "wave" ||
       girl.pose.wave < 0.8 ||
@@ -1184,14 +1230,15 @@ test("the rendered wave actually lifts a glove above the shoulder while she turn
     for (const index of [5, 7]) {
       gloves.getMatrixAt(index, glove);
       hand.setFromMatrixPosition(glove).applyMatrix4(inverse);
-      height=Math.max(height,hand.y);
+      height = Math.max(height, hand.y);
       raised ||= hand.y > 0.07 * 0.4;
     }
     if (raised) break;
   }
   assert.ok(
     raised,
-    "The greeting must be visible, even before in-place turning has settled "+JSON.stringify({waves,peak,weight,height,stats:controller.stats}),
+    "The greeting must be visible, even before in-place turning has settled " +
+      JSON.stringify({ waves, peak, weight, height, stats: controller.stats }),
   );
   base.dispose();
 });

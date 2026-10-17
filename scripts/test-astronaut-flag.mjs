@@ -60,13 +60,31 @@ test("flag visits salute upward, sometimes bring a jogging companion, and always
     let saluted = false,
       jogged = false,
       strolled = false;
+    let lastSalute = -Infinity;
+    const playfulVariants = new Set();
+    const flagNormal = nav.obstacles.find(
+      (item) => item.name === "FlagPole",
+    ).normal;
     for (let i = 0; i < 60 * 1800; i++) {
       nav.update(1 / 60);
       const [boy, girl] = behavior.actors;
       if (girl.state === "flag") {
+        lastSalute = behavior.time;
         assert.ok(girl.focus.length() > 1.1);
         saluted ||= girl.pose.salute > 0.8;
         assert.ok(behavior.time - girl.since < 7.3);
+      }
+      if (girl.state === "playful") {
+        assert.ok(
+          behavior.time - lastSalute >= 24.9,
+          "No playfulness immediately after saluting",
+        );
+        assert.ok(girl.walker.normal.angleTo(flagNormal) >= 0.38);
+        assert.ok(
+          girl.walker.normal.angleTo(boy.walker.normal) < 0.3 ||
+            girl.walker.normal.angleTo(girl.interest.normal) < 0.31,
+        );
+        playfulVariants.add(girl.playVariant);
       }
       jogged ||=
         boy.state === "joinFlag" && boy.walker.speed > boy.cruiseSpeed * 1.2;
@@ -88,7 +106,14 @@ test("flag visits salute upward, sometimes bring a jogging companion, and always
       }
     }
     assert.ok(saluted && jogged && strolled, JSON.stringify(behavior.stats));
-    assert.ok(behavior.stats.boyApproaches >= 5);
+    assert.ok(
+      behavior.stats.boyApproaches >= 5,
+      JSON.stringify({ seed, stats: behavior.stats }),
+    );
+    assert.ok(
+      playfulVariants.size >= 2,
+      "Playfulness must use varied routines",
+    );
     console.log("Flag/social seed", seed, JSON.stringify(behavior.stats));
     base.dispose();
   }

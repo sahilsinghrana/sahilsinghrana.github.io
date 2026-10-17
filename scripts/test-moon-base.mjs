@@ -1,6 +1,14 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { Group, Matrix4, Scene, Vector3 } from "three";
+import {
+  Color,
+  DirectionalLight,
+  Group,
+  Matrix4,
+  Scene,
+  SpotLight,
+  Vector3,
+} from "three";
 import { Moon } from "../src/components/General/Moon/3dMoon/moon.js";
 import {
   createMoonBase,
@@ -70,7 +78,7 @@ test("base stays within geometry, draw-call, material and lighting budgets", () 
   assert.ok(triangles <= 8000);
   assert.ok(calls <= 30);
   assert.ok(palette.size <= 9);
-  assert.equal(lights, 2);
+  assert.equal(lights, 4);
   console.log(
     `Base budget: ${triangles} triangles, ${calls} draw calls, ${palette.size} materials, ${lights} lights`,
   );
@@ -120,7 +128,7 @@ test("walkers stay grounded, clear other movers, and animate heads, arms and leg
       const altitude = person.position.clone().add(center).length() - 0.4;
       const actor =
         base.userData.behavior.actors[name === "BoyAstronaut" ? 0 : 1];
-      near(altitude, actor.pose.hop * 0.4);
+      near(altitude, (actor.pose.hop + actor.walker.jogFlight) * 0.4);
       assert.ok(person.position.distanceTo(rover.position) > 0.025);
     }
     if (
@@ -251,7 +259,11 @@ test("each walking astronaut keeps a planted boot without penetrating the Moon",
         assert.ok(lowest >= 0.4 - 1e-7);
         if (lowest < 0.4001) planted = true;
       }
-      assert.ok(planted || base.userData.behavior.actors[person].pose.hop > 0);
+      assert.ok(
+        planted ||
+          base.userData.behavior.actors[person].pose.hop > 0 ||
+          base.userData.behavior.actors[person].walker.jogFlight > 0,
+      );
     }
   }
   base.dispose();
@@ -294,6 +306,110 @@ test("headlights illuminate forward, remain shadowless and scale with the Moon",
   assert.equal(light.castShadow, false);
   assert.ok(light.target.position.x > light.position.x);
   assert.ok(light.target.position.y < light.position.y);
+  base.dispose();
+});
+
+test("suit accents change independently without changing either character's height", () => {
+  const base = createMoonBase();
+  base.setReveal(1);
+  const boy = base.getObjectByName("BoyAstronaut");
+  const girl = base.getObjectByName("GirlAstronaut");
+  const vertexColor = (mesh, index = 0) =>
+    new Color().fromBufferAttribute(mesh.geometry.attributes.color, index);
+  const closeColor = (actual, hex) => {
+    const expected = new Color(hex);
+    near(actual.r, expected.r, 1e-6);
+    near(actual.g, expected.g, 1e-6);
+    near(actual.b, expected.b, 1e-6);
+  };
+  closeColor(vertexColor(base.getObjectByName("GirlAstronautHead")), 0x527fad);
+  closeColor(vertexColor(base.getObjectByName("BoyAstronautHead")), 0xc9c9bf);
+  for (const offset of [36, 72]) {
+    closeColor(
+      vertexColor(boy.children[0], offset),
+      offset === 36 ? 0xe8e7df : 0x252a30,
+    );
+    closeColor(vertexColor(girl.children[0], offset), 0x9f5266);
+  }
+  near(boy.scale.y, ASTRONAUT_SCALES.boy);
+  near(girl.scale.y, ASTRONAUT_SCALES.girl);
+  base.dispose();
+});
+
+test("boy's torch follows local daylight and nearby illumination without shadows or flicker", () => {
+  const scene = new Scene();
+  const base = createMoonBase();
+  scene.add(base);
+  base.setReveal(1);
+  const boy = base.getObjectByName("BoyAstronaut");
+  const torch = base.getObjectByName("BoyTorch");
+  // Isolate the probe from existing practical lights, without rebuilding the scene.
+  base.traverse((object) => {
+    if (object.isLight && object !== torch) object.visible = false;
+  });
+  const sun = new DirectionalLight(0xffffff, 3.1);
+  const up = new Vector3(0, 1, 0);
+  scene.updateMatrixWorld(true);
+  up.transformDirection(boy.parent.matrixWorld);
+  sun.position.copy(up).multiplyScalar(5);
+  scene.add(sun, sun.target);
+  const lamp = new SpotLight(0xffffff, 0, 0.2, Math.PI / 3, 0.8);
+  boy.getWorldPosition(lamp.position).addScaledVector(up, 0.03);
+  lamp.target.position.copy(boy.parent.position).applyMatrix4(base.matrixWorld);
+  scene.add(lamp, lamp.target);
+  const tick = () => {
+    base.updateLighting(1 / 60);
+  };
+  for (let i = 0; i < 120; i++) tick();
+  assert.equal(torch.userData.on, false);
+  near(torch.intensity, 0);
+  sun.position.negate();
+  for (let i = 0; i < 120; i++) tick();
+  assert.equal(torch.userData.on, true);
+  assert.ok(torch.intensity > 0);
+  assert.equal(torch.castShadow, false);
+  assert.ok(torch.target.position.z > torch.position.z);
+  assert.ok(torch.target.position.y < torch.position.y);
+  sun.position.negate();
+  sun.intensity = 0.24;
+  tick();
+  assert.equal(torch.userData.on, true);
+  sun.intensity = 0;
+  lamp.intensity = 0.1;
+  for (let i = 0; i < 120; i++) tick();
+  assert.equal(torch.userData.on, false);
+  assert.ok(torch.intensity < 1e-6);
+  lamp.intensity = 0;
+  sun.intensity = 3.1;
+  base.updateLighting(1 / 60);
+  assert.equal(torch.userData.on, false);
+  base.dispose();
+});
+
+test("both torches have increased reach, switch independently, and cannot light each other's sensors", () => {
+  const scene = new Scene();
+  const base = createMoonBase();
+  scene.add(base);
+  base.setReveal(1);
+  base.traverse((object) => {
+    if (object.isLight && !object.userData.astronautTorch)
+      object.visible = false;
+  });
+  for (let i = 0; i < 120; i++) base.updateLighting(1 / 60);
+  for (const [name, size] of [
+    ["Boy", ASTRONAUT_SCALES.boy],
+    ["Girl", ASTRONAUT_SCALES.girl],
+  ]) {
+    const torch = base.getObjectByName(`${name}Torch`);
+    assert.equal(torch.userData.on, true);
+    near(torch.distance, 0.4 * 0.4 * size);
+    assert.ok(torch.intensity > 0.0041 * size * size);
+    assert.equal(torch.castShadow, false);
+    near(torch.userData.illumination, 0);
+  }
+  const beacons = base.getObjectByName("RocketBeacons");
+  assert.ok(beacons.material.emissiveIntensity > 0);
+  assert.equal(beacons.castShadow, false);
   base.dispose();
 });
 

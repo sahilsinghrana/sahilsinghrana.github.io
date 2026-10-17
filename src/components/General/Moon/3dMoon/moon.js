@@ -265,7 +265,7 @@ export class Moon {
       : Math.min(1, this._baseReveal + deltaSeconds / BASE_REVEAL_SECONDS);
     this._base.setReveal(this._baseReveal);
     this._base.update(reducedMotion ? 0 : deltaSeconds, reducedMotion);
-    this._base.updateLighting();
+    this._base.updateLighting(deltaSeconds);
   }
 
   getLogoProjection(camera, canvas) {

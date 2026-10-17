@@ -29,13 +29,14 @@ import {
 // Tuning constants
 // ---------------------------------------------------------------------------
 
-const FLAG_WIDTH = 0.1;
-const FLAG_HEIGHT = 0.062; // slightly more flag-like aspect ratio than 1:1-ish
+const FLAG_SCALE = 0.92;
+const FLAG_WIDTH = 0.1 * FLAG_SCALE;
+const FLAG_HEIGHT = 0.062 * FLAG_SCALE;
 const FLAG_SEGMENTS_X = 20; // 16-24 range: enough resolution for soft cloth waves
 const FLAG_SEGMENTS_Y = 10; // 8-14 range
 
-const POLE_HEIGHT = 0.19;
-const POLE_RADIUS = 0.0018; // substantially thinner than the cloth height
+const POLE_HEIGHT = 0.19 * FLAG_SCALE;
+const POLE_RADIUS = 0.0018 * FLAG_SCALE;
 const POLE_RADIAL_SEGMENTS = 10;
 const EMBED_DEPTH = 0.014; // sinks the pole base under the moon surface
 
