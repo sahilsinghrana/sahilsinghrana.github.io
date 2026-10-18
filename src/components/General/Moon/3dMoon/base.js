@@ -128,7 +128,29 @@ export function createMoonBase(
 
   // Bake transformed primitives and linear vertex colors once, not every frame.
   function part(kind, tint, size, at = [0, 0, 0], rotation = [0, 0, 0]) {
-    const geometry = primitives[kind].toNonIndexed();
+    const softSuit = kind === "suit" || kind === "hip";
+    const geometry = primitives[softSuit ? "box" : kind].toNonIndexed();
+    if (softSuit) {
+      const vertices = geometry.attributes.position;
+      const normals = geometry.attributes.normal;
+      for (let i = 0; i < vertices.count; i++) {
+        const x = vertices.getX(i),
+          y = vertices.getY(i),
+          z = vertices.getZ(i);
+        vertices.setX(
+          i,
+          x * (kind === "suit" ? (y > 0 ? 0.96 : 1) : y < 0 ? 0.96 : 1),
+        );
+        // A modest baked normal blend softens the suit without extra vertices,
+        // materials, shader branches, or per-frame deformation.
+        position.set(normals.getX(i), normals.getY(i), normals.getZ(i));
+        position
+          .multiplyScalar(0.8)
+          .addScaledVector(scale.set(x, y * 0.4, z).normalize(), 0.2)
+          .normalize();
+        normals.setXYZ(i, position.x, position.y, position.z);
+      }
+    }
     position.fromArray(at).multiplyScalar(r);
     scale.fromArray(size).multiplyScalar(r);
     quaternion.setFromEuler(euler.fromArray(rotation));
@@ -366,7 +388,7 @@ export function createMoonBase(
     model.name = name;
     const torso = assembly([
       part(
-        "box",
+        "suit",
         COLORS.suit,
         [
           name === "GirlAstronaut" ? 0.0278 : 0.0315,
@@ -383,7 +405,7 @@ export function createMoonBase(
       ),
       part("box", tint, [0.026, 0.03, 0.013], [0, 0.052, -0.017]),
       part(
-        "box",
+        "hip",
         COLORS.suit,
         [name === "GirlAstronaut" ? 0.03 : 0.029, 0.008, 0.022],
         [0, 0.037, 0],
@@ -1394,7 +1416,7 @@ export function createMoonBase(
     if (reducedMotion !== motionReduced) {
       motionReduced = reducedMotion;
       if (reducedMotion) {
-        behavior.cancelBackflip();
+        behavior.settleMotion();
         for (const actor of behavior.actors) {
           actor.pose.hop = 0;
           actor.pose.flip = actor.pose.flipTuck = actor.pose.crouch = 0;

@@ -359,7 +359,7 @@ export function createFlag() {
   const lampPivot = new Group();
   // Planted near the pole base, slightly toward and in front of the cloth
   // so it's never hidden behind the pole from the flag's viewing side.
-  lampPivot.position.set(POLE_RADIUS * 6, LAMP_BASE_Y, 0.026);
+  lampPivot.position.set(POLE_RADIUS * 6, LAMP_BASE_Y, 0.038);
   group.add(lampPivot);
 
   const lampPost = new Mesh(lampPostGeometry, lampMetalMaterial);
@@ -378,7 +378,7 @@ export function createFlag() {
 
   const groundLamp = new SpotLight(
     0xffe0b0, // warm/neutral
-    1.82, // boosted so it actually reads next to the moon's global light
+    1.1, // preserve the fabric colors and emblem under the practical light
     0.3, // short practical range
     Math.PI / 4.6, // wide-ish soft cone
     0.7, // soft penumbra

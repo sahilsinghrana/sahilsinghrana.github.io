@@ -49,6 +49,8 @@ export class Moon {
     this._base = null;
     this._baseReveal = 0;
     this._baseReady = false;
+    this._logoOpacity = 0;
+    this._logoReveal = 0;
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
@@ -102,6 +104,8 @@ export class Moon {
       }
 
       const { diffuse, bump, rough } = e.data;
+      worker.terminate();
+      if (this._worker === worker) this._worker = null;
 
       const diffuseTex = makeDataTex(diffuse, TEX_SIZE, { srgb: true });
       const bumpTex = makeDataTex(bump, TEX_SIZE);
@@ -157,27 +161,6 @@ export class Moon {
       }
 
       try {
-        const profileImgEl = document.querySelector(
-          "#profilePicContainer > img",
-        );
-        const logoSrc = profileImgEl?.src || "";
-        if (logoSrc) {
-          const logoMesh = await createMoonBaseLogo(logoSrc, radius);
-          if (logoMesh && !this._disposed && this.mesh) {
-            this._logo = logoMesh;
-            this.mesh.add(this._logo);
-          } else {
-            logoMesh?.dispose();
-          }
-        }
-      } catch (err) {
-        console.error("Logo initialization failed:", err);
-        this._logo = null;
-      }
-
-      // Image decoding can finish after navigation disposed the Moon.
-      if (this._disposed || !this.mesh) return;
-      try {
         this._base = createMoonBase(radius, {
           gardenInterestPoints: this._garden?.userData.interestPoints,
           gardenLayout: this._garden?.userData.navigation,
@@ -191,15 +174,23 @@ export class Moon {
       this.mesh.updateMatrix();
       this.scene.add(this.mesh);
 
-      worker.terminate();
-      if (this._worker === worker) this._worker = null;
-
-      // onComplete signals that the mesh is now part of the scene graph - textures are
-      // uploaded to the GPU and the geometry is registered. The actual loader dismissal
-      // is deferred in main.js until after the first renderer.render() call that includes
-      // this mesh, confirmed by a requestAnimationFrame callback, so the loader only hides
-      // once a real painted frame has reached the screen rather than at scene.add() time.
+      // Readiness means scene content is available; optional image decoding
+      // must not delay the first rendered Moon frame or retain the worker.
       if (onComplete) onComplete();
+      try {
+        const profile = document.querySelector("#profilePicContainer > img");
+        const source = profile?.currentSrc || profile?.src;
+        if (source) {
+          const logo = await createMoonBaseLogo(source, radius);
+          if (logo && !this._disposed && this.mesh) {
+            this._logo = logo;
+            logo.setOpacity(0);
+            this.mesh.add(logo);
+          } else logo?.dispose();
+        }
+      } catch (err) {
+        console.error("Logo initialization failed:", err);
+      }
     };
 
     worker.postMessage({ size: TEX_SIZE, roughSize: ROUGH_SIZE });
@@ -254,11 +245,18 @@ export class Moon {
   }
 
   setLogoOpacity(val) {
-    this._logo?.setOpacity?.(val);
+    this._logoOpacity = val;
+    this._logo?.setOpacity?.(val * this._logoReveal);
     if (val >= TARGET_ETCHED_OPACITY) this._baseReady = true;
   }
 
   updateBase(deltaSeconds, reducedMotion = false) {
+    if (this._logo && this._logoReveal < 1) {
+      this._logoReveal = reducedMotion
+        ? 1
+        : Math.min(1, this._logoReveal + deltaSeconds / 0.4);
+      this._logo.setOpacity(this._logoOpacity * this._logoReveal);
+    }
     if (!this._base || !this._baseReady) return;
     this._baseReveal = reducedMotion
       ? 1

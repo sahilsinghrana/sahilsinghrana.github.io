@@ -13,6 +13,7 @@ const SOCIAL_IDLE = new Set(["wander", "rest", "sit"]);
 const FEMALE_SOCIAL_IDLE = new Set(["wander", "rest", "sit", "playful"]);
 const INSPECTION = new Set(["garden", "rocket", "house"]);
 const ENGAGED = new Set([
+  "depart",
   "flipApproach",
   "backflip",
   "watchFlip",
@@ -63,6 +64,7 @@ export function createAstronautBehavior({
   const performanceRandom = createRandom(seed ^ 0x1e8c79);
   const flagRandom = createRandom(seed ^ 0x431fc9);
   const gestureRandom = createRandom(seed ^ 0x734ab9);
+  const expressionRandom = createRandom(seed ^ 0x4c83271);
   const playfulRandom = createRandom(seed ^ 0x735b1e);
   const flipRandom = createRandom(seed ^ 0x29c8a17);
   let flipPhase = "none";
@@ -339,6 +341,8 @@ export function createAstronautBehavior({
       nextDestinationAt: 0,
       acknowledgmentAt: 0,
       completedAt: -1,
+      expressionDelay: 0.2,
+      departureAttempts: 0,
       pose: {
         weight: 0,
         lean: 0,
@@ -381,6 +385,39 @@ export function createAstronautBehavior({
   const male = actor(boy, rocket, between(2, 10));
   const female = actor(girl, garden, between(2, 10));
   const actors = [male, female];
+  // Reservations are infrequent decision-time work. Failed paired starts must
+  // restore both actors' plans and navigation, not leave one walking alone.
+  function reservePair(start) {
+    const snapshots = [];
+    for (const record of actors) {
+      for (const object of [record, record.walker]) {
+        const values = {};
+        for (const [key, value] of Object.entries(object)) {
+          values[key] = value?.isVector3
+            ? value.clone()
+            : ArrayBuffer.isView(value)
+              ? value.slice()
+              : Array.isArray(value)
+                ? value.slice()
+                : key === "pose"
+                  ? { ...value }
+                  : value;
+        }
+        snapshots.push({ object, values });
+      }
+    }
+    if (start()) return true;
+    for (const { object, values } of snapshots) {
+      for (const key of Object.keys(object))
+        if (!(key in values)) delete object[key];
+      for (const [key, value] of Object.entries(values)) {
+        if (value?.isVector3) object[key].copy(value);
+        else if (ArrayBuffer.isView(value)) object[key].set(value);
+        else object[key] = value;
+      }
+    }
+    return false;
+  }
   const pairDirection = new Vector3();
   const pairLateral = new Vector3();
   const pairPoint = new Vector3();
@@ -463,6 +500,8 @@ export function createAstronautBehavior({
     return true;
   }
   function enter(record, state, duration) {
+    record.expressionDelay = 0.15 + expressionRandom() * 0.2;
+    record.walker.exiting = state === "depart";
     record.pairSpeed = 0;
     record.pairSide = 0;
     if (state === "gardenDance") {
@@ -533,7 +572,51 @@ export function createAstronautBehavior({
     record.bestRemaining = Infinity;
     record.variant = (record.variant + 1 + Math.floor(gestureRandom() * 2)) % 3;
   }
-  function wander(record) {
+  function leaveConfinedArea(record) {
+    const walker = record.walker;
+    const center =
+      garden?.features && angle(walker.normal, garden.normal) < 0.28
+        ? garden.normal
+        : house && angle(walker.normal, house.normal) < 0.24
+          ? house.normal
+          : null;
+    if (!center) return false;
+    tangent
+      .copy(walker.normal)
+      .addScaledVector(center, -walker.normal.dot(center));
+    if (tangent.lengthSq() < 1e-8) tangent.crossVectors(center, walker.forward);
+    tangent.normalize();
+    lateral.crossVectors(center, tangent).normalize();
+    // Nearest outward exit first, then alternating sides. The shared graph
+    // connects interior flower viewpoints to the exterior house/prop routes.
+    for (let i = 0; i < 16; i++) {
+      const turn = ((Math.ceil(i / 2) * Math.PI) / 8) * (i % 2 ? 1 : -1);
+      candidate
+        .copy(center)
+        .multiplyScalar(Math.cos(0.32))
+        .addScaledVector(tangent, Math.sin(0.32) * Math.cos(turn))
+        .addScaledVector(lateral, Math.sin(0.32) * Math.sin(turn))
+        .normalize();
+      if (
+        !navigation.isClear(candidate, walker, 0.004) ||
+        !navigation.arrive(walker, candidate)
+      )
+        continue;
+      walker.softPartner = walker.softObstacle = null;
+      walker.gardenRoute = true;
+      walker.arrivalRadius = 0.006;
+      record.runUntil = 0;
+      record.touchActive = false;
+      record.goal.copy(candidate);
+      enter(record, "depart", 20);
+      return true;
+    }
+    return false;
+  }
+  function wander(record, skipDeparture = false) {
+    record.runUntil = 0;
+    record.touchActive = false;
+    if (!skipDeparture && leaveConfinedArea(record)) return;
     navigation.wander(record.walker);
     // Favor nearby independent walks so social opportunities remain reachable.
     // Neither partner is held here; inspections and the full bounds stay open.
@@ -559,8 +642,10 @@ export function createAstronautBehavior({
           .addScaledVector(tangent, Math.sin(radius) * Math.cos(turn))
           .addScaledVector(lateral, Math.sin(radius) * Math.sin(turn))
           .normalize();
-        if (navigation.isClear(candidate, record.walker, 0.015)) {
-          record.walker.target.copy(candidate);
+        if (
+          navigation.isClear(candidate, record.walker, 0.015) &&
+          navigation.wander(record.walker, candidate)
+        ) {
           break;
         }
       }
@@ -1154,6 +1239,9 @@ export function createAstronautBehavior({
     return false;
   }
   function startHouseTour() {
+    return reservePair(reserveHouseTour);
+  }
+  function reserveHouseTour() {
     if (!house) return false;
     let selected = -1;
     let guest = -1;
@@ -1192,6 +1280,11 @@ export function createAstronautBehavior({
     if (selected < 0) return false;
     male.goal.copy(houseViews[selected]);
     female.goal.copy(houseGuestViews[guest]);
+    if (
+      !navigation.canArrive(boy, male.goal) ||
+      !navigation.canArrive(girl, female.goal)
+    )
+      return false;
     // Look at the entrance, window, or porch fixture, not the habitat's center.
     houseFocus.copy(house.focuses[Math.floor(random() * house.focuses.length)]);
     houseDirection.copy(houseFocus).normalize();
@@ -1363,6 +1456,9 @@ export function createAstronautBehavior({
     return true;
   }
   function startTour(continuing = false) {
+    return reservePair(() => reserveTour(continuing));
+  }
+  function reserveTour(continuing) {
     female.featureCount = 0;
     female.visitFeatures.fill(null);
     if (tourFlowers.length) {
@@ -1768,6 +1864,9 @@ export function createAstronautBehavior({
     }
   }
   function startPerformance() {
+    return reservePair(reservePerformance);
+  }
+  function reservePerformance() {
     if (
       !lampInterest ||
       !gardenRoutes ||
@@ -1944,13 +2043,16 @@ export function createAstronautBehavior({
       record.stalled = 0;
       record.bestRemaining = Infinity;
       record.focus.copy(saved.focus);
+      if (record.state === "sit") {
+        wander(record);
+        continue;
+      }
       if (saved.mode === "hold") navigation.hold(record.walker, saved.facing);
       else if (saved.mode === "arrive") {
         if (!navigation.arrive(record.walker, saved.target, saved.facing))
           wander(record);
       } else {
-        navigation.wander(record.walker);
-        record.walker.target.copy(saved.target);
+        if (!navigation.wander(record.walker, saved.target)) wander(record);
       }
     }
   }
@@ -2152,6 +2254,17 @@ export function createAstronautBehavior({
   }
   function decisions() {
     stats.decisions++;
+    if (navigation.passageActive) return;
+    for (const record of actors) {
+      if (record.state !== "depart") continue;
+      if (record.walker.arrived && record.walker.velocity < 0.003) {
+        record.departureAttempts = 0;
+        wander(record, true);
+      } else if (record.stalled >= 3 || time >= record.until) {
+        record.departureAttempts++;
+        if (!leaveConfinedArea(record)) wander(record, true);
+      }
+    }
     if (updateYield()) return;
     if (updateBackflip()) return;
     if (updatePerformance()) return;
@@ -2709,8 +2822,15 @@ export function createAstronautBehavior({
             spread = envelope * (record === female ? 0.85 : 0.5);
           if (turn.style === 2) arc *= -1;
         } else if (turn.nod) {
-          nod = Math.sin(local * Math.PI * 2) * (record === male ? 0.17 : 0.12);
-          if (record === female) shake = Math.sin(local * Math.PI * 2) * 0.18;
+          const response = clamp(
+            (local - record.expressionDelay) / (1 - record.expressionDelay),
+            0,
+            1,
+          );
+          nod =
+            Math.sin(response * Math.PI * 2) * (record === male ? 0.17 : 0.12);
+          if (record === female)
+            shake = Math.sin(response * Math.PI * 2) * 0.18;
         }
       }
       shift = Math.sin(elapsed * 0.48 + record.variant) * 0.0014;
@@ -3068,6 +3188,12 @@ export function createAstronautBehavior({
       nod = record === male ? Math.sin((time - yieldStarted) * 5) * 0.09 : 0;
       spread = 0;
     }
+    // Hands cannot point through a contact, salute or clap. Lower-priority
+    // decorative channels fade out before locomotion is released.
+    if (touch > 0 || salute > 0 || clap > 0 || record.state === "backflip") {
+      pointLeft = pointRight = wave = arc = wrist = 0;
+      if (touch > 0 || salute > 0 || clap > 0) spread = 0;
+    }
     const active =
       record.state === "backflip" ||
       record.state === "watchFlip" ||
@@ -3138,7 +3264,11 @@ export function createAstronautBehavior({
     output.flipTuck = flipTuck;
     output.crouch += (crouch - output.crouch) * blend;
     output.sit +=
-      ((record.state === "sit" || record.state === "gardenClap" ? 1 : 0) -
+      (((record.state === "sit" || record.state === "gardenClap") &&
+      yieldPhase === "none" &&
+      !record.walker.passageRole
+        ? 1
+        : 0) -
         output.sit) *
       blend;
     output.touch += (touch - output.touch) * blend;
@@ -3149,20 +3279,81 @@ export function createAstronautBehavior({
     output.wrist += (wrist - output.wrist) * blend;
     // A bounded ballistic hop has a definite landing, without a floating tail.
     output.hop = hop;
+    record.walker.motionReady = output.sit < 0.04 && output.touch < 0.04;
   }
+  function cancelSharedActivity() {
+    flipPhase = performancePhase = yieldPhase = "none";
+    flagJoined = false;
+    for (const record of actors) {
+      record.walker.softPartner = record.walker.softObstacle = null;
+      record.pairSpeed = record.pairSide = 0;
+      record.runUntil = 0;
+      record.nextTalkAt = time + 5;
+      wander(record);
+    }
+  }
+  navigation.onPassageTimeout = cancelSharedActivity;
+  navigation.onPassageEnd = (walker) => {
+    const record = actors.find((item) => item.walker === walker);
+    if (record?.state === "sit") wander(record);
+  };
   return {
     actors,
     stats,
     cancelBackflip() {
       if (flipPhase !== "none") endBackflip();
     },
+    settleMotion() {
+      navigation.cancelPassage?.();
+      if (
+        flipPhase !== "none" ||
+        performancePhase !== "none" ||
+        yieldPhase !== "none"
+      )
+        cancelSharedActivity();
+      for (const record of actors) {
+        if (["playful", "wave", "gardenCall"].includes(record.state))
+          wander(record);
+        const seated = record.state === "sit" ? 1 : 0;
+        for (const key of Object.keys(record.pose)) record.pose[key] = 0;
+        record.pose.sit = seated;
+        record.pose.weight = seated;
+        record.waveHop = record.playfulWait = false;
+        record.touchActive = false;
+        record.walker.motionReady = !seated;
+      }
+    },
     get time() {
       return time;
     },
     step(dt) {
       if (disposed) return;
+      if (navigation.passageActive) {
+        // Keep fixed decision cadence, but freeze action-local elapsed times
+        // and deadlines while navigation owns the passage.
+        for (const record of actors) {
+          record.since += dt;
+          record.until += dt;
+          record.visitUntil += dt;
+          record.visitEnd += dt;
+          record.restUntil += dt;
+          record.runUntil += dt;
+          record.nextDestinationAt += dt;
+        }
+        talkStarted += dt;
+        performanceStarted += dt;
+        flagStarted += dt;
+        flipStarted += dt;
+        flipRetargetAt += dt;
+        tourStarted += dt;
+        tourShowingAt += dt;
+        houseTourStarted += dt;
+        if (strollWalkingAt) strollWalkingAt += dt;
+        if (yieldPhase !== "none") yieldStarted += dt;
+      }
       time += dt;
       for (const record of actors) {
+        if (navigation.passageActive) continue;
         const targetSpeed =
           record.pairSpeed ||
           (record.state === "stroll" || record.state === "strollDepart"
@@ -3207,6 +3398,9 @@ export function createAstronautBehavior({
     },
     dispose() {
       disposed = true;
+      navigation.cancelPassage?.();
+      navigation.onPassageTimeout = null;
+      navigation.onPassageEnd = null;
       for (const record of actors) {
         record.runUntil = 0;
         record.walker.speed = record.cruiseSpeed;

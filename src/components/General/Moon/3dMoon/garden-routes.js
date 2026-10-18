@@ -3,7 +3,11 @@
 export function createGardenRoutes(navigation, views, normal, walker) {
   // Include safe outer prop waypoints, so a house between the walker and every
   // garden entrance cannot make all entry links disappear.
-  const nodes = [...views, ...(navigation.propRouteNodes || [])];
+  // Interior views already cover fine flowers; do not duplicate their nodes.
+  const nodes = [
+    ...views,
+    ...(navigation.propRouteNodes || []).filter((point) => !point.gardenDetail),
+  ];
   const tangent = normal.clone().cross(walker.forward).normalize();
   const side = normal.clone().cross(tangent).normalize();
   for (let i = 0; i < 16; i++) {

@@ -60,6 +60,8 @@ export function createWalker(
     blockedSeconds: 0,
     recoveryActive: false,
     routeReplans: 0,
+    exiting: false,
+    motionReady: true,
     recoveryTarget: up.clone(),
   };
 }
@@ -99,9 +101,113 @@ export function createWanderSimulation(agents, obstacles, seed) {
   const recoverySide = new Vector3();
   const recoveryPoint = new Vector3();
   const recoveryBest = new Vector3();
+  const validationRoute = new Int16Array(128);
   let accumulator = 0;
   const STEP = 1 / 60;
   let propRoutes;
+  let passage = null;
+  const passageSpot = new Vector3();
+  const passageSide = new Vector3();
+  const passageCandidate = new Vector3();
+
+  function endPassage(notify = true) {
+    if (!passage) return;
+    const waiter = passage.waiter;
+    passage.leader.passageRole = passage.waiter.passageRole = null;
+    passage.leader.obstructedFor = passage.waiter.obstructedFor = 0;
+    passage = null;
+    if (notify) simulation.onPassageEnd?.(waiter);
+  }
+  function findPassingPlace(leader, waiter) {
+    passageSide.crossVectors(waiter.normal, leader.forward).normalize();
+    for (const offset of [0.07, 0.11, 0.15]) {
+      for (let i = 0; i < 8; i++) {
+        const turn = (i * Math.PI) / 4;
+        passageCandidate
+          .copy(waiter.normal)
+          .multiplyScalar(Math.cos(offset))
+          .addScaledVector(passageSide, Math.sin(offset) * Math.cos(turn))
+          .addScaledVector(leader.forward, Math.sin(offset) * Math.sin(turn))
+          .normalize();
+        if (
+          clear(passageCandidate, waiter, 0.004) &&
+          simulation.segmentClear(waiter.normal, passageCandidate, waiter, true)
+        ) {
+          passageSpot.copy(passageCandidate);
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+  function coordinatePassage() {
+    if (passage) {
+      passage.elapsed += STEP;
+      if (passage.waiter.normal.angleTo(passageSpot) < 0.008)
+        passage.waiting = true;
+      if (
+        passage.leader.normal.angleTo(passage.waiter.normal) >
+          passage.leader.radius + passage.waiter.radius + 0.09 &&
+        passage.leader.distance - passage.startDistance > 0.04
+      ) {
+        endPassage();
+      } else if (passage.elapsed >= 8) {
+        endPassage(false);
+        simulation.onPassageTimeout?.();
+      } else if (passage.elapsed >= 3 && !passage.replanned) {
+        passage.replanned = true;
+        passage.waiting = !findPassingPlace(passage.leader, passage.waiter);
+        const leader = passage.leader;
+        const length = propRoutes.plan(
+          leader.normal,
+          leader.target,
+          leader,
+          leader.propRoute,
+        );
+        if (length >= 0) {
+          leader.propRouteLength = length;
+          leader.propRouteIndex = 0;
+          leader.routeValidated = true;
+        }
+      }
+      return;
+    }
+    const a = people[0],
+      b = people[1];
+    if (
+      !a ||
+      !b ||
+      Math.max(a.obstructedFor || 0, b.obstructedFor || 0) < 0.8 ||
+      a.normal.angleTo(b.normal) > a.radius + b.radius + 0.035
+    )
+      return;
+    // A stable priority lasts for the whole passage, never alternates per frame.
+    let leader = a,
+      waiter = b;
+    const aDistance = a.normal.angleTo(simulation.nextWaypoint(a));
+    const bDistance = b.normal.angleTo(simulation.nextWaypoint(b));
+    if (
+      (!a.exiting && b.exiting) ||
+      (a.exiting === b.exiting &&
+        (a.mode === "hold" ||
+          (b.mode !== "hold" && bDistance < aDistance - 1e-6)))
+    ) {
+      leader = b;
+      waiter = a;
+    }
+    if (leader.mode === "hold" || !findPassingPlace(leader, waiter)) return;
+    passage = {
+      leader,
+      waiter,
+      elapsed: 0,
+      startDistance: leader.distance,
+      waiting: false,
+      replanned: false,
+    };
+    leader.passageRole = "proceed";
+    waiter.passageRole = "yield";
+    leader.recoveryActive = waiter.recoveryActive = false;
+  }
 
   function clear(normal, agent, margin = 0, allowEscape = false) {
     if (
@@ -176,12 +282,21 @@ export function createWanderSimulation(agents, obstacles, seed) {
   agents.forEach(chooseTarget);
 
   function avoid(agent) {
-    const buffer = agent.radius > 0.06 ? 0.3 : 0.14;
+    let buffer = agent.radius > 0.06 ? 0.3 : 0.14;
+    let nearestBuffer = buffer;
     let nearest = null;
     let nearestGap = Infinity;
     for (const obstacle of blockers) {
       if (obstacle === agent || obstacle === agent.softPartner) continue;
       if (!applies(obstacle, agent)) continue;
+      buffer =
+        agent.radius < 0.06 &&
+        agents.includes(obstacle) &&
+        obstacle.radius < 0.06
+          ? 0.07
+          : agent.radius > 0.06
+            ? 0.3
+            : 0.14;
       if (agent.routeValidated && obstacles.includes(obstacle)) continue;
       // The prevalidated garden graph supplies clearance through narrow gaps;
       // soft personal-space buffers must not seal those gaps. Hard checks stay.
@@ -204,12 +319,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
       ) {
         nearest = obstacle;
         nearestGap = gap;
+        nearestBuffer = buffer;
       }
     }
     if (!nearest) {
       agent.avoidance = null;
       return;
     }
+    buffer = nearestBuffer;
     away
       .copy(agent.normal)
       .multiplyScalar(agent.normal.dot(nearest.normal))
@@ -266,11 +383,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.normal.angleTo(agent.recoveryTarget) < 0.008
     )
       agent.recoveryActive = false;
-    const routePoint = agent.recoveryActive
-      ? agent.recoveryTarget
-      : agent.propRouteIndex < agent.propRouteLength
-        ? propRoutes.nodes[agent.propRoute[agent.propRouteIndex]]
-        : agent.target;
+    const yielding = passage?.waiter === agent;
+    const routePoint = yielding
+      ? passageSpot
+      : agent.recoveryActive
+        ? agent.recoveryTarget
+        : agent.propRouteIndex < agent.propRouteLength
+          ? propRoutes.nodes[agent.propRoute[agent.propRouteIndex]]
+          : agent.target;
     const remaining = Math.acos(
       Math.max(-1, Math.min(1, agent.normal.dot(routePoint))),
     );
@@ -291,12 +411,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
       remaining <= agent.arrivalRadius + 1e-7
     )
       agent.arrived = true;
-    const holding = agent.mode === "hold" || agent.arrived;
+    const holding =
+      !agent.motionReady ||
+      (yielding ? passage.waiting : agent.mode === "hold" || agent.arrived);
     const aim = holding ? agent.lookTarget : routePoint;
     desired.copy(aim).addScaledVector(agent.normal, -aim.dot(agent.normal));
     if (desired.lengthSq() < 1e-10) desired.copy(agent.forward);
     desired.normalize();
-    if (!holding && !agent.recoveryActive) avoid(agent);
+    if (!holding && !agent.recoveryActive && !yielding) avoid(agent);
     if (
       !holding &&
       agent.boundCos > -0.999 &&
@@ -383,7 +505,8 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.moving = false;
       agent.velocity = 0;
       agent.blockedSeconds += STEP;
-      if (!rover && !holding && agent.blockedSeconds >= 0.8) {
+      agent.obstructedFor = (agent.obstructedFor || 0) + STEP;
+      if (!passage && !rover && !holding && agent.blockedSeconds >= 0.8) {
         agent.blockedSeconds = 0;
         if (agent.mode === "arrive" && agent.routeValidated) {
           const length = propRoutes.plan(
@@ -430,7 +553,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
         }
       }
       if (agent.turning) agent.gaitDistance += 0.02 * STEP;
-      if (agent.mode === "wander" && agent.retargetIn === 0) {
+      if (!passage && agent.mode === "wander" && agent.retargetIn === 0) {
         chooseTarget(agent);
         agent.retargetIn = 6;
       }
@@ -445,6 +568,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.moving = angle > 1e-7;
     agent.blocked = false;
     agent.blockedSeconds = 0;
+    agent.obstructedFor = 0;
   }
   const simulation = {
     propRouteNodes: [],
@@ -458,6 +582,19 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agents,
     obstacles,
     beforeStep: null,
+    onPassageTimeout: null,
+    onPassageEnd: null,
+    get passageActive() {
+      return passage !== null;
+    },
+    cancelPassage: () => endPassage(false),
+    canArrive(agent, normal) {
+      return (
+        clear(normal, agent) &&
+        (propRoutes?.plan(agent.normal, normal, agent, validationRoute) ?? 0) >=
+          0
+      );
+    },
     isClear: clear,
     isStaticClear(normal, agent, margin = 0.004) {
       return (
@@ -528,7 +665,17 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.lookTarget.copy(facing);
       agent.pause = 0;
     },
-    wander(agent) {
+    wander(agent, destination = null) {
+      // Validate before changing mode; callers must not replace target behind
+      // the route planner's back.
+      let length = 0;
+      if (destination) {
+        if (!clear(destination, agent)) return false;
+        length =
+          propRoutes?.plan(agent.normal, destination, agent, agent.propRoute) ??
+          0;
+        if (length < 0) return false;
+      }
       agent.recoveryActive = false;
       agent.propRouteLength = 0;
       agent.routeValidated = false;
@@ -538,12 +685,19 @@ export function createWanderSimulation(agents, obstacles, seed) {
       agent.softObstacle = null;
       agent.gardenRoute = false;
       agent.pause = 0;
-      chooseTarget(agent);
+      if (destination) {
+        agent.target.copy(destination);
+        agent.propRouteLength = length;
+        agent.propRouteIndex = 0;
+        agent.routeValidated = true;
+      } else chooseTarget(agent);
+      return true;
     },
     update(deltaSeconds) {
       accumulator += Math.max(0, Math.min(0.05, deltaSeconds));
       while (accumulator + 1e-10 >= STEP) {
         simulation.beforeStep?.(STEP);
+        coordinatePassage();
         for (const agent of agents) step(agent);
         accumulator -= STEP;
       }

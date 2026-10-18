@@ -5,8 +5,9 @@ import { Vector3 } from "three";
 export function createPropRoutes(navigation, obstacles, walker) {
   const nodes = [];
   for (const obstacle of obstacles) {
-    // Fine garden details already have their own entrance/viewpoint graph.
-    if (obstacle.roverOnly || obstacle.name === "GardenDetail") continue;
+    // Departure paths need the same fine clearances as garden arrival paths.
+    // Include flower/lamp waypoints so a walker can leave an interior pocket.
+    if (obstacle.roverOnly) continue;
     const up = obstacle.normal;
     const tangent = new Vector3(1, 0, 0).addScaledVector(up, -up.x).normalize();
     const side = new Vector3().crossVectors(up, tangent).normalize();
@@ -15,15 +16,17 @@ export function createPropRoutes(navigation, obstacles, walker) {
         ? Math.hypot(obstacle.halfWidth, obstacle.halfDepth)
         : obstacle.radius) +
       walker.radius +
-      0.024;
-    for (let i = 0; i < 12; i++) {
-      const turn = (i * Math.PI) / 6;
+      (obstacle.name === "GardenDetail" ? 0.006 : 0.024);
+    const samples = obstacle.name === "GardenDetail" ? 8 : 12;
+    for (let i = 0; i < samples; i++) {
+      const turn = (i * Math.PI * 2) / samples;
       const point = up
         .clone()
         .multiplyScalar(Math.cos(radius))
         .addScaledVector(tangent, Math.sin(radius) * Math.cos(turn))
         .addScaledVector(side, Math.sin(radius) * Math.sin(turn))
         .normalize();
+      point.gardenDetail = obstacle.name === "GardenDetail";
       if (navigation.isStaticClear(point, walker)) nodes.push(point);
     }
   }

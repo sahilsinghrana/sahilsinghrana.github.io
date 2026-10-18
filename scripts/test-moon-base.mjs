@@ -570,7 +570,7 @@ test("navigation during logo loading disposes late artwork and does not resurrec
     assert.equal(worker.terminated, true);
     assert.equal(moon.mesh, null);
     assert.equal(scene.children.length, 0);
-    assert.equal(completed, 0);
+    assert.equal(completed, 1, "scene is ready before optional logo decoding");
     assert.ok(errors.includes("Flag initialization failed:"));
   } finally {
     console.error = previousError;

@@ -14,83 +14,72 @@ import { PLAZA_DIAMETER } from "./dimensions.js";
 export const LOGO_NORMAL = new Vector3(-0.25, -0.04, 0.31).normalize();
 export { TARGET_ETCHED_OPACITY } from "./motion.js";
 
-// Cache finished meshes' source materials so re-requesting the same
-// image/radius doesn't repeat the getImageData/putImageData work
-// (that's the most expensive part of this function).
-const textureCache = new Map();
+// Keep one completed stencil, not GPU resources. Concurrent callers share
+// decoding but each owns its mesh/material/texture and can dispose independently.
+let cachedKey = "";
+let cachedCanvas = null;
+const pending = new Map();
 
-/**
- * Creates an etched moon-base logo stencil and projects it onto the moon mesh.
- * The logo is rendered as a posterized, edge-accented stencil with transparent
- * negative space, so craters, bumps, and lunar texture underneath remain visible
- * while the insignia itself still reads clearly, like an engraving.
- *
- * @param {string} imageSrc - Image URL for the profile picture
- * @param {number} moonRadius - Radius of the moon sphere (typically 0.4)
- * @returns {Promise<Mesh|null>} Three.js Mesh containing the etched insignia, or null if loading fails
- */
-export function createMoonBaseLogo(imageSrc, moonRadius = 0.4) {
+export async function createMoonBaseLogo(imageSrc, moonRadius = 0.4) {
+  if (!imageSrc) return null;
+  const key = `${imageSrc}::${moonRadius}`;
+  if (cachedKey === key && cachedCanvas)
+    return buildMeshFromCanvas(cachedCanvas, moonRadius);
+  let work = pending.get(key);
+  if (!work) {
+    work = loadStencil(imageSrc)
+      .then((canvas) => {
+        if (canvas) {
+          cachedKey = key;
+          cachedCanvas = canvas;
+        }
+        return canvas;
+      })
+      .finally(() => pending.delete(key));
+    pending.set(key, work);
+  }
+  const canvas = await work;
+  return canvas ? buildMeshFromCanvas(canvas, moonRadius) : null;
+}
+
+function loadStencil(imageSrc) {
   return new Promise((resolve) => {
-    if (!imageSrc) {
-      resolve(null);
-      return;
-    }
-
-    const cacheKey = `${imageSrc}::${moonRadius}`;
-    const cached = textureCache.get(cacheKey);
-    if (cached) {
-      resolve(buildMeshFromCanvas(cached, moonRadius));
-      return;
-    }
-
     let settled = false;
-    const safeResolve = (val) => {
+    let image = null;
+    const finish = (canvas) => {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
-      resolve(val);
+      if (image) image.onload = image.onerror = null;
+      resolve(canvas);
     };
-
-    // Timeout guard: never hang scene initialization if image loading stalls
-    const timer = setTimeout(() => {
-      safeResolve(null);
-    }, 2000);
-
-    const onImageLoaded = (img) => {
+    const timer = setTimeout(() => finish(null), 2000);
+    const loaded = (source) => {
       if (settled) return;
       try {
-        const canvas = etchImageToStencil(img);
-        if (!canvas) {
-          safeResolve(null);
-          return;
-        }
-        textureCache.set(cacheKey, canvas);
-        safeResolve(buildMeshFromCanvas(canvas, moonRadius));
+        finish(etchImageToStencil(source));
       } catch (err) {
         console.error("Failed to render moon base logo canvas:", err);
-        safeResolve(null);
+        finish(null);
       }
     };
-
-    // FIX: Only reuse an already-loaded DOM <img> if it's provably CORS-clean.
-    // Previously this reused any #profilePicContainer > img unconditionally;
-    // if that element lacked crossOrigin="anonymous", getImageData() below
-    // threw a SecurityError, was swallowed, and the code silently fell back
-    // to compositing the raw, unetched color photo onto the moon (the hazy,
-    // photo-like blob instead of a crisp insignia). We now always load a
-    // fresh Image with crossOrigin set, and never trust the DOM element's
-    // taint status.
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.onload = () => onImageLoaded(img);
-    img.onerror = (err) => {
-      console.error("Failed to load profile image for moon base logo:", err);
-      safeResolve(null);
-    };
-    img.src = imageSrc;
-    if (img.complete && img.naturalWidth > 0) {
-      onImageLoaded(img);
+    const existing = document.querySelector("#profilePicContainer > img");
+    // Matching CORS-mode plus successful canvas readback is the safety check.
+    if (
+      existing?.crossOrigin === "anonymous" &&
+      existing.complete &&
+      existing.naturalWidth > 0 &&
+      (existing.currentSrc || existing.src) === imageSrc
+    ) {
+      loaded(existing);
+      return;
     }
+    image = new Image();
+    image.crossOrigin = "anonymous";
+    image.onload = () => loaded(image);
+    image.onerror = () => finish(null);
+    image.src = imageSrc;
+    if (image.complete && image.naturalWidth > 0) loaded(image);
   });
 }
 
