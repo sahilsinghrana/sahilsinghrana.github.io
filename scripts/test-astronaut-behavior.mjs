@@ -445,6 +445,75 @@ test("independent and guided garden visits reach all blooms from varied viewpoin
   base.dispose();
 });
 
+test("garden entry can route around an intervening house from a close departure", () => {
+  const { base, navigation, controller } = fixture(123);
+  const girl = controller.actors[1].walker;
+  const house = navigation.obstacles.find((item) => item.name === "Habitat");
+  const actor = controller.actors[1];
+  const graph = createGardenRoutes(
+    navigation,
+    actor.views,
+    actor.interest.normal,
+    girl,
+  );
+  const away = house.normal.clone().addScaledVector(actor.interest.normal, -1);
+  away.addScaledVector(house.normal, -away.dot(house.normal)).normalize();
+  const route = new Int16Array(128);
+  let found = false;
+  navigation.beforeStep = null;
+  for (let attempt = 0; attempt < 12 && !found; attempt++) {
+    const direction = away
+      .clone()
+      .applyAxisAngle(
+        house.normal,
+        (attempt % 2 ? -1 : 1) * Math.floor(attempt / 2) * 0.15,
+      );
+    const from = house.normal
+      .clone()
+      .multiplyScalar(Math.cos(0.19))
+      .addScaledVector(direction, Math.sin(0.19))
+      .normalize();
+    if (!navigation.isStaticClear(from, girl)) continue;
+    const length = graph.plan(from, 0, route);
+    if (
+      !length ||
+      !Array.from(route.subarray(0, length)).some(
+        (index) =>
+          index >= actor.views.length &&
+          index < actor.views.length + navigation.propRouteNodes.length,
+      )
+    )
+      continue;
+    girl.normal.copy(from);
+    girl.forward
+      .copy(direction)
+      .addScaledVector(from, -direction.dot(from))
+      .normalize();
+    girl.velocity = 0;
+    let waypoint = 0;
+    assert.ok(navigation.arrive(girl, graph.nodes[route[0]]));
+    for (let frame = 0; frame < 60 * 60; frame++) {
+      navigation.update(1 / 60);
+      for (const obstacle of navigation.obstacles) {
+        if (obstacle.roverOnly) continue;
+        assert.ok(obstacleGap(girl.normal, obstacle) >= girl.radius - 1e-8);
+      }
+      if (girl.arrived) {
+        if (++waypoint === length) break;
+        assert.ok(navigation.arrive(girl, graph.nodes[route[waypoint]]));
+      }
+    }
+    assert.equal(
+      waypoint,
+      length,
+      "She must leave the house and reach the garden",
+    );
+    found = true;
+  }
+  assert.ok(found, "Exercise a garden route using an outer house waypoint");
+  base.dispose();
+});
+
 test("reduced motion lands an active hop without advancing simulation", () => {
   const { base, controller } = fixture();
   const girl = controller.actors[1];
@@ -715,6 +784,7 @@ test("either partner can initiate; conversation alternates with safe separation"
         girl.state === "leadGarden" ||
         girl.state === "inviteGarden" ||
         girl.state === "acceptHouse" ||
+        girl.state === "strollDepart" ||
         girl.state === "stroll"
       ) {
         assert.equal(boy.walker.softPartner, girl.walker);

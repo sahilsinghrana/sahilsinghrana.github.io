@@ -80,3 +80,26 @@ test("failed initialization stays hidden; disposal unbinds controls and a new sc
   assert.equal(next.paused, true, "Exactly one live handler handles the click");
   next.dispose();
 });
+
+test("the control stays inside the visible canvas on short mobile viewports", () => {
+  const button = new Button(),
+    preference = new Preference();
+  const view = new EventTarget();
+  view.innerHeight = 300;
+  button.ownerDocument = { defaultView: view };
+  button.style = {};
+  button.parentElement = {
+    getBoundingClientRect: () => ({ top: 30, bottom: 430, height: 400 }),
+  };
+  const control = createSpinControl(button, preference);
+  control.reveal();
+  assert.equal(button.style.bottom, "140px");
+  assert.equal(button.style.visibility, "");
+  view.innerHeight = 600;
+  view.dispatchEvent(new Event("resize"));
+  assert.equal(button.style.bottom, "10px");
+  control.dispose();
+  view.innerHeight = 300;
+  view.dispatchEvent(new Event("resize"));
+  assert.equal(button.style.bottom, "10px");
+});

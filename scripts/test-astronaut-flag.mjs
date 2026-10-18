@@ -45,6 +45,7 @@ test("flag visits salute upward, sometimes bring a jogging companion, and always
   } finally {
     Math.random = savedRandom;
   }
+  let anyJogged = false;
   for (const seed of [123, 71, 508]) {
     const base = createMoonBase(0.4, {
       seed,
@@ -105,7 +106,10 @@ test("flag visits salute upward, sometimes bring a jogging companion, and always
           assert.ok(behavior.time - actor.since < 60.3);
       }
     }
-    assert.ok(saluted && jogged && strolled, JSON.stringify(behavior.stats));
+    assert.ok(saluted && strolled, JSON.stringify(behavior.stats));
+    // A random companion can already be nearby. Require a jog across the
+    // seeded sample rather than forcing a distant flag approach in every run.
+    anyJogged ||= jogged;
     assert.ok(
       behavior.stats.boyApproaches >= 5,
       JSON.stringify({ seed, stats: behavior.stats }),
@@ -117,6 +121,7 @@ test("flag visits salute upward, sometimes bring a jogging companion, and always
     console.log("Flag/social seed", seed, JSON.stringify(behavior.stats));
     base.dispose();
   }
+  assert.ok(anyJogged, "At least one distant companion must jog to the flag");
   garden.dispose();
 });
 

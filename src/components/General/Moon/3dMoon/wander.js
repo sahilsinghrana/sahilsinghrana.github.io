@@ -141,6 +141,9 @@ export function createWanderSimulation(agents, obstacles, seed) {
   }
 
   function chooseTarget(agent) {
+    agent.propRouteLength = 0;
+    agent.propRouteIndex = 0;
+    agent.routeValidated = false;
     for (let attempt = 0; attempt < 24; attempt++) {
       // Full-sphere agents sample the whole Moon uniformly, including its poles.
       const bound = agent.boundCos;
@@ -148,7 +151,25 @@ export function createWanderSimulation(agents, obstacles, seed) {
       const angle = random() * Math.PI * 2;
       const spread = Math.sqrt(1 - z * z);
       agent.target.set(Math.cos(angle) * spread, Math.sin(angle) * spread, z);
-      if (clear(agent.target, agent, 0.035)) return;
+      if (clear(agent.target, agent, 0.035)) {
+        if (agent.radius < 0.06 && propRoutes) {
+          const length = propRoutes.plan(
+            agent.normal,
+            agent.target,
+            agent,
+            agent.propRoute,
+          );
+          if (length < 0) {
+            // An initially overlapping walker must first follow the existing
+            // outward escape gradient; no visibility edge can start inside a prop.
+            if (!simulation.isStaticClear(agent.normal, agent, 0)) return;
+            continue;
+          }
+          agent.propRouteLength = length;
+          agent.routeValidated = true;
+        }
+        return;
+      }
     }
     agent.target.set(0, 0, 1);
   }
@@ -253,7 +274,11 @@ export function createWanderSimulation(agents, obstacles, seed) {
     const remaining = Math.acos(
       Math.max(-1, Math.min(1, agent.normal.dot(routePoint))),
     );
-    if (agent.mode === "wander" && remaining < 0.035) {
+    if (
+      agent.mode === "wander" &&
+      routePoint === agent.target &&
+      remaining < 0.035
+    ) {
       agent.pause = 0.8 + random() * 2;
       chooseTarget(agent);
       agent.moving = false;
@@ -422,6 +447,14 @@ export function createWanderSimulation(agents, obstacles, seed) {
     agent.blockedSeconds = 0;
   }
   const simulation = {
+    propRouteNodes: [],
+    nextWaypoint(agent) {
+      return agent.recoveryActive
+        ? agent.recoveryTarget
+        : agent.propRouteIndex < agent.propRouteLength
+          ? propRoutes.nodes[agent.propRoute[agent.propRouteIndex]]
+          : agent.target;
+    },
     agents,
     obstacles,
     beforeStep: null,
@@ -525,5 +558,6 @@ export function createWanderSimulation(agents, obstacles, seed) {
         agent.radius > largest.radius ? agent : largest,
       ),
     );
+  simulation.propRouteNodes = propRoutes?.nodes || [];
   return simulation;
 }

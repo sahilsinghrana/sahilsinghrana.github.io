@@ -411,6 +411,7 @@ export function createMoonBase(
       strideBlend: 0,
       gaitPhase: 0,
       lastGaitDistance: 0,
+      footLifts: new Float64Array(2),
       gazeYaw: 0,
       gazePitch: 0,
       stride: name === "GirlAstronaut" ? 0.0146 : 0.0154,
@@ -993,6 +994,29 @@ export function createMoonBase(
       person.anchor.updateMatrix();
       person.model.updateMatrix();
       person.frame.multiplyMatrices(person.anchor.matrix, person.model.matrix);
+      for (let foot = 0; foot < 2; foot++) {
+        const phase = (((gait / TAU + foot * 0.5) % 1) + 1) % 1;
+        const swing =
+          phase < stanceDuty ? 0 : (phase - stanceDuty) / (1 - stanceDuty);
+        person.footLifts[foot] =
+          Math.sin(swing * Math.PI) ** 2 *
+            (0.006 + jog * 0.008) *
+            person.gaitBlend +
+          (foot === activity.variant % 2 && person.gaitBlend < 0.01
+            ? Math.abs(pose.stance) * 0.2 * poseWeight
+            : 0) +
+          (activity.state === "gardenDance"
+            ? 0
+            : Math.max(0, (foot === 0 ? -1 : 1) * pose.danceStep) * 0.003) +
+          (foot === 0 ? pose.danceLiftLeft : pose.danceLiftRight) +
+          pose.flipTuck * 0.013;
+      }
+      // Crossfading gait and dance can otherwise lift both boots. Preserve a
+      // supporting foot except during an explicitly animated aerial phase.
+      const supportLift =
+        pose.hop > 0 || jog > 0 || pose.flip > 0
+          ? 0
+          : Math.min(person.footLifts[0], person.footLifts[1]);
       for (let sideIndex = 0; sideIndex < 2; sideIndex++) {
         const side = sideIndex === 0 ? -1 : 1;
         const phase = (((gait / TAU + sideIndex * 0.5) % 1) + 1) % 1;
@@ -1034,18 +1058,7 @@ export function createMoonBase(
             1) /
             bodyScale +
           0.00002;
-        const lift =
-          Math.sin(swing * Math.PI) ** 2 *
-            (0.006 + jog * 0.008) *
-            person.gaitBlend +
-          (sideIndex === activity.variant % 2 && person.gaitBlend < 0.01
-            ? Math.abs(pose.stance) * 0.2 * poseWeight
-            : 0) +
-          (activity.state === "gardenDance"
-            ? 0
-            : Math.max(0, side * pose.danceStep) * 0.003) +
-          (sideIndex === 0 ? pose.danceLiftLeft : pose.danceLiftRight) +
-          pose.flipTuck * 0.013;
+        const lift = person.footLifts[sideIndex] - supportLift;
         const ankleY = ground + bootHeight / 2 + lift;
         const hipY = 0.037 + bob - seatDrop;
         const hipX = side * (index === 0 ? 0.0093 : 0.0088) + weightShift;

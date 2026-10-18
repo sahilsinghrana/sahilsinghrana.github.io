@@ -54,7 +54,7 @@ section.heading {
     transform: translate(-50%, -50%);
     width: min(740px, 97vw);
     height: 400px;
-    z-index: 0;
+    z-index: auto;
     pointer-events: all;
     background: transparent;
     overflow: hidden;

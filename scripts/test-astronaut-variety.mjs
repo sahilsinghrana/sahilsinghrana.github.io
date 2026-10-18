@@ -456,6 +456,10 @@ test("talking strolls include several seconds of real paired walking", () => {
     startGirl = 0,
     gestures = 0,
     completed = 0;
+  const separation = new Vector3(),
+    forward = new Vector3();
+  let lateralSamples = 0,
+    longitudinalTotal = 0;
   for (let tick = 0; tick < 900 * 60; tick++) {
     navigation.update(1 / 60);
     if (
@@ -474,6 +478,17 @@ test("talking strolls include several seconds of real paired walking", () => {
         girl.pose.left,
         girl.pose.right,
       );
+      if (
+        boy.walker.forward.dot(girl.walker.forward) > 0.9 &&
+        behavior.time - activeSince > 0.5
+      ) {
+        separation
+          .subVectors(boy.walker.normal, girl.walker.normal)
+          .normalize();
+        forward.copy(boy.walker.forward).add(girl.walker.forward).normalize();
+        longitudinalTotal += Math.abs(separation.dot(forward));
+        lateralSamples++;
+      }
     } else if (activeSince && girl.state !== "stroll") {
       if (
         behavior.time - activeSince >= 2.8 &&
@@ -490,6 +505,10 @@ test("talking strolls include several seconds of real paired walking", () => {
     `Expected visible, sustained strolls; started ${behavior.stats.strolls}, completed ${completed}`,
   );
   assert.ok(gestures > 3);
+  assert.ok(
+    lateralSamples > 60 && longitudinalTotal / lateralSamples < 0.3,
+    `Stroll formation must be predominantly lateral, not single-file: samples ${lateralSamples}, longitudinal ${longitudinalTotal / lateralSamples}`,
+  );
   base.dispose();
 });
 

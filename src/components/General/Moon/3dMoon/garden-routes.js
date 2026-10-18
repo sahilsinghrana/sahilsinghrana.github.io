@@ -1,7 +1,9 @@
 // A tiny precomputed visibility graph for the garden only. No navmesh, scene
 // traversal, or per-step search. Route storage belongs to each actor.
 export function createGardenRoutes(navigation, views, normal, walker) {
-  const nodes = views.slice();
+  // Include safe outer prop waypoints, so a house between the walker and every
+  // garden entrance cannot make all entry links disappear.
+  const nodes = [...views, ...(navigation.propRouteNodes || [])];
   const tangent = normal.clone().cross(walker.forward).normalize();
   const side = normal.clone().cross(tangent).normalize();
   for (let i = 0; i < 16; i++) {

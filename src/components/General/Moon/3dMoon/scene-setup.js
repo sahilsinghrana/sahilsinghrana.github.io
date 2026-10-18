@@ -745,6 +745,7 @@ function animate(timestamp = performance.now()) {
 // An anonymous function passed to addEventListener cannot be removed with removeEventListener later.
 const onScroll = () => {
   currentScrollY = window.scrollY;
+  spinControl?.position();
 };
 
 const stopAnimation = () => {
@@ -806,6 +807,7 @@ let resizeObserver = null;
 
 // Container resize execution
 const onContainerResize = () => {
+  spinControl?.position();
   if (!isInitialized || !moonRoot || !camera || !renderer) return;
 
   const width = moonRoot.clientWidth;
