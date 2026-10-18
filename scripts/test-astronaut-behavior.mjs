@@ -279,6 +279,7 @@ test("playful waiting uses both hands and small landed hops; rocks support sitti
     navigation.hold(actor.walker, controller.actors[1 - index].walker.normal);
   });
   female.playfulWait = true;
+  female.playVariant = 1; // Exercise the bouncing variant; other variants use toe taps.
   let bothHands = false,
     hop = false,
     legs = false;
@@ -423,17 +424,20 @@ test("waves keep travelling, sometimes hop, and always land", () => {
   assert.ok(hopping && grounded && moving);
 });
 
-test("multi-flower visits reach the second bloom before the inspection time budget expires", () => {
+test("independent and guided garden visits reach all blooms from varied viewpoints", () => {
   const { base, navigation, controller } = fixture(71);
   const blooms = new Set();
   const places = new Set();
   for (let tick = 0; tick < 60 * 900; tick++) {
     navigation.update(1 / 60);
     const girl = controller.actors[1];
-    if (girl.state === "garden" && girl.lastFeature.kind === "flower") {
+    if (
+      (girl.state === "garden" || girl.state === "showGarden") &&
+      girl.lastFeature.kind === "flower"
+    ) {
       blooms.add(girl.lastFeature);
       places.add(girl.lastView);
-      assert.ok(girl.until - girl.since <= 4.5);
+      if (girl.state === "garden") assert.ok(girl.until - girl.since <= 4.5);
     }
   }
   assert.equal(blooms.size, interests.length);
@@ -647,7 +651,16 @@ test("inspection destinations remain outside all colliders and differ between vi
           actor.state !== "showGarden" &&
           actor.state !== "gardenGuest"
         )
-          assert.ok(actor.since - completed[index] >= (index ? 10 : 15));
+          assert.ok(
+            actor.since - completed[index] >= (index ? 10 : 15),
+            JSON.stringify({
+              index,
+              state: actor.state,
+              since: actor.since,
+              completed: completed[index],
+              nextInspectAt: actor.nextInspectAt,
+            }),
+          );
         previousView[index].copy(actor.walker.target);
         previousVisit[index] = actor.since;
         inspections++;

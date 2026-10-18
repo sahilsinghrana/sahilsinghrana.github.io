@@ -142,12 +142,8 @@ export function createWanderSimulation(agents, obstacles, seed) {
 
   function chooseTarget(agent) {
     for (let attempt = 0; attempt < 24; attempt++) {
-      // Walkers explore a broad cap around the base. The rover can select any
-      // hemisphere, and occasionally visits the base instead of avoiding it.
-      const bound =
-        agent.boundCos < -0.99 && random() < 0.25
-          ? Math.cos(0.8)
-          : agent.boundCos;
+      // Full-sphere agents sample the whole Moon uniformly, including its poles.
+      const bound = agent.boundCos;
       const z = bound + random() * (1 - bound);
       const angle = random() * Math.PI * 2;
       const spread = Math.sqrt(1 - z * z);
@@ -278,6 +274,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     if (!holding && !agent.recoveryActive) avoid(agent);
     if (
       !holding &&
+      agent.boundCos > -0.999 &&
       !(agent.mode === "arrive" && agent.routeValidated) &&
       !(agent.mode === "arrive" && remaining < 0.16) &&
       agent.normal.z < agent.boundCos + 0.08

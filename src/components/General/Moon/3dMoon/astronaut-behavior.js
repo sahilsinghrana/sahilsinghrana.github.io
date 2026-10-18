@@ -13,6 +13,9 @@ const SOCIAL_IDLE = new Set(["wander", "rest", "sit"]);
 const FEMALE_SOCIAL_IDLE = new Set(["wander", "rest", "sit", "playful"]);
 const INSPECTION = new Set(["garden", "rocket", "house"]);
 const ENGAGED = new Set([
+  "flipApproach",
+  "backflip",
+  "watchFlip",
   "conversation",
   "gardenCall",
   "travelDance",
@@ -59,6 +62,16 @@ export function createAstronautBehavior({
   const performanceRandom = createRandom(seed ^ 0x1e8c79);
   const flagRandom = createRandom(seed ^ 0x431fc9);
   const gestureRandom = createRandom(seed ^ 0x734ab9);
+  const playfulRandom = createRandom(seed ^ 0x735b1e);
+  const flipRandom = createRandom(seed ^ 0x29c8a17);
+  let flipPhase = "none";
+  let flipStarted = 0;
+  let nextFlipAt = 35 + flipRandom() * 35;
+  let nextFlipCheck = 0;
+  let flipRetargetAt = 0;
+  let flipFlight = 1.4;
+  const varietyRandom = createRandom(seed ^ 0x3af574);
+  let nextSoloOpportunity = 90 + varietyRandom() * 70;
   const conversationDistance = Math.max(
     0.064,
     boy.radius + girl.radius + 0.008,
@@ -75,6 +88,18 @@ export function createAstronautBehavior({
   let time = 0;
   let playBlockedUntil = 0;
   let lastChatAt = -Infinity;
+  let lastSocialOutcome = "";
+  let previousSocialOutcome = "";
+  const novelty = (activity) =>
+    activity === lastSocialOutcome
+      ? 0.2
+      : activity === previousSocialOutcome
+        ? 0.65
+        : 1;
+  function rememberOutcome(activity) {
+    previousSocialOutcome = lastSocialOutcome;
+    lastSocialOutcome = activity;
+  }
   let nextPlayOpportunity = 0;
   let decisionTime = 0;
   let talkStarted = 0;
@@ -158,6 +183,8 @@ export function createAstronautBehavior({
     flagCompanions: 0,
     strolls: 0,
     conversations: 0,
+    backflips: 0,
+    flipApproaches: 0,
     aborts: 0,
   };
 
@@ -280,6 +307,10 @@ export function createAstronautBehavior({
       playfulWait: false,
       nextPlayAt: 18,
       playVariant: 0,
+      playTempo: 1,
+      playLead: 1,
+      danceSteps: new Uint8Array(16),
+      danceEnds: new Float32Array(16),
       gestureStyle: 0,
       approachDistance: 0,
       cruiseSpeed: walker.speed,
@@ -322,6 +353,14 @@ export function createAstronautBehavior({
         spread: 0,
         dance: 0,
         danceStep: 0,
+        danceSide: 0,
+        danceLiftLeft: 0,
+        danceLiftRight: 0,
+        shoulder: 0,
+        roll: 0,
+        flip: 0,
+        flipTuck: 0,
+        crouch: 0,
         sit: 0,
         touch: 0,
         salute: 0,
@@ -407,8 +446,6 @@ export function createAstronautBehavior({
     )
       return false;
     female.nextPlayAt = time + 25 + gestureRandom() * 20;
-    female.playVariant =
-      (female.playVariant + 1 + Math.floor(gestureRandom() * 2)) % 3;
     navigation.hold(girl, boy.normal);
     female.focus.copy(boy.normal).multiplyScalar(eyeRadius(boy));
     enter(female, "playful", 3.5 + gestureRandom() * 0.7);
@@ -416,6 +453,23 @@ export function createAstronautBehavior({
     return true;
   }
   function enter(record, state, duration) {
+    if (state === "gardenDance") {
+      // Sample choreography once, independently of navigation. Every short
+      // phrase has a different step from its two immediate predecessors.
+      let end = 0;
+      for (let i = 0; i < record.danceSteps.length; i++) {
+        let step = Math.floor(playfulRandom() * 6);
+        while (
+          (i > 0 && step === record.danceSteps[i - 1]) ||
+          (i > 1 && step === record.danceSteps[i - 2])
+        )
+          step = (step + 1) % 6;
+        record.danceSteps[i] = step;
+        end += 0.72 + playfulRandom() * 0.3;
+        record.danceEnds[i] = end;
+      }
+      record.playLead = playfulRandom() < 0.5 ? -1 : 1;
+    }
     record.playfulWait =
       record === female &&
       playContext() &&
@@ -423,6 +477,12 @@ export function createAstronautBehavior({
         state === "waitGarden" ||
         state === "acceptHouse") &&
       gestureRandom() < 0.75;
+    if (record.playfulWait || state === "playful") {
+      record.playVariant =
+        (record.playVariant + 1 + Math.floor(playfulRandom() * 3)) % 4;
+      record.playTempo = 0.9 + playfulRandom() * 0.25;
+      record.playLead = playfulRandom() < 0.5 ? -1 : 1;
+    }
     if (
       INSPECTION.has(state) ||
       state === "showGarden" ||
@@ -572,10 +632,19 @@ export function createAstronautBehavior({
   }
   function startInspection(record) {
     if (record === male && house) {
-      record.interest = random() < 0.4 || rocketStreak >= 2 ? house : rocket;
+      const missingRocket = stats.rocketVisits === 0 && time > 120;
+      record.interest =
+        !missingRocket && (random() < 0.4 || rocketStreak >= 2)
+          ? house
+          : rocket;
       record.views = record.interest === house ? houseViews : rocketViews;
     }
-    record.visitDuration = record === female ? between(8, 15) : between(5, 10);
+    record.visitDuration =
+      record === female
+        ? between(8, 15)
+        : record.interest === rocket
+          ? between(3, 5)
+          : between(5, 10);
     record.stopsRemaining = Math.ceil(record.visitDuration / 4);
     record.visitEnd = Infinity;
     record.featureCount = 0;
@@ -590,13 +659,17 @@ export function createAstronautBehavior({
         let total = 0;
         for (const flower of tourFlowers)
           if (tourFlowers.length === 1 || flower !== record.lastFlower)
-            total += 1 / (1 + (record.featureVisits.get(flower) || 0)) ** 2;
+            total +=
+              ((record.featureVisits.get(flower) || 0) === 0 ? 10 : 1) /
+              (1 + (record.featureVisits.get(flower) || 0)) ** 2;
         let pick = random() * total,
           index = 0;
         for (; index < tourFlowers.length - 1; index++) {
           const flower = tourFlowers[index];
           if (tourFlowers.length > 1 && flower === record.lastFlower) continue;
-          pick -= 1 / (1 + (record.featureVisits.get(flower) || 0)) ** 2;
+          pick -=
+            ((record.featureVisits.get(flower) || 0) === 0 ? 10 : 1) /
+            (1 + (record.featureVisits.get(flower) || 0)) ** 2;
           if (pick <= 0) break;
         }
         record.visitFeatures[0] = tourFlowers[index];
@@ -697,7 +770,7 @@ export function createAstronautBehavior({
     return !ENGAGED.has(record.state);
   }
   function socialAvailable(record) {
-    if (performancePhase !== "none") return false;
+    if (performancePhase !== "none" || flipPhase !== "none") return false;
     return (
       available(record) &&
       record.state !== "travelRest" &&
@@ -824,7 +897,8 @@ export function createAstronautBehavior({
       record.walker.softPartner = null;
       record.runUntil = 0;
     }
-    if (!aborted && gestureRandom() < 0.45 && startPlay()) {
+    if (!aborted && gestureRandom() < 0.45 * novelty("play") && startPlay()) {
+      rememberOutcome("play");
       boyInitiated = false;
       wander(male);
       return;
@@ -835,19 +909,27 @@ export function createAstronautBehavior({
       !aborted &&
       showHouse &&
       time >= nextHouseTourAt &&
-      random() < 0.75 &&
+      random() < 0.75 * novelty("house") &&
       startHouseTour()
-    )
+    ) {
+      rememberOutcome("house");
       return;
+    }
     if (
       !aborted &&
       garden &&
       time >= nextTourAt &&
-      random() < (stats.gardenTours === 0 ? 0.65 : 0.4) &&
+      random() < (stats.gardenTours === 0 ? 0.65 : 0.4) * novelty("garden") &&
       startTour()
-    )
+    ) {
+      rememberOutcome("garden");
       return;
-    if (!aborted && random() < 0.35 && startStroll()) return;
+    }
+    if (!aborted && random() < 0.35 * novelty("stroll") && startStroll()) {
+      rememberOutcome("stroll");
+      return;
+    }
+    if (!aborted) rememberOutcome("independent");
     wander(female);
     if (
       male.state === "waiting" ||
@@ -1097,7 +1179,7 @@ export function createAstronautBehavior({
       record.retries = 0;
       navigation.hold(record.walker, houseDirection);
     }
-    enter(male, "inviteHouse", between(2.2, 3.2));
+    enter(male, "inviteHouse", between(1.2, 1.8));
     enter(female, "acceptHouse", 90);
     return true;
   }
@@ -1172,7 +1254,7 @@ export function createAstronautBehavior({
         aligned(boy, houseDirection) &&
         aligned(girl, houseDirection)
       ) {
-        const duration = between(5, 8);
+        const duration = between(2.5, 4);
         enter(male, "showHouse", duration);
         enter(female, "houseGuest", duration);
         navigation.hold(boy, houseDirection);
@@ -1187,8 +1269,8 @@ export function createAstronautBehavior({
       const partner = record === male ? girl : boy;
       if (
         male.state === "showHouse" &&
-        time - male.since > 4 &&
-        time - male.since < 5.5
+        time - male.since > (male.until - male.since) * 0.65 &&
+        time - male.since < (male.until - male.since) * 0.9
       )
         record.focus.copy(partner.normal).multiplyScalar(eyeRadius(partner));
       else record.focus.copy(houseFocus);
@@ -1660,7 +1742,11 @@ export function createAstronautBehavior({
       performanceSawFlowersAt < 0
     )
       performanceSawFlowersAt = time;
-    if (performancePhase === "wait" && female.state === "wander")
+    if (
+      performancePhase === "wait" &&
+      female.state === "wander" &&
+      time >= female.nextInspectAt
+    )
       startInspection(female);
     if (performancePhase === "call" || performancePhase === "wait") {
       male.runUntil = boy.normal.angleTo(male.goal) > 0.15 ? time + 0.8 : 0;
@@ -1853,10 +1939,152 @@ export function createAstronautBehavior({
     navigation.hold(boy, girl.normal);
     return true;
   }
+  function clearFlipSpot(point) {
+    if (
+      !navigation.isClear(point, boy, 0.04) ||
+      (flag && angle(point, flag.normal) < 0.38)
+    )
+      return false;
+    if (garden?.features)
+      for (const feature of garden.features) {
+        if (
+          feature.kind === "rock" &&
+          angle(point, feature.normal) <
+            (feature.supportRadius || feature.radius || 0.02) +
+              boy.radius +
+              0.025
+        )
+          return false;
+      }
+    return true;
+  }
+  function pickFlipSpot() {
+    tangent
+      .copy(boy.normal)
+      .addScaledVector(girl.normal, -boy.normal.dot(girl.normal));
+    if (tangent.lengthSq() < 1e-8)
+      tangent.set(1, 0, 0).addScaledVector(girl.normal, -girl.normal.x);
+    tangent.normalize();
+    lateral.crossVectors(girl.normal, tangent).normalize();
+    for (let i = 0; i < 12; i++) {
+      const turn = ((i % 2 ? -1 : 1) * Math.ceil(i / 2) * Math.PI) / 6;
+      candidate
+        .copy(girl.normal)
+        .multiplyScalar(Math.cos(0.19))
+        .addScaledVector(tangent, Math.sin(0.19) * Math.cos(turn))
+        .addScaledVector(lateral, Math.sin(0.19) * Math.sin(turn))
+        .normalize();
+      if (
+        clearFlipSpot(candidate) &&
+        navigation.segmentClear(girl.normal, candidate, girl) &&
+        navigation.arrive(boy, candidate, girl.normal)
+      ) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function endBackflip() {
+    const watched = female.state === "watchFlip";
+    flipPhase = "none";
+    nextFlipAt = time + 100 + flipRandom() * 80;
+    male.runUntil = 0;
+    male.pose.flip = male.pose.flipTuck = male.pose.crouch = male.pose.hop = 0;
+    wander(male);
+    if (watched) wander(female);
+    for (const record of actors)
+      record.nextTalkAt = time + 3 + flipRandom() * 5;
+  }
+  function updateBackflip() {
+    if (flipPhase === "none") return false;
+    if (flipPhase === "show") {
+      if (time >= male.until) endBackflip();
+      return true;
+    }
+    male.runUntil = angle(boy.normal, girl.normal) > 0.38 ? time + 0.6 : 0;
+    if (
+      time - flipStarted > 35 ||
+      male.stalled > 4 ||
+      (female.state !== "watchFlip" && !available(female))
+    ) {
+      endBackflip();
+      return true;
+    }
+    if (
+      female.state !== "watchFlip" &&
+      angle(boy.normal, girl.normal) < 0.3 &&
+      navigation.segmentClear(girl.normal, boy.normal, girl)
+    ) {
+      enter(female, "watchFlip", 35);
+      navigation.hold(girl, boy.normal);
+    }
+    if (time >= flipRetargetAt && female.state !== "watchFlip") {
+      flipRetargetAt = time + 0.8;
+      if (!pickFlipSpot()) {
+        endBackflip();
+        return true;
+      }
+    }
+    if (female.state === "watchFlip") {
+      girl.lookTarget.copy(boy.normal);
+      if (boy.arrived && boy.velocity < 0.003) {
+        if (!clearFlipSpot(boy.normal)) {
+          endBackflip();
+          return true;
+        }
+        navigation.hold(boy, girl.normal);
+        if (aligned(boy, girl.normal) && aligned(girl, boy.normal)) {
+          flipFlight = 1.25 + flipRandom() * 0.3;
+          enter(male, "backflip", 0.45 + flipFlight + 0.8);
+          enter(female, "watchFlip", 0.45 + flipFlight + 0.8);
+          flipPhase = "show";
+          stats.backflips++;
+        }
+      }
+      return true;
+    }
+    return false;
+  }
   function decisions() {
     stats.decisions++;
     if (updateYield()) return;
+    if (updateBackflip()) return;
     if (updatePerformance()) return;
+    if (
+      flipPhase === "none" &&
+      performancePhase === "none" &&
+      time >= nextFlipAt &&
+      time >= nextFlipCheck &&
+      !male.initial &&
+      !female.initial &&
+      SOCIAL_IDLE.has(male.state) &&
+      (female.state === "wander" ||
+        (female.state === "garden" && !pendingFeature(female))) &&
+      time >= playBlockedUntil &&
+      (!flag || angle(girl.normal, flag.normal) > 0.38) &&
+      angle(boy.normal, girl.normal) > 0.12 &&
+      angle(boy.normal, girl.normal) < 1.1
+    ) {
+      nextFlipCheck = time + 8 + flipRandom() * 8;
+      if (flipRandom() < 0.45 && pickFlipSpot()) {
+        flipPhase = "approach";
+        flipStarted = time;
+        flipRetargetAt = time + 0.8;
+        enter(male, "flipApproach", 35);
+        stats.flipApproaches++;
+      }
+    }
+    // Frequent social invitations must not indefinitely starve his own visits.
+    if (
+      performancePhase === "none" &&
+      male.state === "wander" &&
+      !male.initial &&
+      time >= nextSoloOpportunity &&
+      time >= male.nextInspectAt
+    ) {
+      nextSoloOpportunity = time + 120 + varietyRandom() * 100;
+      startInspection(male);
+    }
     if (
       performancePhase === "none" &&
       lampInterest &&
@@ -2241,6 +2469,18 @@ export function createAstronautBehavior({
     let salute = 0;
     let spread = 0,
       dance = 0;
+    let danceSide = 0,
+      danceLiftLeft = 0,
+      danceLiftRight = 0,
+      shoulder = 0,
+      danceArmPhase = 0;
+    let flip = 0,
+      flipTuck = 0,
+      crouch = 0;
+    let playfulStep = 0,
+      playfulLean = 0,
+      playfulTilt = 0,
+      playfulRoll = 0;
     const elapsed = time - record.since;
     const inviting =
       record.state === "inviteGarden" ||
@@ -2465,39 +2705,98 @@ export function createAstronautBehavior({
       dance =
         envelope * (0.65 + Math.sin(local * (variant === 1 ? 4 : 3)) * 0.15);
       hand = envelope * (0.65 + Math.sin(local * 5) * 0.18);
-      spread =
-        variant === 0
-          ? dance
-          : variant === 1
-            ? envelope * 0.35
-            : envelope * 0.8;
-      arc = Math.sin(local * (variant === 2 ? 4 : 3)) * envelope;
-      wrist = Math.sin(local * 4 + variant) * envelope * 0.6;
       shake = Math.sin(local * 3.5) * 0.13 * envelope;
-      nod = Math.sin(local * 4) * 0.08 * envelope;
-      yaw = Math.sin(local * (variant === 1 ? 3.5 : 2)) * envelope * 0.09;
-      const bounce = local % (variant === 1 ? 1.3 : 1.6);
-      if (variant !== 2 && bounce < 0.5)
-        hop =
-          Math.sin((bounce * Math.PI) / 0.5) *
-          (variant === 1 ? 0.014 : 0.01) *
-          envelope;
-      if (variant === 2) chest = envelope * (0.4 + 0.25 * Math.sin(local * 4));
       if (record.state === "gardenDance") {
-        // Four readable phrases: side-step, springy greeting, open-arm sway,
-        // and alternating toe taps. Phrases vary within a performance as well.
-        const phrase = (variant + Math.floor(local / 2.4)) % 4;
-        spread = envelope * (phrase === 2 ? 0.9 : phrase === 1 ? 0.35 : 0.65);
-        chest = phrase === 1 ? envelope * 0.3 : 0;
-        arc =
-          Math.sin(local * 3.5 + variant) *
-          envelope *
-          (phrase === 0 ? 1 : 0.65);
-        shift =
-          Math.sin(local * 3.5) * envelope * (variant === 2 ? 0.0025 : 0.0015);
-        yaw = Math.sin(local * 2.8) * envelope * (phrase === 2 ? 0.16 : 0.08);
-        nod = Math.sin(local * 3.5 + 0.5) * envelope * 0.11;
-        if (variant === 3) hop = 0;
+        let index = 0;
+        while (index < 15 && local >= record.danceEnds[index]) index++;
+        if (!record.danceEnds[0]) index = Math.floor(local / 0.85);
+        const start = record.danceEnds[0]
+          ? index > 0
+            ? record.danceEnds[index - 1]
+            : 0
+          : index * 0.85;
+        // The fallback also supports isolated pose previews without an entry.
+        const duration = record.danceEnds[0]
+          ? record.danceEnds[index] - start
+          : 0.85;
+        const phase = Math.min(1, (local - start) / duration);
+        const phrase = record.danceEnds[0]
+          ? record.danceSteps[index]
+          : (variant + Math.floor(local / 0.85)) % 6;
+        const beat = phase * Math.PI * 2;
+        const pulse = Math.sin(phase * Math.PI) ** 2 * envelope;
+        const lead = record.playLead * (index % 2 ? -1 : 1);
+        const response = Math.sin(beat - 0.5) * pulse;
+        // Side tap, heel dig, shuffle, spring, twist, and diagonal reach.
+        // Each resolves at planted feet before the next phrase begins.
+        playfulStep = Math.sin(beat) * envelope * (phrase === 2 ? 1 : 0.65);
+        danceSide = (phrase === 0 || phrase === 5 ? 0.0022 : 0.0006) * pulse;
+        const lift = (phrase === 1 ? 0.0045 : 0.003) * pulse;
+        danceLiftLeft = lead < 0 ? lift : 0;
+        danceLiftRight = lead > 0 ? lift : 0;
+        spread = (phrase === 4 ? 0.25 : phrase === 5 ? 0.95 : 0.65) * envelope;
+        chest = phrase === 1 ? pulse * 0.35 : 0;
+        arc = response * (phrase === 5 ? 1.3 : 0.85) * lead;
+        shift = response * 0.0028 * lead;
+        yaw = response * (phrase === 4 ? 0.22 : 0.12) * lead;
+        playfulRoll = Math.sin(beat + 0.4) * pulse * 0.105 * lead;
+        playfulLean = pulse * (phrase === 1 ? 0.08 : 0.035);
+        playfulTilt = Math.sin(beat - 0.8) * pulse * 0.16 * lead;
+        nod = Math.sin(beat + 0.8) * pulse * 0.15;
+        shake = Math.sin(beat - 0.3) * pulse * 0.15 * lead;
+        shoulder = response * 0.0024 * lead;
+        crouch = pulse * (phrase === 3 ? 0.003 : 0.0012);
+        hop = phrase === 3 ? Math.sin(phase * Math.PI) * 0.012 * envelope : 0;
+        danceArmPhase = beat + phrase * 0.7;
+        wrist = Math.sin(beat - 0.7) * pulse * 0.8;
+      } else {
+        const phase = local * record.playTempo;
+        const lead = record.playLead;
+        // Anticipation, a distinct short action, then a quiet recovery. The
+        // feet and upper body use offset phases instead of one shared sine.
+        const beat = Math.sin(phase * 3.8);
+        const response = Math.sin(phase * 3.8 - 0.65);
+        shift = response * envelope * 0.0018 * lead;
+        yaw = Math.sin(phase * 2.6 - 0.3) * envelope * 0.11 * lead;
+        playfulTilt = Math.sin(phase * 2.6 + 0.4) * envelope * 0.09 * lead;
+        playfulRoll = response * envelope * 0.055;
+        playfulLean =
+          (0.5 + 0.5 * Math.sin(phase * 3 - 0.5)) * envelope * 0.025;
+        nod = Math.sin(phase * 3.1 + 0.5) * envelope * 0.08;
+        hop = 0;
+        if (variant === 0) {
+          // A side-to-side toe tap with alternating open hands.
+          playfulStep = beat * envelope * 0.8;
+          spread = (0.45 + response * 0.2) * envelope;
+          chest = 0;
+          arc = response * envelope * 0.8;
+        } else if (variant === 1) {
+          // A quick delighted bounce, then one hand settles before the other.
+          playfulStep = Math.sin(phase * 4.6) * envelope * 0.45;
+          const jump = (local - 0.55) / 0.6;
+          if (jump > 0 && jump < 1)
+            hop = Math.sin(jump * Math.PI) * 0.012 * envelope;
+          spread = 0.7 * envelope;
+          chest = 0;
+          arc = Math.sin(phase * 4.2) * envelope;
+        } else if (variant === 2) {
+          // A smaller shoulder tease: hands near the chest, head tilts back.
+          playfulStep = beat * envelope * 0.2;
+          chest = (0.65 + response * 0.15) * envelope;
+          spread = 0.15 * envelope;
+          arc = Math.sin(phase * 2.7 - 0.8) * envelope * 0.5;
+          playfulRoll *= 1.4;
+        } else {
+          // A light shuffle and diagonal arm flourish with a small hop.
+          playfulStep = Math.sin(phase * 5) * envelope;
+          spread = (0.6 + beat * 0.25) * envelope;
+          chest = 0;
+          arc = Math.sin(phase * 3.1 + 0.8) * envelope;
+          const jump = (local - 1.05) / 0.55;
+          if (jump > 0 && jump < 1)
+            hop = Math.sin(jump * Math.PI) * 0.007 * envelope;
+        }
+        wrist = Math.sin(phase * 3.6 - 0.9) * envelope * 0.55;
       }
     }
     if (record.state === "gardenDance")
@@ -2533,6 +2832,20 @@ export function createAstronautBehavior({
         left = hand;
         right =
           hand * (0.65 + 0.2 * Math.cos(elapsed * 3 + record.playVariant));
+        if (record.state === "gardenDance") {
+          left = hand * (0.65 + 0.35 * Math.sin(danceArmPhase));
+          right = hand * (0.65 + 0.35 * Math.sin(danceArmPhase - 1.8));
+        }
+        if (record.playfulWait && record.state !== "gardenDance") {
+          const phase = elapsed * record.playTempo * 3.8;
+          left = hand * (0.55 + 0.4 * Math.sin(phase));
+          right = hand * (0.55 + 0.4 * Math.sin(phase - 1.3));
+          if (record.playLead < 0) {
+            const swap = left;
+            left = right;
+            right = swap;
+          }
+        }
       }
       if (touch > 0) {
         left = record.touchArm === 0 ? hand : 0;
@@ -2542,6 +2855,37 @@ export function createAstronautBehavior({
     if (pointing) {
       pointLeft = left;
       pointRight = right;
+    }
+    if (record.state === "backflip") {
+      const air = (elapsed - 0.45) / flipFlight;
+      const progress = clamp((air - 0.1) / 0.8, 0, 1);
+      flip = progress * progress * (3 - 2 * progress);
+      if (air > 0 && air < 1) {
+        hop = 4 * air * (1 - air) * 0.12;
+        const tuckPhase = clamp((air - 0.12) / 0.76, 0, 1);
+        flipTuck = Math.sin(tuckPhase * Math.PI) ** 2;
+      }
+      if (elapsed < 0.45) crouch = Math.sin((elapsed / 0.45) * Math.PI) * 0.004;
+      else if (air >= 1 && air < 1.4)
+        crouch = Math.sin(((air - 1) / 0.4) * Math.PI) * 0.003;
+      left = right = hand = air > 0 && air < 1 ? 0.7 : 0.3;
+      chest = flipTuck * 0.85;
+      spread = air < 0 ? 0.25 : 0.05;
+      nod = shake = 0;
+      record.focus.copy(girl.normal).multiplyScalar(eyeRadius(girl));
+    } else if (record.state === "watchFlip") {
+      record.focus.copy(boy.normal).multiplyScalar(1 + 0.046 + male.pose.hop);
+      nod = Math.sin(elapsed * 2.7) * 0.045;
+      if (male.state === "backflip" && time - male.since > 0.45 + flipFlight)
+        clap = 0.8;
+      else {
+        left = 0.25;
+        right = 0.15;
+        chest = 0.2;
+      }
+    } else if (record.state === "flipApproach") {
+      record.focus.copy(girl.normal).multiplyScalar(eyeRadius(girl));
+      left = hand = 0.18;
     }
     if (yieldPhase !== "none") {
       record.focus
@@ -2557,6 +2901,9 @@ export function createAstronautBehavior({
       spread = 0;
     }
     const active =
+      record.state === "backflip" ||
+      record.state === "watchFlip" ||
+      record.state === "flipApproach" ||
       yieldPhase !== "none" ||
       atFlag ||
       record.state === "travelFlag" ||
@@ -2569,16 +2916,22 @@ export function createAstronautBehavior({
       record.state === "gardenClap" ||
       dance > 0 ||
       record.state === "sit";
-    const blend = 1 - Math.exp(-dt / (talking ? 0.09 : 0.16));
+    const blend =
+      1 -
+      Math.exp(
+        -dt / (record.state === "gardenDance" ? 0.075 : talking ? 0.09 : 0.16),
+      );
     const output = record.pose;
     output.weight += ((active ? 1 : 0) - output.weight) * blend;
     output.hand += (hand - output.hand) * blend;
     output.wave += (wave - output.wave) * blend;
     output.chest += (chest - output.chest) * blend;
     output.lean +=
-      ((inspecting ? 0.04 + hand * 0.04 : 0) - output.lean) * blend;
+      ((inspecting ? 0.04 + hand * 0.04 : playfulLean) - output.lean) * blend;
     output.tilt +=
-      ((inspecting ? Math.sin(elapsed * 0.8 + record.variant) * 0.06 : 0) -
+      ((inspecting
+        ? Math.sin(elapsed * 0.8 + record.variant) * 0.06
+        : playfulTilt) -
         output.tilt) *
       blend;
     output.nod += (nod - output.nod) * blend;
@@ -2592,11 +2945,16 @@ export function createAstronautBehavior({
     output.shake += (shake - output.shake) * blend;
     output.spread += (spread - output.spread) * blend;
     output.dance += (dance - output.dance) * blend;
-    const danceStep =
-      record.state === "gardenDance"
-        ? Math.sin(elapsed * (record.playVariant === 3 ? 5 : 3.5)) * dance
-        : 0;
+    const danceStep = playfulStep;
     output.danceStep += (danceStep - output.danceStep) * blend;
+    output.danceSide += (danceSide - output.danceSide) * blend;
+    output.danceLiftLeft += (danceLiftLeft - output.danceLiftLeft) * blend;
+    output.danceLiftRight += (danceLiftRight - output.danceLiftRight) * blend;
+    output.shoulder += (shoulder - output.shoulder) * blend;
+    output.roll += (playfulRoll - output.roll) * blend;
+    output.flip = flip;
+    output.flipTuck = flipTuck;
+    output.crouch += (crouch - output.crouch) * blend;
     output.sit +=
       ((record.state === "sit" || record.state === "gardenClap" ? 1 : 0) -
         output.sit) *
@@ -2613,6 +2971,9 @@ export function createAstronautBehavior({
   return {
     actors,
     stats,
+    cancelBackflip() {
+      if (flipPhase !== "none") endBackflip();
+    },
     get time() {
       return time;
     },

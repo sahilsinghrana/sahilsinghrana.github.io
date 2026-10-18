@@ -30,7 +30,11 @@ import {
 } from "./dimensions.js";
 import { LOGO_NORMAL } from "./logo.js";
 import { createAstronautBehavior } from "./astronaut-behavior.js";
-import { createWalker, createWanderSimulation } from "./wander.js";
+import {
+  createRandom,
+  createWalker,
+  createWanderSimulation,
+} from "./wander.js";
 import { ANCHOR_POSITION as FLAG_ANCHOR_POSITION } from "./flag.js";
 import { GARDEN_SURFACE_NORMAL } from "./garden.js";
 
@@ -90,6 +94,7 @@ export function createMoonBase(
   group.quaternion.setFromUnitVectors(FRONT, LOGO_NORMAL);
   group.visible = false;
   const r = moonRadius;
+  const openingRandom = createRandom(seed ^ 0x68a2d47);
   const geometries = new Set();
   const materials = new Set();
   const primitives = {
@@ -434,13 +439,13 @@ export function createMoonBase(
     );
     torchLens.name = `${name}TorchLens`;
     person.torso.add(torchLens);
-    const torch = new SpotLight(0xffe5bf, 0, r * 0.4, Math.PI / 7, 0.85, 2);
+    const torch = new SpotLight(0xffe5bf, 0, r * 0.55, Math.PI / 7, 0.85, 2);
     torch.name = `${name}Torch`;
     torch.userData.astronautTorch = true;
     torch.castShadow = false;
     torch.position.set(0.009 * r, 0.061 * r, 0.021 * r);
     const torchTarget = new Group();
-    torchTarget.position.set(0.009 * r, -0.02 * r, 0.16 * r);
+    torchTarget.position.set(0.009 * r, -0.02 * r, 0.21 * r);
     torch.target = torchTarget;
     person.torso.add(torch, torchTarget);
     return {
@@ -574,19 +579,20 @@ export function createMoonBase(
   const roverWalker = createWalker(FRONT, {
     radius: 0.095 * ROVER_SCALE,
     speed: 0.065,
+    boundAngle: Math.PI,
     heading: 0.32,
   });
   boy.walker = createWalker(normalAt(-0.12, -0.175), {
     radius: (0.027 * ASTRONAUT_SCALES.boy) / 0.8,
     speed: 0.0334,
     boundAngle: 1.43,
-    heading: 0.7,
+    heading: (openingRandom() - 0.5) * TAU,
   });
   girl.walker = createWalker(normalAt(0.18, -0.03), {
     radius: (0.027 * ASTRONAUT_SCALES.girl) / 0.8,
     speed: 0.0368,
     boundAngle: 1.43,
-    heading: -0.7,
+    heading: (openingRandom() - 0.5) * TAU,
   });
   boy.walker.eyeHeight = 0.079 * ASTRONAUT_SCALES.boy;
   girl.walker.eyeHeight = 0.079 * ASTRONAUT_SCALES.girl;
@@ -887,18 +893,20 @@ export function createMoonBase(
       // the Moon instead of raising the entire bent-leg rig above the seat.
       const seatDrop =
         seated *
-        clamp(
-          0.033 -
-            Math.max(0, surfaceLift - 0.003) /
-              Math.max(person.model.scale.y, 0.01),
-          0.012,
-          0.031,
-        );
+          clamp(
+            0.033 -
+              Math.max(0, surfaceLift - 0.003) /
+                Math.max(person.model.scale.y, 0.01),
+            0.012,
+            0.031,
+          ) +
+        pose.crouch;
       person.torso.position.x = weightShift * r;
       person.torso.position.y = (bob - seatDrop) * r;
       person.torso.rotation.x = pose.lean * poseWeight + jog * 0.085;
       person.torso.rotation.z =
-        Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend;
+        Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend +
+        pose.roll * poseWeight;
       person.torso.rotation.y =
         pose.yaw * poseWeight -
         turnLead * 0.35 +
@@ -959,6 +967,13 @@ export function createMoonBase(
         (-25 * Math.PI) / 180,
         (25 * Math.PI) / 180,
       );
+      // Rotate the whole articulated body about its center, not its boots.
+      // The same model matrix is used below for every instanced limb.
+      const flipAngle = pose.flip > 0 ? -TAU * pose.flip : 0;
+      const flipCenter = 0.046 * r * person.model.scale.y;
+      person.model.rotation.x = flipAngle;
+      person.model.position.y = flipCenter * (1 - Math.cos(flipAngle));
+      person.model.position.z = -flipCenter * Math.sin(flipAngle);
       person.anchor.updateMatrix();
       person.model.updateMatrix();
       person.frame.multiplyMatrices(person.anchor.matrix, person.model.matrix);
@@ -977,10 +992,12 @@ export function createMoonBase(
           stride * turningStep * 0.2 +
           (sideIndex === activity.variant % 2 ? pose.stance * poseWeight : 0) +
           seated * 0.03 +
-          side * pose.danceStep * 0.004;
+          side * pose.danceStep * 0.004 +
+          pose.flipTuck * 0.012;
         const footX =
           side * ((index === 0 ? 0.0093 : 0.0088) + (pose.dance || 0) * 0.003) +
-          Math.sin(gait) * turningStep * 0.001;
+          Math.sin(gait) * turningStep * 0.001 +
+          side * pose.danceSide;
         const bootWidth = index === 0 ? 0.0125 : 0.0115;
         const bootHeight = index === 0 ? 0.0102 : 0.0095;
         const bootDepth = index === 0 ? 0.023 : 0.021;
@@ -1008,12 +1025,17 @@ export function createMoonBase(
           (sideIndex === activity.variant % 2 && person.gaitBlend < 0.01
             ? Math.abs(pose.stance) * 0.2 * poseWeight
             : 0) +
-          Math.max(0, side * pose.danceStep) * 0.003;
+          (activity.state === "gardenDance"
+            ? 0
+            : Math.max(0, side * pose.danceStep) * 0.003) +
+          (sideIndex === 0 ? pose.danceLiftLeft : pose.danceLiftRight) +
+          pose.flipTuck * 0.013;
         const ankleY = ground + bootHeight / 2 + lift;
         const hipY = 0.037 + bob - seatDrop;
+        const hipX = side * (index === 0 ? 0.0093 : 0.0088) + weightShift;
         // Two equal leg links solve ankle reach; the knee bends forward.
         const dy = ankleY - hipY;
-        const length = Math.hypot(dy, footZ, weightShift);
+        const length = Math.hypot(dy, footZ, hipX - footX);
         const bend = Math.sqrt(Math.max(0, 0.019 ** 2 - (length * length) / 4));
         const kneeY = (hipY + ankleY) / 2 + (footZ / length) * bend;
         const kneeZ = footZ / 2 - (dy / length) * bend;
@@ -1021,10 +1043,10 @@ export function createMoonBase(
         segment(
           person,
           limbIndex,
-          footX + weightShift,
+          hipX,
           hipY,
           0,
-          footX + weightShift * 0.5,
+          (hipX + footX) / 2,
           kneeY,
           kneeZ,
           0.0048,
@@ -1032,7 +1054,7 @@ export function createMoonBase(
         segment(
           person,
           limbIndex + 1,
-          footX + weightShift * 0.5,
+          (hipX + footX) / 2,
           kneeY,
           kneeZ,
           footX,
@@ -1056,8 +1078,13 @@ export function createMoonBase(
           person.carriage *
           (1 - seated);
         const shoulderY =
-          0.063 * Math.cos(person.torso.rotation.x) + bob - seatDrop;
-        const shoulderZ = 0.063 * Math.sin(person.torso.rotation.x);
+          0.063 * Math.cos(person.torso.rotation.x) +
+          bob -
+          seatDrop +
+          side * pose.shoulder;
+        const shoulderZ =
+          0.063 * Math.sin(person.torso.rotation.x) -
+          side * Math.sin(person.torso.rotation.y) * 0.018;
         const elbowBend = 0.2 + jog * 0.95;
         let elbowY = shoulderY - Math.cos(armSwing) * 0.017;
         let elbowZ = shoulderZ + Math.sin(armSwing) * 0.017;
@@ -1307,9 +1334,9 @@ export function createMoonBase(
       else if (illumination > 0.32) entry.on = false;
       const dt = Math.max(0, Math.min(0.05, deltaSeconds));
       entry.fade += ((entry.on ? 1 : 0) - entry.fade) * (1 - Math.exp(-dt * 7));
-      entry.light.distance = r * 0.4 * personSize;
+      entry.light.distance = r * 0.55 * personSize;
       entry.light.intensity =
-        0.0042 * personSize * personSize * entry.fade * smooth(reveal);
+        0.007 * personSize * personSize * entry.fade * smooth(reveal);
       entry.material.emissiveIntensity = entry.fade * 0.8;
       entry.material.color.lerpColors(
         torchDarkColor,
@@ -1338,8 +1365,10 @@ export function createMoonBase(
     if (reducedMotion !== motionReduced) {
       motionReduced = reducedMotion;
       if (reducedMotion) {
+        behavior.cancelBackflip();
         for (const actor of behavior.actors) {
           actor.pose.hop = 0;
+          actor.pose.flip = actor.pose.flipTuck = actor.pose.crouch = 0;
           actor.waveHop = false;
         }
         updatePeople(0);

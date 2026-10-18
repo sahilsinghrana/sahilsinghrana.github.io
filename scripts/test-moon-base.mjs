@@ -53,6 +53,44 @@ test("shared clock pauses without catch-up and clamps delayed frames", () => {
   near(clock.elapsed, 0);
 });
 
+test("the rover can reach the far pole without an artificial return-to-base boundary", () => {
+  const rover = createWalker(new Vector3(0, 0, 1), {
+    radius: 0.08,
+    speed: 0.065,
+    boundAngle: Math.PI,
+  });
+  const nav = createWanderSimulation([rover], [], 71);
+  const destination = new Vector3(0.015, -0.02, -1).normalize();
+  assert.ok(nav.arrive(rover, destination));
+  for (let i = 0; i < 110 * 60 && !rover.arrived; i++) nav.update(1 / 60);
+  assert.ok(rover.arrived, JSON.stringify(rover.normal));
+  assert.ok(rover.normal.z < -0.995);
+});
+
+test("fresh scenes vary their opening headings while explicit seeds remain reproducible", () => {
+  const savedRandom = Math.random;
+  const bases = [];
+  try {
+    let value = 0.1;
+    Math.random = () => {
+      value += 0.2;
+      return value;
+    };
+    bases.push(
+      createMoonBase(),
+      createMoonBase(),
+      createMoonBase(0.4, { seed: 123 }),
+      createMoonBase(0.4, { seed: 123 }),
+    );
+    const forward = (base) => base.userData.behavior.actors[0].walker.forward;
+    assert.ok(forward(bases[0]).angleTo(forward(bases[1])) > 0.1);
+    assert.ok(forward(bases[2]).angleTo(forward(bases[3])) < 1e-7);
+  } finally {
+    Math.random = savedRandom;
+    for (const base of bases) base.dispose();
+  }
+});
+
 test("base stays within geometry, draw-call, material and lighting budgets", () => {
   const base = createMoonBase();
   base.setReveal(1);
@@ -402,8 +440,8 @@ test("both torches have increased reach, switch independently, and cannot light 
   ]) {
     const torch = base.getObjectByName(`${name}Torch`);
     assert.equal(torch.userData.on, true);
-    near(torch.distance, 0.4 * 0.4 * size);
-    assert.ok(torch.intensity > 0.0041 * size * size);
+    near(torch.distance, 0.4 * 0.55 * size);
+    assert.ok(torch.intensity > 0.0069 * size * size);
     assert.equal(torch.castShadow, false);
     near(torch.userData.illumination, 0);
   }

@@ -22,9 +22,11 @@ import { Moon } from "../src/components/General/Moon/3dMoon/moon.js";
 import { createAnimationClock } from "../src/components/General/Moon/3dMoon/motion.js";
 
 const root = document.querySelector("#moonRoot");
-let interactionSeed = new URLSearchParams(location.search).has("seed")
-  ? Number(new URLSearchParams(location.search).get("seed"))
-  : Math.floor(Math.random() * 0xffffffff);
+const replay = new URLSearchParams(location.search).get("replay") === "1";
+let interactionSeed =
+  replay && new URLSearchParams(location.search).has("seed")
+    ? Number(new URLSearchParams(location.search).get("seed"))
+    : Math.floor(Math.random() * 0xffffffff);
 const revision =
   new URLSearchParams(location.search).get("revision") === "before"
     ? "before"
@@ -133,8 +135,7 @@ function createMoon() {
     moon.setLogoOpacity(0.72);
     moon.updateBase(0, true);
     if (recreations > 0) auditRequested = true;
-    results.textContent =
-      "Ready. Full Moon, front of base. Drag to orbit; wheel to zoom. Measurements include existing flag and garden shadow passes.";
+    results.textContent = `Ready. Activity seed ${interactionSeed} (${replay ? "fixed replay" : "fresh scene"}). Full Moon, front of base. Drag to orbit; wheel to zoom. Measurements include existing flag and garden shadow passes.`;
   });
 }
 createMoon();
@@ -162,6 +163,8 @@ function render(timestamp) {
             (previewTarget !== "garden" ||
               !item.interest.features ||
               item.lastFeature?.kind === "flower") &&
+            (previewTarget !== "backflip" ||
+              (item.pose.flip > 0.42 && item.pose.flip < 0.58)) &&
             item.pose.weight > 0.99 &&
             (previewTarget === "wave" || previewTarget === "call"
               ? item.pose.wave > 0.8
@@ -443,6 +446,7 @@ function focusActivity(actor) {
     capturedActivity === "conversation" ||
     capturedActivity === "stroll" ||
     capturedActivity === "gardenDance" ||
+    capturedActivity === "backflip" ||
     capturedActivity === "wave" ||
     capturedActivity === "call" ||
     capturedActivity === "showGarden" ||
@@ -596,6 +600,7 @@ for (const [activity, label] of [
   ["flag", "Preview flag salute"],
   ["stroll", "Preview talking stroll"],
   ["gardenDance", "Preview garden dance"],
+  ["backflip", "Preview boy backflip"],
 ]) {
   const button = document.createElement("button");
   button.textContent = label;

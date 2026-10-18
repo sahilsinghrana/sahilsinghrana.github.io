@@ -267,6 +267,7 @@ test("shared house visits choose the entrance side for both people", () => {
         );
     }
     if (boy.state === "showHouse") {
+      assert.ok(boy.until - boy.since >= 2.5 && boy.until - boy.since <= 4);
       shown = true;
       break;
     }
@@ -308,6 +309,182 @@ test("garden dance phrases vary feet, arm spread, torso sway, and hops", () => {
   base.dispose();
 });
 
+test("playful routines move feet, torso, head and independent hands with four distinct signatures", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  const behavior = base.userData.behavior;
+  const [boy, girl] = behavior.actors;
+  girl.walker.normal.copy(boy.walker.normal);
+  girl.walker.mode = "hold";
+  girl.walker.velocity = 0;
+  const signatures = new Set();
+  for (let variant = 0; variant < 4; variant++) {
+    girl.state = "playful";
+    girl.playfulWait = true;
+    girl.playVariant = variant;
+    girl.playTempo = 1;
+    girl.playLead = 1;
+    girl.since = behavior.time;
+    girl.until = behavior.time + 4;
+    let feet = 0,
+      torso = 0,
+      head = 0,
+      hands = 0,
+      hops = 0;
+    for (let tick = 0; tick < 3.5 * 60; tick++) {
+      behavior.step(1 / 60);
+      feet += Math.abs(girl.pose.danceStep);
+      torso += Math.abs(girl.pose.roll) + Math.abs(girl.pose.shift);
+      head += Math.abs(girl.pose.tilt) + Math.abs(girl.pose.nod);
+      hands += Math.abs(girl.pose.left - girl.pose.right);
+      hops += girl.pose.hop;
+      assert.ok(girl.pose.hop >= 0 && girl.pose.hop <= 0.014);
+    }
+    assert.ok(
+      feet > 4 && torso > 1 && head > 2 && hands > 5,
+      JSON.stringify({ variant, feet, torso, head, hands }),
+    );
+    signatures.add(
+      [feet, torso, head, hands, hops]
+        .map((value) => value.toFixed(3))
+        .join(":"),
+    );
+  }
+  assert.equal(signatures.size, 4);
+  base.dispose();
+});
+
+test("rocket attention is a short visit instead of a long multi-view routine", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  const nav = base.userData.motion;
+  const boy = base.userData.behavior.actors[0];
+  let inspected = false;
+  for (let tick = 0; tick < 900 * 60; tick++) {
+    nav.update(1 / 60);
+    if (boy.state === "rocket") {
+      assert.ok(boy.visitDuration >= 3 && boy.visitDuration <= 5);
+      assert.ok(boy.stopsRemaining <= 2);
+      inspected = true;
+      break;
+    }
+  }
+  assert.ok(inspected);
+  base.dispose();
+});
+
+test("the boy approaches, performs a grounded full backflip for her, and both resume", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  base.setReveal(1);
+  const behavior = base.userData.behavior;
+  const nav = base.userData.motion;
+  const [boy, girl] = behavior.actors;
+  const body = base.getObjectByName("BoyAstronaut");
+  const boots = base.getObjectByName("AstronautGlovesAndBoots");
+  const limbs = base.getObjectByName("AstronautLimbSegments");
+  const matrix = new Matrix4(),
+    point = new Vector3();
+  let approached = false,
+    flipped = false,
+    inverted = false,
+    landed = false;
+  let previousFlip = 0;
+  for (let tick = 0; tick < 1800 * 60; tick++) {
+    approached ||= boy.state === "flipApproach";
+    if (boy.state === "backflip") base.update(1 / 60);
+    else nav.update(1 / 60);
+    if (boy.state === "backflip") {
+      flipped = true;
+      assert.equal(girl.state, "watchFlip");
+      assert.ok(
+        nav.segmentClear(girl.walker.normal, boy.walker.normal, girl.walker),
+      );
+      assert.ok(boy.walker.normal.angleTo(girl.walker.normal) > 0.14);
+      assert.ok(boy.pose.flip >= previousFlip - 1e-9);
+      previousFlip = boy.pose.flip;
+      inverted ||= boy.pose.flip > 0.45 && boy.pose.flip < 0.55;
+      for (const [mesh, count] of [
+        [boots, 4],
+        [limbs, 8],
+      ]) {
+        for (let part = 0; part < count; part++) {
+          mesh.getMatrixAt(part, matrix);
+          for (
+            let vertex = 0;
+            vertex < mesh.geometry.attributes.position.count;
+            vertex++
+          ) {
+            point
+              .fromBufferAttribute(mesh.geometry.attributes.position, vertex)
+              .applyMatrix4(matrix);
+            point.z += 0.4;
+            assert.ok(
+              point.length() >= 0.4 - 1e-7,
+              `Part ${part} penetrated at spin ${boy.pose.flip}`,
+            );
+          }
+        }
+      }
+      body.updateWorldMatrix(true, true);
+      for (const mesh of [
+        body.children[0],
+        base.getObjectByName("BoyAstronautHead"),
+      ]) {
+        for (
+          let vertex = 0;
+          vertex < mesh.geometry.attributes.position.count;
+          vertex++
+        ) {
+          point
+            .fromBufferAttribute(mesh.geometry.attributes.position, vertex)
+            .applyMatrix4(mesh.matrixWorld);
+          assert.ok(point.length() >= 0.4 - 1e-7);
+        }
+      }
+    } else if (flipped) {
+      base.update(0);
+      assert.equal(boy.pose.flip, 0);
+      assert.equal(boy.pose.hop, 0);
+      assert.equal(body.rotation.x, 0);
+      assert.ok(girl.state !== "watchFlip");
+      landed = true;
+      break;
+    }
+  }
+  assert.ok(
+    approached && flipped && inverted && landed,
+    JSON.stringify({
+      approached,
+      flipped,
+      inverted,
+      landed,
+      stats: behavior.stats,
+    }),
+  );
+  base.dispose();
+});
+
+test("reduced motion safely cancels an airborne backflip", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  base.setReveal(1);
+  const behavior = base.userData.behavior;
+  const boy = behavior.actors[0];
+  let cancelled = false;
+  for (let tick = 0; tick < 1800 * 60; tick++) {
+    base.userData.motion.update(1 / 60);
+    if (boy.state === "backflip" && boy.pose.flip > 0.2) {
+      base.update(0, true);
+      assert.equal(boy.pose.flip, 0);
+      assert.equal(boy.pose.flipTuck, 0);
+      assert.equal(boy.pose.hop, 0);
+      assert.equal(base.getObjectByName("BoyAstronaut").rotation.x, 0);
+      cancelled = true;
+      break;
+    }
+  }
+  assert.ok(cancelled);
+  base.dispose();
+  base.dispose();
+});
+
 test("garden calls lead to a seated audience, 5�9 seconds of dancing, and visible clapping", () => {
   const saved = Math.random;
   let garden;
@@ -341,12 +518,19 @@ test("garden calls lead to a seated audience, 5�9 seconds of dancing, and visi
     matrix = new Matrix4();
   let minX = Infinity,
     maxX = -Infinity;
+  const danceSteps = new Set();
+  const point = new Vector3();
+  let headMotion = 0,
+    hipMotion = 0,
+    shoulders = 0,
+    independentHands = 0,
+    alternatingFeet = 0;
   for (let i = 0; i < 1800 * 60; i++) {
     const [boy, girl] = behavior.actors;
     if (girl.state === "gardenDance") base.update(1 / 60);
     else nav.update(1 / 60);
     called ||= girl.state === "gardenCall";
-    if (called && boy.state === "travelRest") {
+    if (called && (boy.state === "travelRest" || boy.state === "sit")) {
       inspectedWhileWaiting ||= girl.state === "garden";
       jogged ||= boy.walker.velocity > boy.cruiseSpeed * 1.3;
     }
@@ -354,6 +538,44 @@ test("garden calls lead to a seated audience, 5�9 seconds of dancing, and visi
       if (start < 0) {
         start = behavior.time;
         duration = girl.until - girl.since;
+        for (let step = 0; step < girl.danceSteps.length; step++) {
+          const seconds =
+            girl.danceEnds[step] - (girl.danceEnds[step - 1] || 0);
+          assert.ok(seconds >= 0.719 && seconds <= 1.021);
+          if (step > 0)
+            assert.notEqual(girl.danceSteps[step], girl.danceSteps[step - 1]);
+          if (step > 1)
+            assert.notEqual(girl.danceSteps[step], girl.danceSteps[step - 2]);
+        }
+      }
+      let step = 0;
+      while (step < 15 && behavior.time - girl.since >= girl.danceEnds[step])
+        step++;
+      danceSteps.add(girl.danceSteps[step]);
+      headMotion += Math.abs(girl.pose.tilt) + Math.abs(girl.pose.nod);
+      hipMotion += Math.abs(girl.pose.roll) + Math.abs(girl.pose.yaw);
+      shoulders += Math.abs(girl.pose.shoulder);
+      independentHands += Math.abs(girl.pose.left - girl.pose.right);
+      alternatingFeet += Math.abs(
+        girl.pose.danceLiftLeft - girl.pose.danceLiftRight,
+      );
+      // Check actual transformed boot vertices, including step transitions.
+      for (const boot of [4, 6]) {
+        glove.getMatrixAt(boot, matrix);
+        for (
+          let vertex = 0;
+          vertex < glove.geometry.attributes.position.count;
+          vertex++
+        ) {
+          point
+            .fromBufferAttribute(glove.geometry.attributes.position, vertex)
+            .applyMatrix4(matrix);
+          point.z += 0.4;
+          assert.ok(
+            point.length() >= 0.4 - 1e-7,
+            "Dancing boot penetrated the Moon",
+          );
+        }
       }
       assert.equal(boy.state, "gardenClap");
       assert.ok(
@@ -394,6 +616,12 @@ test("garden calls lead to a seated audience, 5�9 seconds of dancing, and visi
   );
   assert.ok(duration >= 5 && duration <= 9);
   assert.ok(maxX - minX > 0.0005, "Clapping hands must move");
+  assert.ok(
+    danceSteps.size >= 4,
+    "One performance needs several different steps",
+  );
+  assert.ok(headMotion > 3 && hipMotion > 3 && shoulders > 0.03);
+  assert.ok(independentHands > 5 && alternatingFeet > 0.1);
   base.dispose();
   garden.dispose();
 });
