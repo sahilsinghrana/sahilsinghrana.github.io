@@ -2,6 +2,7 @@
 
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
 import { createAnimationClock, TARGET_ETCHED_OPACITY } from "./motion.js";
+import { createSpinControl } from "./spin-control.js";
 
 // Mobile detection threshold (in pixels)
 // HIGHER: Treats larger screens (like tablets) as mobile devices.
@@ -76,7 +77,7 @@ const HEMI_INTENSITY = 0.04;
 const PHASE_LIGHT_RADIUS = 5;
 
 // Animation & interaction speeds
-const AUTO_ROTATION_SPEED = 0.002;
+const AUTO_ROTATION_SPEED = 0.003;
 
 // Intro handoff: ease from slightly undersized into moonBaseScale as the loader fades.
 const INTRO_SCALE_FROM = 0.9;
@@ -187,6 +188,7 @@ let animationFrameId = null;
 // Re-queried in setupMoonLifecycle() so bfcache / Astro client nav get fresh DOM nodes.
 let moonRoot = null;
 let profileImg = null;
+let spinControl = null;
 
 // ===================== ORBITAL LOADER =====================
 // The loader ring is injected around .profileImage and removed only after the first
@@ -397,8 +399,10 @@ const onMoonReady = () => {
 
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (!disposeRequested && generation === lifecycleGeneration)
+      if (!disposeRequested && generation === lifecycleGeneration) {
         dismissLoader();
+        spinControl?.reveal();
+      }
     });
   });
 };
@@ -698,7 +702,8 @@ function animate(timestamp = performance.now()) {
 
   if (moon?.mesh) {
     // Add continuous base spin.
-    if (!reducedMotion) autoRotationY += AUTO_ROTATION_SPEED * 60 * delta;
+    if (!reducedMotion && !spinControl?.paused)
+      autoRotationY += AUTO_ROTATION_SPEED * 60 * delta;
 
     // Combine base spin with scroll-driven rotation.
     moon.mesh.rotation.y =
@@ -922,6 +927,14 @@ const setupMoonLifecycle = () => {
   disposeRequested = false;
   isVisible = false;
 
+  const spinButton = moonRoot.querySelector(".moonSpinControl");
+  if (spinControl?.button !== spinButton) {
+    spinControl?.dispose();
+    spinControl = spinButton
+      ? createSpinControl(spinButton, reducedMotionQuery)
+      : null;
+  }
+
   // Scroll listener (idempotent remove+add)
   window.removeEventListener("scroll", onScroll);
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -950,6 +963,8 @@ const setupMoonLifecycle = () => {
 const cleanupThreeJS = () => {
   disposeRequested = true;
   lifecycleGeneration++;
+  spinControl?.dispose();
+  spinControl = null;
 
   if (animationFrameId !== null) {
     cancelAnimationFrame(animationFrameId);

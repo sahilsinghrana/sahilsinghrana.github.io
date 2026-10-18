@@ -26,6 +26,7 @@ const ENGAGED = new Set([
   "joinFlag",
   "flagGuest",
   "stroll",
+  "strollDepart",
   "approach",
   "acknowledge",
   "waiting",
@@ -68,6 +69,9 @@ export function createAstronautBehavior({
   let flipStarted = 0;
   let nextFlipAt = 35 + flipRandom() * 35;
   let nextFlipCheck = 0;
+  let nextStrollAt = 0;
+  let strollWalkingAt = 0;
+  let strollDuration = 0;
   let flipRetargetAt = 0;
   let flipFlight = 1.4;
   const varietyRandom = createRandom(seed ^ 0x3af574);
@@ -357,6 +361,7 @@ export function createAstronautBehavior({
         danceLiftLeft: 0,
         danceLiftRight: 0,
         shoulder: 0,
+        turn: 0,
         roll: 0,
         flip: 0,
         flipTuck: 0,
@@ -457,15 +462,17 @@ export function createAstronautBehavior({
       // Sample choreography once, independently of navigation. Every short
       // phrase has a different step from its two immediate predecessors.
       let end = 0;
+      const spinIndex =
+        playfulRandom() < 0.4 ? 1 + Math.floor(playfulRandom() * 2) : -1;
       for (let i = 0; i < record.danceSteps.length; i++) {
-        let step = Math.floor(playfulRandom() * 6);
+        let step = i === spinIndex ? 6 : Math.floor(playfulRandom() * 6);
         while (
           (i > 0 && step === record.danceSteps[i - 1]) ||
           (i > 1 && step === record.danceSteps[i - 2])
         )
           step = (step + 1) % 6;
         record.danceSteps[i] = step;
-        end += 0.72 + playfulRandom() * 0.3;
+        end += step === 6 ? 1.25 : 0.72 + playfulRandom() * 0.3;
         record.danceEnds[i] = end;
       }
       record.playLead = playfulRandom() < 0.5 ? -1 : 1;
@@ -479,7 +486,13 @@ export function createAstronautBehavior({
       gestureRandom() < 0.75;
     if (record.playfulWait || state === "playful") {
       record.playVariant =
-        (record.playVariant + 1 + Math.floor(playfulRandom() * 3)) % 4;
+        (record.playVariant + 1 + Math.floor(playfulRandom() * 4)) % 5;
+      // A full-body pivot needs clearance throughout its swept footprint.
+      if (
+        record.playVariant === 4 &&
+        !navigation.isClear(record.walker.normal, record.walker, 0.012)
+      )
+        record.playVariant = 3;
       record.playTempo = 0.9 + playfulRandom() * 0.25;
       record.playLead = playfulRandom() < 0.5 ? -1 : 1;
     }
@@ -897,6 +910,16 @@ export function createAstronautBehavior({
       record.walker.softPartner = null;
       record.runUntil = 0;
     }
+    if (
+      !aborted &&
+      time >= nextStrollAt &&
+      random() < 0.5 * novelty("stroll") &&
+      startStroll()
+    ) {
+      rememberOutcome("stroll");
+      boyInitiated = false;
+      return;
+    }
     if (!aborted && gestureRandom() < 0.45 * novelty("play") && startPlay()) {
       rememberOutcome("play");
       boyInitiated = false;
@@ -923,10 +946,6 @@ export function createAstronautBehavior({
       startTour()
     ) {
       rememberOutcome("garden");
-      return;
-    }
-    if (!aborted && random() < 0.35 * novelty("stroll") && startStroll()) {
-      rememberOutcome("stroll");
       return;
     }
     if (!aborted) rememberOutcome("independent");
@@ -1537,16 +1556,23 @@ export function createAstronautBehavior({
         !navigation.segmentClear(boy.normal, meetingBoy, boy)
       )
         continue;
-      const duration = between(3, 5);
+      strollDuration = between(3, 5);
+      strollWalkingAt = 0;
+      if (!navigation.arrive(girl, meetingGirl)) continue;
+      if (!navigation.arrive(boy, meetingBoy)) {
+        navigation.hold(girl, boy.normal);
+        continue;
+      }
       boy.softPartner = girl;
       girl.softPartner = boy;
-      if (
-        !navigation.arrive(girl, meetingGirl) ||
-        !navigation.arrive(boy, meetingBoy)
-      )
-        continue;
-      for (const record of actors) enter(record, "stroll", duration);
-      stats.strolls++;
+      for (const record of actors) {
+        record.runUntil = 0;
+        record.walker.arrivalRadius = 0.008;
+        record.walker.softObstacle = null;
+        record.walker.gardenRoute = false;
+        enter(record, "strollDepart", 4);
+      }
+      nextStrollAt = time + between(30, 50);
       return true;
     }
     return false;
@@ -1987,7 +2013,7 @@ export function createAstronautBehavior({
   function endBackflip() {
     const watched = female.state === "watchFlip";
     flipPhase = "none";
-    nextFlipAt = time + 100 + flipRandom() * 80;
+    nextFlipAt = time + 75 + flipRandom() * 65;
     male.runUntil = 0;
     male.pose.flip = male.pose.flipTuck = male.pose.crouch = male.pose.hop = 0;
     wander(male);
@@ -2065,8 +2091,8 @@ export function createAstronautBehavior({
       angle(boy.normal, girl.normal) > 0.12 &&
       angle(boy.normal, girl.normal) < 1.1
     ) {
-      nextFlipCheck = time + 8 + flipRandom() * 8;
-      if (flipRandom() < 0.45 && pickFlipSpot()) {
+      nextFlipCheck = time + 6 + flipRandom() * 7;
+      if (flipRandom() < 0.55 && pickFlipSpot()) {
         flipPhase = "approach";
         flipStarted = time;
         flipRetargetAt = time + 0.8;
@@ -2110,12 +2136,19 @@ export function createAstronautBehavior({
       if (mutuallyVisible(false) && performanceRandom() < 0.7 && greeting())
         return;
     }
-    if (female.state === "stroll") {
+    if (female.state === "strollDepart" || female.state === "stroll") {
+      // Do not spend the requested walking time turning away from the chat.
+      if (!strollWalkingAt && boy.velocity > 0.008 && girl.velocity > 0.008) {
+        strollWalkingAt = time;
+        for (const record of actors) enter(record, "stroll", strollDuration);
+        stats.strolls++;
+      }
       if (
         time >= female.until ||
-        boy.blocked ||
-        girl.blocked ||
-        angle(boy.normal, girl.normal) > 0.17
+        (!strollWalkingAt && time - female.since > 4) ||
+        (boy.blocked && male.stalled > 1.2) ||
+        (girl.blocked && female.stalled > 1.2) ||
+        angle(boy.normal, girl.normal) > 0.2
       ) {
         for (const record of actors) {
           record.nextTalkAt = time + between(3, 8);
@@ -2474,6 +2507,7 @@ export function createAstronautBehavior({
       danceLiftRight = 0,
       shoulder = 0,
       danceArmPhase = 0;
+    let turn = 0;
     let flip = 0,
       flipTuck = 0,
       crouch = 0;
@@ -2489,6 +2523,7 @@ export function createAstronautBehavior({
       record.state === "acceptHouse";
     const walkingTogether =
       record.state === "stroll" ||
+      record.state === "strollDepart" ||
       record.state === "joinFlag" ||
       record.state === "leadGarden" ||
       record.state === "followGarden" ||
@@ -2641,6 +2676,7 @@ export function createAstronautBehavior({
     if (walkingTogether) {
       if (
         record.state === "stroll" ||
+        record.state === "strollDepart" ||
         record.state === "joinFlag" ||
         (elapsed + (record === male ? 2 : 0)) % 7 > 5.8
       )
@@ -2749,6 +2785,17 @@ export function createAstronautBehavior({
         hop = phrase === 3 ? Math.sin(phase * Math.PI) * 0.012 * envelope : 0;
         danceArmPhase = beat + phrase * 0.7;
         wrist = Math.sin(beat - 0.7) * pulse * 0.8;
+        if (phrase === 6) {
+          // A compact full-turn flourish: gather the arms, pivot, then open.
+          turn = lead * Math.PI * 2 * (phase * phase * (3 - 2 * phase));
+          playfulStep = danceSide = danceLiftLeft = danceLiftRight = hop = 0;
+          shift = yaw = playfulRoll = 0;
+          chest = pulse * 0.8;
+          spread = (1 - pulse) * 0.7 * envelope;
+          playfulLean = pulse * 0.025;
+          playfulTilt = pulse * 0.08 * lead;
+          crouch = pulse * 0.002;
+        }
       } else {
         const phase = local * record.playTempo;
         const lead = record.playLead;
@@ -2786,7 +2833,7 @@ export function createAstronautBehavior({
           spread = 0.15 * envelope;
           arc = Math.sin(phase * 2.7 - 0.8) * envelope * 0.5;
           playfulRoll *= 1.4;
-        } else {
+        } else if (variant === 3) {
           // A light shuffle and diagonal arm flourish with a small hop.
           playfulStep = Math.sin(phase * 5) * envelope;
           spread = (0.6 + beat * 0.25) * envelope;
@@ -2795,6 +2842,17 @@ export function createAstronautBehavior({
           const jump = (local - 1.05) / 0.55;
           if (jump > 0 && jump < 1)
             hop = Math.sin(jump * Math.PI) * 0.007 * envelope;
+        } else {
+          const progress = Math.max(0, Math.min(1, (local - 0.4) / 1.25));
+          const gather = Math.sin(progress * Math.PI) ** 2;
+          turn =
+            lead * Math.PI * 2 * (progress * progress * (3 - 2 * progress));
+          playfulStep = hop = shift = yaw = playfulRoll = 0;
+          chest = gather * 0.85;
+          spread = (1 - gather) * 0.7 * envelope;
+          arc = Math.sin(progress * Math.PI * 2) * 0.65;
+          crouch = gather * 0.002;
+          shoulder = Math.sin(progress * Math.PI * 2) * 0.0015;
         }
         wrist = Math.sin(phase * 3.6 - 0.9) * envelope * 0.55;
       }
@@ -2950,7 +3008,21 @@ export function createAstronautBehavior({
     output.danceSide += (danceSide - output.danceSide) * blend;
     output.danceLiftLeft += (danceLiftLeft - output.danceLiftLeft) * blend;
     output.danceLiftRight += (danceLiftRight - output.danceLiftRight) * blend;
+    if (record.state === "gardenDance" && hop === 0) {
+      // Blending alternating feet must not create an unintended aerial phase.
+      const support = Math.min(output.danceLiftLeft, output.danceLiftRight);
+      output.danceLiftLeft -= support;
+      output.danceLiftRight -= support;
+    }
     output.shoulder += (shoulder - output.shoulder) * blend;
+    // Follow an unwrapped angular target. On interruption recover to forward
+    // by the shortest arc instead of snapping or unwinding a complete turn.
+    const turnDelta = Math.atan2(
+      Math.sin(turn - output.turn),
+      Math.cos(turn - output.turn),
+    );
+    output.turn += Math.max(-dt * 9, Math.min(dt * 9, turnDelta));
+    output.turn = Math.atan2(Math.sin(output.turn), Math.cos(output.turn));
     output.roll += (playfulRoll - output.roll) * blend;
     output.flip = flip;
     output.flipTuck = flipTuck;
@@ -2982,7 +3054,9 @@ export function createAstronautBehavior({
       time += dt;
       for (const record of actors) {
         const targetSpeed =
-          record.cruiseSpeed * (time < record.runUntil ? 1.95 : 1);
+          record.state === "stroll" || record.state === "strollDepart"
+            ? Math.min(male.cruiseSpeed, female.cruiseSpeed)
+            : record.cruiseSpeed * (time < record.runUntil ? 1.95 : 1);
         record.walker.speed +=
           (targetSpeed - record.walker.speed) * (1 - Math.exp(-dt * 6));
         if (

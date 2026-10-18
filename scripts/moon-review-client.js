@@ -159,12 +159,19 @@ function render(timestamp) {
                 item.calling) ||
               (previewTarget === "waiting" &&
                 item.playfulWait &&
-                item.pose.dance > 0.2)) &&
+                item.pose.dance > 0.2) ||
+              (previewTarget === "twirl" &&
+                Math.abs(item.pose.turn) > 0.005 &&
+                Math.abs(item.pose.turn) < 0.12)) &&
             (previewTarget !== "garden" ||
               !item.interest.features ||
               item.lastFeature?.kind === "flower") &&
             (previewTarget !== "backflip" ||
               (item.pose.flip > 0.42 && item.pose.flip < 0.58)) &&
+            (previewTarget !== "stroll" ||
+              moon._base.userData.behavior.actors.every(
+                (person) => person.walker.velocity > 0.012,
+              )) &&
             item.pose.weight > 0.99 &&
             (previewTarget === "wave" || previewTarget === "call"
               ? item.pose.wave > 0.8
@@ -601,6 +608,7 @@ for (const [activity, label] of [
   ["stroll", "Preview talking stroll"],
   ["gardenDance", "Preview garden dance"],
   ["backflip", "Preview boy backflip"],
+  ["twirl", "Preview girl full turn"],
 ]) {
   const button = document.createElement("button");
   button.textContent = label;

@@ -57,7 +57,7 @@ const COLORS = {
 const UP = new Vector3(0, 1, 0);
 const FRONT = new Vector3(0, 0, 1);
 const TAU = Math.PI * 2;
-const HEADLIGHT_INTENSITY = 0.02;
+const HEADLIGHT_INTENSITY = 0.2;
 const smooth = (t) => t * t * (3 - 2 * t);
 
 /** Local frame: X/Y span the logo; +Z points out of the Moon. */
@@ -324,11 +324,11 @@ export function createMoonBase(
       headlampMaterial,
     ),
   );
-  // Two emissive lenses share one short-range beam. No extra shadow pass.
+  // Two emissive lenses share one forward beam. No extra shadow pass.
   const headlight = new SpotLight(
     0xffe5b8,
     HEADLIGHT_INTENSITY,
-    r * 0.3,
+    r * 0.65,
     Math.PI / 5,
     0.7,
     2,
@@ -337,7 +337,7 @@ export function createMoonBase(
   headlight.position.set(0.079 * r, 0.047 * r, 0);
   headlight.castShadow = false;
   const headlightTarget = new Group();
-  headlightTarget.position.set(0.24 * r, -0.018 * r, 0);
+  headlightTarget.position.set(0.4 * r, -0.018 * r, 0);
   headlight.target = headlightTarget;
   rover.add(headlight, headlightTarget);
   const wheelGeometry = part(
@@ -732,7 +732,21 @@ export function createMoonBase(
     },
     seed,
   });
-  simulation.beforeStep = behavior.step;
+  const roverSpeedRandom = createRandom(seed ^ 0x4b91d23);
+  let roverSpeedTime = 0;
+  let nextRoverSpeedAt = 0;
+  let roverCruiseSpeed = roverWalker.speed;
+  simulation.beforeStep = (dt) => {
+    behavior.step(dt);
+    roverSpeedTime += dt;
+    if (roverSpeedTime >= nextRoverSpeedAt) {
+      roverCruiseSpeed = 0.052 + roverSpeedRandom() * 0.023;
+      nextRoverSpeedAt = roverSpeedTime + 5 + roverSpeedRandom() * 7;
+    }
+    // Change cruise intent gradually; navigation retains braking and yaw limits.
+    roverWalker.speed +=
+      (roverCruiseSpeed - roverWalker.speed) * (1 - Math.exp(-dt * 0.8));
+  };
   group.userData.behavior = behavior;
 
   let disposed = false;
@@ -928,6 +942,7 @@ export function createMoonBase(
         attention.copy(activity.focus).sub(walker.normal).multiplyScalar(r);
         attentionRotation.copy(person.anchor.quaternion).invert();
         attention.applyQuaternion(attentionRotation);
+        if (pose.turn !== 0) attention.applyAxisAngle(UP, -pose.turn);
         attention.y -= person.head.position.y * person.model.scale.y;
         attention.z -= person.head.position.z * person.model.scale.z;
         const gazeYaw = clamp(
@@ -972,6 +987,7 @@ export function createMoonBase(
       const flipAngle = pose.flip > 0 ? -TAU * pose.flip : 0;
       const flipCenter = 0.046 * r * person.model.scale.y;
       person.model.rotation.x = flipAngle;
+      person.model.rotation.y = pose.turn;
       person.model.position.y = flipCenter * (1 - Math.cos(flipAngle));
       person.model.position.z = -flipCenter * Math.sin(flipAngle);
       person.anchor.updateMatrix();
@@ -1268,7 +1284,7 @@ export function createMoonBase(
     if (disposed) return;
     group.getWorldScale(worldScale);
     const size = worldScale.x * ROVER_SCALE;
-    headlight.distance = r * 0.3 * size;
+    headlight.distance = r * 0.65 * size;
     headlight.intensity = HEADLIGHT_INTENSITY * size * size * smooth(reveal);
     houseLight.distance = r * 0.7 * worldScale.x;
     houseLight.intensity = 0.065 * worldScale.x * worldScale.x * smooth(reveal);
@@ -1336,7 +1352,7 @@ export function createMoonBase(
       entry.fade += ((entry.on ? 1 : 0) - entry.fade) * (1 - Math.exp(-dt * 7));
       entry.light.distance = r * 0.55 * personSize;
       entry.light.intensity =
-        0.007 * personSize * personSize * entry.fade * smooth(reveal);
+        0.012 * personSize * personSize * entry.fade * smooth(reveal);
       entry.material.emissiveIntensity = entry.fade * 0.8;
       entry.material.color.lerpColors(
         torchDarkColor,

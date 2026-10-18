@@ -339,12 +339,40 @@ test("headlights illuminate forward, remain shadowless and scale with the Moon",
   parent.scale.setScalar(2);
   base.updateLighting();
   const light = base.getObjectByName("RoverHeadlights");
-  near(light.intensity, 0.056448);
-  near(light.distance, 0.2016);
+  near(light.intensity, 0.49928);
+  near(light.distance, 0.4108);
   assert.equal(light.castShadow, false);
   assert.ok(light.target.position.x > light.position.x);
   assert.ok(light.target.position.y < light.position.y);
   base.dispose();
+});
+
+test("rover cruise varies smoothly, reaches a higher maximum, and is frame-rate independent", () => {
+  const traces = [];
+  for (const hz of [30, 60, 120]) {
+    const base = createMoonBase(0.4, { seed: 123 });
+    const navigation = base.userData.motion;
+    const rover = navigation.agents[0];
+    const trace = [];
+    let previous = rover.speed;
+    for (let frame = 0; frame < 120 * hz; frame++) {
+      navigation.update(1 / hz);
+      assert.ok(rover.speed >= 0.052 && rover.speed <= 0.075);
+      assert.ok(
+        Math.abs(rover.speed - previous) < 0.02 * Math.max(1 / hz, 1 / 60),
+      );
+      previous = rover.speed;
+      if ((frame + 1) % hz === 0) trace.push(rover.speed);
+    }
+    assert.ok(Math.max(...trace) > 0.07);
+    assert.ok(Math.max(...trace) - Math.min(...trace) > 0.012);
+    traces.push(trace);
+    base.dispose();
+  }
+  for (let frame = 0; frame < traces[0].length; frame++) {
+    near(traces[0][frame], traces[1][frame]);
+    near(traces[1][frame], traces[2][frame]);
+  }
 });
 
 test("suit accents change independently without changing either character's height", () => {
@@ -441,7 +469,8 @@ test("both torches have increased reach, switch independently, and cannot light 
     const torch = base.getObjectByName(`${name}Torch`);
     assert.equal(torch.userData.on, true);
     near(torch.distance, 0.4 * 0.55 * size);
-    assert.ok(torch.intensity > 0.0069 * size * size);
+    assert.ok(torch.intensity > 0.0119 * size * size);
+    assert.ok(torch.intensity <= 0.012 * size * size);
     assert.equal(torch.castShadow, false);
     near(torch.userData.illumination, 0);
   }

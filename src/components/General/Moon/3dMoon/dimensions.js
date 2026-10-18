@@ -4,7 +4,7 @@
 export const PLAZA_SCALE = 0.875;
 export const PLAZA_DIAMETER = 0.7 * PLAZA_SCALE;
 export const HABITAT_SCALE = 0.84;
-export const ROVER_SCALE = 0.84;
+export const ROVER_SCALE = 0.79;
 export const ROCKET_SCALE = 0.93;
 // Keep her established size; give him a further subtle 1.8% height increase.
 const HEIGHT_RATIO = 5.7 / 6.2;

@@ -13,6 +13,39 @@ const {
 
 <div id="profilePicContainer" class="profilePicContainer">
   <div id="moonRoot">
+    <button
+      class="moonSpinControl"
+      type="button"
+      aria-label="Pause Moon auto-spin"
+      title="Pause Moon auto-spin"
+      data-paused="false"
+      hidden
+    >
+      <span class="moonSpinSurface">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            class="moonSpinPause"
+            d="M8 5v14M16 5v14"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"></path>
+          <path
+            class="moonSpinPlay"
+            d="m9 5 10 7-10 7Z"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linejoin="round"></path>
+        </svg>
+      </span>
+    </button>
   </div>
   <img
     class={className}
@@ -30,3 +63,56 @@ const {
 </div>
 
 <script src="../General/Moon/3dMoon/main.js"></script>
+
+<style>
+  .moonSpinControl {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: rgb(190 190 190 / 85%);
+    cursor: pointer;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+  .moonSpinControl[hidden] {
+    display: none;
+  }
+  .moonSpinSurface {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    width: 30px;
+    height: 30px;
+    border: 1px solid rgb(190 190 190 / 18%);
+    border-radius: 50%;
+    background: rgb(12 12 12 / 35%);
+  }
+  .moonSpinControl:focus-visible,
+  .moonSpinControl:enabled:hover {
+    color: rgb(220 220 220 / 100%);
+  }
+  .moonSpinControl:focus-visible .moonSpinSurface,
+  .moonSpinControl:enabled:hover .moonSpinSurface {
+    border-color: rgb(190 190 190 / 45%);
+    background: rgb(12 12 12 / 60%);
+  }
+  .moonSpinControl:disabled {
+    cursor: default;
+  }
+  .moonSpinPlay,
+  .moonSpinControl[data-paused="true"] .moonSpinPause {
+    display: none;
+  }
+  .moonSpinControl[data-paused="true"] .moonSpinPlay {
+    display: initial;
+  }
+</style>

@@ -353,6 +353,146 @@ test("playful routines move feet, torso, head and independent hands with four di
   base.dispose();
 });
 
+test("a playful full turn is continuous, grounded, and frame-rate independent", () => {
+  for (const hz of [30, 60, 120]) {
+    const base = createMoonBase(0.4, { seed: 123 });
+    base.setReveal(1);
+    const behavior = base.userData.behavior;
+    const [boy, girl] = behavior.actors;
+    girl.walker.normal.copy(boy.walker.normal);
+    girl.walker.forward.copy(boy.walker.forward);
+    girl.walker.mode = "hold";
+    girl.walker.velocity = 0;
+    girl.state = "playful";
+    girl.playfulWait = true;
+    girl.playVariant = 4;
+    girl.playLead = 1;
+    girl.since = behavior.time;
+    girl.until = behavior.time + 4;
+    const model = base.getObjectByName("GirlAstronaut");
+    const boots = base.getObjectByName("AstronautGlovesAndBoots");
+    const matrix = new Matrix4(),
+      point = new Vector3();
+    let previous = 0,
+      traveled = 0;
+    for (let frame = 0; frame < 2.8 * hz; frame++) {
+      behavior.step(1 / hz);
+      base.update(0);
+      const delta = Math.atan2(
+        Math.sin(girl.pose.turn - previous),
+        Math.cos(girl.pose.turn - previous),
+      );
+      assert.ok(Math.abs(delta) <= 9 / hz + 1e-9);
+      traveled += delta;
+      previous = girl.pose.turn;
+      assert.equal(model.rotation.y, girl.pose.turn);
+      assert.equal(girl.pose.hop, 0);
+      for (const boot of [4, 6]) {
+        boots.getMatrixAt(boot, matrix);
+        for (
+          let vertex = 0;
+          vertex < boots.geometry.attributes.position.count;
+          vertex++
+        ) {
+          point
+            .fromBufferAttribute(boots.geometry.attributes.position, vertex)
+            .applyMatrix4(matrix);
+          point.z += 0.4;
+          assert.ok(
+            point.length() >= 0.4 - 1e-7,
+            `${hz}Hz frame ${frame}: turn ${girl.pose.turn}, boot gap ${point.length() - 0.4}`,
+          );
+        }
+      }
+    }
+    assert.ok(Math.abs(traveled - Math.PI * 2) < 0.001);
+    base.update(0, true);
+    const held = model.rotation.y;
+    base.update(1, true);
+    assert.equal(model.rotation.y, held);
+    base.dispose();
+  }
+});
+
+test("an interrupted playful turn recovers without snapping", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  const behavior = base.userData.behavior;
+  const [boy, girl] = behavior.actors;
+  girl.walker.normal.copy(boy.walker.normal);
+  girl.walker.mode = "hold";
+  girl.walker.velocity = 0;
+  girl.state = "playful";
+  girl.playfulWait = true;
+  girl.playVariant = 4;
+  girl.playLead = 1;
+  girl.since = behavior.time;
+  girl.until = behavior.time + 4;
+  for (let i = 0; i < 78; i++) behavior.step(1 / 60);
+  assert.ok(Math.abs(girl.pose.turn) > 0.5);
+  girl.state = "wander";
+  girl.playfulWait = false;
+  girl.until = behavior.time + 20;
+  let previous = girl.pose.turn;
+  for (let i = 0; i < 60; i++) {
+    behavior.step(1 / 60);
+    const delta = Math.atan2(
+      Math.sin(girl.pose.turn - previous),
+      Math.cos(girl.pose.turn - previous),
+    );
+    assert.ok(Math.abs(delta) <= 9 / 60 + 1e-9);
+    previous = girl.pose.turn;
+  }
+  assert.ok(Math.abs(girl.pose.turn) < 0.001);
+  base.dispose();
+});
+
+test("talking strolls include several seconds of real paired walking", () => {
+  const base = createMoonBase(0.4, { seed: 123 });
+  const behavior = base.userData.behavior,
+    navigation = base.userData.motion;
+  const [boy, girl] = behavior.actors;
+  let activeSince = 0,
+    startBoy = 0,
+    startGirl = 0,
+    gestures = 0,
+    completed = 0;
+  for (let tick = 0; tick < 900 * 60; tick++) {
+    navigation.update(1 / 60);
+    if (
+      girl.state === "stroll" &&
+      boy.walker.velocity > 0.008 &&
+      girl.walker.velocity > 0.008
+    ) {
+      if (!activeSince) {
+        activeSince = behavior.time;
+        startBoy = boy.walker.distance;
+        startGirl = girl.walker.distance;
+      }
+      gestures += Math.max(
+        boy.pose.left,
+        boy.pose.right,
+        girl.pose.left,
+        girl.pose.right,
+      );
+    } else if (activeSince && girl.state !== "stroll") {
+      if (
+        behavior.time - activeSince >= 2.8 &&
+        boy.walker.distance - startBoy > 0.05 &&
+        girl.walker.distance - startGirl > 0.05
+      )
+        completed++;
+      activeSince = 0;
+      if (completed >= 2) break;
+    }
+  }
+  assert.ok(
+    completed >= 2,
+    `Expected visible, sustained strolls; started ${behavior.stats.strolls}, completed ${completed}`,
+  );
+  assert.ok(gestures > 3);
+  base.dispose();
+});
+
 test("rocket attention is a short visit instead of a long multi-view routine", () => {
   const base = createMoonBase(0.4, { seed: 123 });
   const nav = base.userData.motion;
@@ -541,12 +681,17 @@ test("garden calls lead to a seated audience, 5�9 seconds of dancing, and visi
         for (let step = 0; step < girl.danceSteps.length; step++) {
           const seconds =
             girl.danceEnds[step] - (girl.danceEnds[step - 1] || 0);
-          assert.ok(seconds >= 0.719 && seconds <= 1.021);
+          assert.ok(
+            girl.danceSteps[step] === 6
+              ? Math.abs(seconds - 1.25) < 0.001
+              : seconds >= 0.719 && seconds <= 1.021,
+          );
           if (step > 0)
             assert.notEqual(girl.danceSteps[step], girl.danceSteps[step - 1]);
           if (step > 1)
             assert.notEqual(girl.danceSteps[step], girl.danceSteps[step - 2]);
         }
+        assert.ok(girl.danceSteps.filter((step) => step === 6).length <= 1);
       }
       let step = 0;
       while (step < 15 && behavior.time - girl.since >= girl.danceEnds[step])
