@@ -20,29 +20,53 @@ let cachedKey = "";
 let cachedCanvas = null;
 const pending = new Map();
 
-export async function createMoonBaseLogo(imageSrc, moonRadius = 0.4) {
-  if (!imageSrc) return null;
+export async function createMoonBaseLogo(imageSrc, moonRadius = 0.4, signal) {
+  if (!imageSrc || signal?.aborted) return null;
   const key = `${imageSrc}::${moonRadius}`;
   if (cachedKey === key && cachedCanvas)
     return buildMeshFromCanvas(cachedCanvas, moonRadius);
   let work = pending.get(key);
   if (!work) {
-    work = loadStencil(imageSrc)
+    work = { controller: new AbortController(), users: 0, promise: null };
+    pending.set(key, work);
+    const entry = work;
+    work.promise = loadStencil(imageSrc, work.controller.signal)
       .then((canvas) => {
-        if (canvas) {
+        if (canvas && !entry.controller.signal.aborted) {
           cachedKey = key;
           cachedCanvas = canvas;
         }
         return canvas;
       })
-      .finally(() => pending.delete(key));
-    pending.set(key, work);
+      .finally(() => {
+        if (pending.get(key) === entry) pending.delete(key);
+      });
   }
-  const canvas = await work;
-  return canvas ? buildMeshFromCanvas(canvas, moonRadius) : null;
+  work.users++;
+  let onAbort;
+  try {
+    const canvas = signal
+      ? await Promise.race([
+          work.promise,
+          new Promise((resolve) => {
+            onAbort = () => resolve(null);
+            signal.addEventListener("abort", onAbort, { once: true });
+          }),
+        ])
+      : await work.promise;
+    return canvas && !signal?.aborted
+      ? buildMeshFromCanvas(canvas, moonRadius)
+      : null;
+  } finally {
+    signal?.removeEventListener("abort", onAbort);
+    if (--work.users === 0) {
+      if (pending.get(key) === work) pending.delete(key);
+      work.controller.abort();
+    }
+  }
 }
 
-function loadStencil(imageSrc) {
+function loadStencil(imageSrc, signal) {
   return new Promise((resolve) => {
     let settled = false;
     let image = null;
@@ -50,10 +74,13 @@ function loadStencil(imageSrc) {
       if (settled) return;
       settled = true;
       clearTimeout(timer);
+      signal.removeEventListener("abort", abort);
       if (image) image.onload = image.onerror = null;
       resolve(canvas);
     };
-    const timer = setTimeout(() => finish(null), 2000);
+    const abort = () => finish(null);
+    const timer = setTimeout(abort, 2000);
+    signal.addEventListener("abort", abort, { once: true });
     const loaded = (source) => {
       if (settled) return;
       try {

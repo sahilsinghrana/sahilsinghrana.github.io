@@ -51,14 +51,21 @@ export class Moon {
     this._baseReady = false;
     this._logoOpacity = 0;
     this._logoReveal = 0;
+    this._logoAbort = new AbortController();
+    let completed = false;
+    const complete = () => {
+      if (completed || this._disposed) return;
+      completed = true;
+      onComplete?.();
+    };
 
     // .catch() is required because init() is async and its returned Promise is not
     // awaited by the caller. Without this, any rejection inside init() (e.g. a Worker
     // construction failure before onerror fires) becomes an unhandled Promise rejection
     // that is silently swallowed - no console error, no onComplete, no feedback.
-    this.init(onComplete).catch((err) => {
+    this.init(complete).catch((err) => {
       console.error("Moon init failed:", err);
-      if (onComplete) onComplete();
+      complete();
     });
   }
 
@@ -88,8 +95,18 @@ export class Moon {
     };
 
     worker.onmessage = async (e) => {
-      if (e.data?.error) {
-        console.error("Moon texture worker reported an error:", e.data.error);
+      if (this._worker !== worker) return;
+      const payload = e.data;
+      if (
+        payload?.error ||
+        payload?.diffuse?.byteLength !== TEX_SIZE * TEX_SIZE * 4 ||
+        payload?.bump?.byteLength !== TEX_SIZE * TEX_SIZE * 4 ||
+        payload?.rough?.byteLength !== ROUGH_SIZE * ROUGH_SIZE * 4
+      ) {
+        console.error(
+          "Moon texture worker reported an error:",
+          payload?.error || "Invalid texture buffers",
+        );
         worker.terminate();
         if (this._worker === worker) this._worker = null;
         if (onComplete) onComplete();
@@ -103,7 +120,7 @@ export class Moon {
         return;
       }
 
-      const { diffuse, bump, rough } = e.data;
+      const { diffuse, bump, rough } = payload;
       worker.terminate();
       if (this._worker === worker) this._worker = null;
 
@@ -181,7 +198,11 @@ export class Moon {
         const profile = document.querySelector("#profilePicContainer > img");
         const source = profile?.currentSrc || profile?.src;
         if (source) {
-          const logo = await createMoonBaseLogo(source, radius);
+          const logo = await createMoonBaseLogo(
+            source,
+            radius,
+            this._logoAbort.signal,
+          );
           if (logo && !this._disposed && this.mesh) {
             this._logo = logo;
             logo.setOpacity(0);
@@ -201,6 +222,7 @@ export class Moon {
   // because Three.js does not garbage-collect GPU objects automatically.
   dispose() {
     this._disposed = true;
+    this._logoAbort.abort();
 
     if (this._worker) {
       this._worker.terminate();

@@ -361,6 +361,14 @@ export function createFlag() {
   // so it's never hidden behind the pole from the flag's viewing side.
   lampPivot.position.set(POLE_RADIUS * 6, LAMP_BASE_Y, 0.038);
   group.add(lampPivot);
+  group.updateMatrixWorld(true);
+  // Keep navigation's pole-centered clearance aligned with the entire relocated
+  // fixture, including the head's widest edge, in angular surface units.
+  const lampNormal = new Vector3()
+    .setFromMatrixPosition(lampPivot.matrixWorld)
+    .normalize();
+  group.userData.interest.clearanceRadius =
+    normal.angleTo(lampNormal) + Math.atan2(0.008, anchorPoint.length());
 
   const lampPost = new Mesh(lampPostGeometry, lampMetalMaterial);
   lampPost.position.y = LAMP_POST_HEIGHT / 2;

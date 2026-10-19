@@ -564,9 +564,16 @@ test("navigation during logo loading disposes late artwork and does not resurrec
       },
     });
     assert.ok(image);
+    const queuedLoad = image.onload;
     moon.dispose();
-    image.onload();
     await pending;
+    assert.equal(
+      image.onload,
+      null,
+      "disposal releases pending image handlers",
+    );
+    assert.equal(image.onerror, null);
+    queuedLoad();
     assert.equal(worker.terminated, true);
     assert.equal(moon.mesh, null);
     assert.equal(scene.children.length, 0);
@@ -578,6 +585,42 @@ test("navigation during logo loading disposes late artwork and does not resurrec
       if (value === undefined) delete globalThis[key];
       else globalThis[key] = value;
     }
+  }
+});
+
+test("worker failures finish readiness once and release the worker", async () => {
+  const previousWorker = globalThis.Worker;
+  const previousError = console.error;
+  try {
+    console.error = () => {};
+    for (const payload of [{ error: "generation failed" }, {}, null]) {
+      let worker;
+      globalThis.Worker = class {
+        constructor() { worker = this; }
+        postMessage() {}
+        terminate() { this.terminated = true; }
+      };
+      let completed = 0;
+      const scene = new Scene();
+      const moon = new Moon(scene, () => completed++);
+      await worker.onmessage({ data: payload });
+      await worker.onmessage({ data: payload });
+      assert.equal(completed, 1);
+      assert.equal(worker.terminated, true);
+      assert.equal(moon._worker, null);
+      assert.equal(scene.children.length, 0);
+      moon.dispose();
+    }
+    globalThis.Worker = class { constructor() { throw new Error("unavailable"); } };
+    let completed = 0;
+    const moon = new Moon(new Scene(), () => completed++);
+    await Promise.resolve();
+    assert.equal(completed, 1);
+    moon.dispose();
+  } finally {
+    console.error = previousError;
+    if (previousWorker === undefined) delete globalThis.Worker;
+    else globalThis.Worker = previousWorker;
   }
 });
 

@@ -4,12 +4,15 @@ import { createServer } from "vite";
 import { resolve } from "node:path";
 import { mkdir, writeFile } from "node:fs/promises";
 import { execFileSync } from "node:child_process";
+import { readFileSync } from "node:fs";
 
 // Read-only, pinned Git snapshot for repeatable local before/after reviews.
 const beforeRef = execFileSync("git", ["rev-parse", "HEAD"], {
   encoding: "utf8",
 }).trim();
 const beforePrefix = "/@moon-before/";
+const beforeDirectory = process.env.MOON_REVIEW_BASELINE;
+const port = Number(process.env.MOON_REVIEW_PORT || 4235);
 
 const outputDirectory = resolve(
   process.argv[2] || "node_modules/.cache/moon-review",
@@ -42,8 +45,9 @@ pre{white-space:pre-wrap;text-align:left;max-width:740px;margin:16px auto;font-s
 
 const server = await createServer({
   configFile: false,
+  cacheDir: `node_modules/.cache/moon-review-vite-${port}`,
   root: resolve("."),
-  server: { host: "127.0.0.1", port: 4235, strictPort: true },
+  server: { host: "127.0.0.1", port, strictPort: true },
   plugins: [
     {
       name: "moon-review-page",
@@ -60,6 +64,8 @@ const server = await createServer({
         const filename = id.slice(beforePrefix.length + 1);
         if (!/^[\w-]+\.js$/.test(filename))
           throw new Error("Invalid before module");
+        if (beforeDirectory)
+          return readFileSync(resolve(beforeDirectory, filename), "utf8");
         return execFileSync(
           "git",
           [
@@ -117,4 +123,4 @@ const server = await createServer({
   ],
 });
 await server.listen();
-console.log("Moon review: http://localhost:4235/moon-review");
+console.log(`Moon review: http://127.0.0.1:${port}/moon-review`);
