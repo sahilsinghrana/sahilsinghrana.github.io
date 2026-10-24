@@ -901,10 +901,10 @@ test("boy approaches, invites, and shows the house with separate safe viewing po
   assert.ok(boyApproaches >= 2);
 });
 
-test("fixed steps reproduce interaction state and positions at 30, 60, and 120 Hz", () => {
+test("thirty-minute fixed steps reproduce interaction state and positions at 30, 60, and 120 Hz", () => {
   const fixtures = [fixture(71), fixture(71), fixture(71)];
   [30, 60, 120].forEach((fps, index) =>
-    advance(fixtures[index].navigation, 180, fps),
+    advance(fixtures[index].navigation, 1800, fps),
   );
   for (let index = 1; index < fixtures.length; index++) {
     assert.deepEqual(

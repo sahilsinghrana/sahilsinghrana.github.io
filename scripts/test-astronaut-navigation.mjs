@@ -41,6 +41,42 @@ test("a replaced wander destination rebuilds its validated route around the hous
   assert.ok(arrived);
 });
 
+test("opposing house-corner departures both reach open space within twenty seconds", () => {
+  const obstacle = {
+    name: "Habitat",
+    normal: point(0),
+    halfWidth: 0.08,
+    halfDepth: 0.055,
+    radius: 0.1,
+    axisX: new Vector3(1, 0, 0),
+    axisY: new Vector3(0, 1, 0),
+  };
+  const a = createWalker(point(-0.15, 0.09), { speed: 0.04 });
+  const b = createWalker(point(0.15, 0.09), { speed: 0.04 });
+  const nav = createWanderSimulation([a, b], [obstacle], 12);
+  assert.ok(nav.arrive(a, point(0.27, 0.09)));
+  assert.ok(nav.arrive(b, point(-0.27, 0.09)));
+  a.exiting = b.exiting = true;
+  const arrived = [false, false];
+  let leader = null;
+  for (let i = 0; i < 60 * 20; i++) {
+    nav.update(1 / 60);
+    for (const [index, actor] of [a, b].entries()) {
+      assert.ok(obstacleGap(actor.normal, obstacle) >= actor.radius - 1e-8);
+      arrived[index] ||= actor.arrived;
+    }
+    assert.ok(a.normal.angleTo(b.normal) >= a.radius + b.radius - 1e-8);
+    if (nav.passageActive) {
+      const current = a.passageRole === "proceed" ? a : b;
+      if (leader)
+        assert.equal(current, leader, "priority stays stable until clear");
+      leader = current;
+    } else leader = null;
+    if (arrived.every(Boolean)) break;
+  }
+  assert.deepEqual(arrived, [true, true]);
+});
+
 test("a blocked exit retains passage priority and clears without overlapping", () => {
   const a = createWalker(point(-0.065), { speed: 0.04 }),
     b = createWalker(point(0.008), { speed: 0.04 });

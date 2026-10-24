@@ -553,6 +553,41 @@ document.querySelector("#reset").onclick = () => {
   recreations++;
   createMoon();
 };
+const resourceAuditButton = document.createElement("button");
+resourceAuditButton.textContent = "Audit ten recreations";
+document.querySelector("#reset").after(resourceAuditButton);
+resourceAuditButton.onclick = async () => {
+  if (!ready || sample || resourceAuditButton.disabled) return;
+  resourceAuditButton.disabled = true;
+  paused = true;
+  document.querySelector("#motion").textContent = "Resume motion";
+  const cycles = [];
+  try {
+    for (let cycle = 1; cycle <= 10; cycle++) {
+      moon.dispose();
+      recreations++;
+      createMoon();
+      const deadline = performance.now() + 30000;
+      while (!ready && performance.now() < deadline)
+        await new Promise((resolve) => setTimeout(resolve, 100));
+      if (!ready) throw new Error("Scene recreation timed out");
+      // Include optional logo completion and at least one rendered frame.
+      await new Promise((resolve) => setTimeout(resolve, 2200));
+      renderer.render(scene, camera);
+      cycles.push({
+        cycle,
+        geometries: renderer.info.memory.geometries,
+        textures: renderer.info.memory.textures,
+        programs: renderer.info.programs.length,
+      });
+      results.textContent = JSON.stringify({ resourceCycles: cycles }, null, 2);
+    }
+  } catch (error) {
+    results.textContent = `${error.message}\n${JSON.stringify(cycles)}`;
+  } finally {
+    resourceAuditButton.disabled = false;
+  }
+};
 document.querySelector("#capture").onclick = () => {
   captureRequested = true;
 };

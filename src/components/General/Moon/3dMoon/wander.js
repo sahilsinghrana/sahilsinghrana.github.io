@@ -335,7 +335,15 @@ export function createWanderSimulation(agents, obstacles, seed) {
     side.crossVectors(agent.normal, away).normalize();
     if (agent.avoidance !== nearest) {
       agent.avoidance = nearest;
-      agent.avoidanceSide = side.dot(desired) >= 0 ? 1 : -1;
+      // Reciprocal walkers take the same local side of each other, which is
+      // opposite in world space. Goal-based signs can send both sideways in
+      // lockstep forever without producing a hard collision or blocked timer.
+      agent.avoidanceSide =
+        people.includes(agent) && people.includes(nearest)
+          ? 1
+          : side.dot(desired) >= 0
+            ? 1
+            : -1;
     }
     // Commit to one side until the obstacle is behind the goal direction.
     // A tangent detour avoids the unstable equilibrium of summed repulsion.
