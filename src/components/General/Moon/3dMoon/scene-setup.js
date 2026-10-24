@@ -1,7 +1,11 @@
 // GENERATE USING AI
 
 import { getCurrentMoonData } from "@utils/currentMoonData.js";
-import { createAnimationClock, TARGET_ETCHED_OPACITY } from "./motion.js";
+import {
+  createAnimationClock,
+  createMoonPhaseIntro,
+  TARGET_ETCHED_OPACITY,
+} from "./motion.js";
 import { createSpinControl } from "./spin-control.js";
 
 // Mobile detection threshold (in pixels)
@@ -173,6 +177,7 @@ let currentScrollY = 0;
 let autoRotationY = 0;
 let moonBaseScale = MOON_INITIAL_SCALE;
 let introStartTime = null;
+let phaseIntro = null;
 const animationClock = createAnimationClock();
 const reducedMotionQuery = window.matchMedia(
   "(prefers-reduced-motion: reduce)",
@@ -439,6 +444,7 @@ const disposeGpuResources = () => {
   isInitializing = false;
   fixedHorizontalFov = null;
   introStartTime = null;
+  phaseIntro = null;
   animationClock.reset();
   motionTime = 0;
   autoRotationY = 0;
@@ -601,7 +607,10 @@ async function initThreeJS() {
     scene.add(new AmbientLight(AMBIENT_LIGHT_COLOR, AMBIENT_LIGHT_INTENSITY));
 
     const currentAgePercent = getCurrentMoonData().lunarAgePercent;
-    setMoonPhase(currentAgePercent);
+    phaseIntro = reducedMotionQuery.matches
+      ? null
+      : createMoonPhaseIntro(currentAgePercent, setMoonPhase);
+    setMoonPhase(reducedMotionQuery.matches ? currentAgePercent : 0.5);
 
     // Load the custom Moon 3D model into the scene.
     // onMoonReady is used instead of an inline callback so the loader dismissal is tied
@@ -701,6 +710,9 @@ function animate(timestamp = performance.now()) {
   profileTransitionStep?.();
 
   if (moon?.mesh) {
+    // Only advance once the textured Moon can actually be rendered.
+    phaseIntro?.update(animationClock.elapsed, reducedMotion);
+
     // Add continuous base spin.
     if (!reducedMotion && !spinControl?.paused)
       autoRotationY += AUTO_ROTATION_SPEED * 60 * delta;
