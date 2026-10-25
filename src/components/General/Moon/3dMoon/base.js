@@ -921,7 +921,9 @@ export function createMoonBase(
       person.torso.rotation.x = pose.lean * poseWeight + jog * 0.085;
       person.torso.rotation.z =
         Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend +
-        pose.roll * poseWeight;
+        pose.roll * poseWeight +
+        pose.playfulSway +
+        pose.phraseBody;
       person.torso.rotation.y =
         pose.yaw * poseWeight -
         turnLead * 0.35 +
@@ -934,7 +936,7 @@ export function createMoonBase(
         turnLead +
         Math.sin(time * 0.65 + index * 2.1) * (walker.moving ? 0.16 : 0.3);
       person.head.rotation.x = Math.sin(gait) * 0.055 * person.gaitBlend;
-      person.head.rotation.z = 0;
+      person.head.rotation.z = pose.playfulTilt;
       if (gazeWeight > 1e-5) {
         const upwardLimit =
           activity.state === "flag" || activity.state === "flagGuest"
@@ -976,7 +978,7 @@ export function createMoonBase(
           ) -
             person.head.rotation.x) *
           gazeWeight;
-        person.head.rotation.z = pose.tilt * gazeWeight;
+        person.head.rotation.z = pose.tilt * gazeWeight + pose.playfulTilt;
       }
       person.head.rotation.y = clamp(
         person.head.rotation.y,
@@ -1110,7 +1112,7 @@ export function createMoonBase(
           0.063 * Math.cos(person.torso.rotation.x) +
           bob -
           seatDrop +
-          side * pose.shoulder;
+          side * (pose.shoulder + pose.playfulShoulder);
         const shoulderZ =
           0.063 * Math.sin(person.torso.rotation.x) -
           side * Math.sin(person.torso.rotation.y) * 0.018;
@@ -1130,6 +1132,8 @@ export function createMoonBase(
           handZ *= handClearance / handPlanar;
         }
         const gesture = sideIndex === 0 ? pose.left : pose.right;
+        const phrase = sideIndex === 0 ? pose.phraseLeft : pose.phraseRight;
+        const phrasePath = sideIndex === 0 ? pose.pathLeft : pose.pathRight;
         const point =
           (sideIndex === 0 ? pose.pointLeft : pose.pointRight) * poseWeight;
         const wave = sideIndex === activity.variant % 2 ? pose.wave : 0;
@@ -1146,20 +1150,36 @@ export function createMoonBase(
           salute,
           clap,
           push,
+          phrase,
         );
         if (action > 1e-5) {
           const chest = pose.chest > gesture;
           let desiredHandX =
             side *
             (wave > gesture && wave > pose.chest
-              ? 0.023 + Math.sin(behavior.time * 8) * 0.006
+              ? 0.023 +
+                Math.sin(
+                  (behavior.time - activity.since) *
+                    8 *
+                    activity.handWaveTempo +
+                    activity.handWavePhase,
+                ) *
+                  0.006
               : chest
                 ? 0.01
                 : 0.021 + (pose.spread || 0) * 0.024);
           let desiredHandY =
             shoulderY +
             (wave > gesture && wave > pose.chest
-              ? 0.023 + Math.sin(behavior.time * 7) * 0.003
+              ? 0.023 +
+                Math.sin(
+                  (behavior.time - activity.since) *
+                    7 *
+                    activity.handWaveTempo +
+                    activity.handWavePhase -
+                    0.4,
+                ) *
+                  0.003
               : chest
                 ? -0.005
                 : -0.002);
@@ -1183,6 +1203,20 @@ export function createMoonBase(
               side * 0.018 + clamp(direction.x, -0.65, 0.65) * 0.027;
             desiredHandY = shoulderY + clamp(direction.y, -0.6, 0.7) * 0.027;
             desiredHandZ = Math.max(0.012, direction.z * 0.027);
+          }
+          // The pointing hand keeps its target. Its free partner follows a
+          // delayed curved stroke, coordinated with the torso and wrist.
+          if (
+            point < 0.01 &&
+            wave < 0.01 &&
+            touch < 0.001 &&
+            salute < 0.01 &&
+            clap < 0.01 &&
+            push < 0.01
+          ) {
+            desiredHandX += side * phrasePath * 0.014;
+            desiredHandY += phrasePath * 0.013;
+            desiredHandZ += (phrase - Math.abs(phrasePath)) * 0.014;
           }
           if (touch > 0.001) {
             touchLocal
@@ -1214,6 +1248,13 @@ export function createMoonBase(
           handX += (desiredHandX - handX) * action;
           handY += (desiredHandY - handY) * action;
           handZ += (desiredHandZ - handZ) * action;
+          if (walker.moving && phrase > 0) {
+            const planar = Math.hypot(handX, handZ);
+            if (planar > handClearance) {
+              handX *= handClearance / planar;
+              handZ *= handClearance / planar;
+            }
+          }
           // Two-link arm IK: bend elbows outward without stretching suit limbs.
           let dx = handX - side * 0.018;
           let dy = handY - shoulderY;
@@ -1272,7 +1313,11 @@ export function createMoonBase(
           0.008,
           0.009,
           0.008,
-          armSwing + pose.wrist * action * (index === 1 ? 0.7 : 0.45),
+          armSwing +
+            pose.wrist * action * (index === 1 ? 0.7 : 0.45) +
+            (touch > 0.001 || salute > 0.01 || clap > 0.01 || push > 0.01
+              ? 0
+              : phrasePath * 0.65),
           point > 0.01 ? direction : null,
         );
         // One shared four-instance batch; a folded index collapses into its glove.

@@ -207,6 +207,7 @@ export function createWanderSimulation(agents, obstacles, seed) {
     leader.passageRole = "proceed";
     waiter.passageRole = "yield";
     leader.recoveryActive = waiter.recoveryActive = false;
+    simulation.onPassageStart?.(waiter);
   }
 
   function clear(normal, agent, margin = 0, allowEscape = false) {
