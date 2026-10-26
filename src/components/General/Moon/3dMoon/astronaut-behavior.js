@@ -83,6 +83,7 @@ export function createAstronautBehavior({
   const expressionRandom = createRandom(seed ^ 0x4c83271);
   const playfulRandom = createRandom(seed ^ 0x735b1e);
   const walkingPlayRandom = createRandom(seed ^ 0x62c41a);
+  const suitRandom = createRandom(seed ^ 0x3a781d);
   const handRandom = createRandom(seed ^ 0x491ad7);
   const flipRandom = createRandom(seed ^ 0x29c8a17);
   let flipPhase = "none";
@@ -366,6 +367,9 @@ export function createAstronautBehavior({
       completedAt: -1,
       expressionDelay: 0.2,
       departureAttempts: 0,
+      nextSuitCheckAt: 15 + suitRandom() * 20,
+      suitCheckStarted: -100,
+      suitCheckArm: 0,
       handPhraseAt: -1,
       handPhraseDuration: 1,
       handPhraseStyle: 0,
@@ -380,6 +384,8 @@ export function createAstronautBehavior({
         pathLeft: 0,
         pathRight: 0,
         phraseBody: 0,
+        suitCheck: 0,
+        suitStroke: 0,
         weight: 0,
         lean: 0,
         tilt: 0,
@@ -919,6 +925,14 @@ export function createAstronautBehavior({
   }
   function socialAvailable(record) {
     if (performancePhase !== "none" || flipPhase !== "none") return false;
+    // A chosen solo destination is a commitment, not an idle opportunity for
+    // the global greeting timer. Finish the selected garden features first.
+    if (
+      record.state.startsWith("travel") ||
+      record.state === "yieldInspection" ||
+      (record === female && record.state === "garden" && pendingFeature(record))
+    )
+      return false;
     return (
       available(record) &&
       record.state !== "travelRest" &&
@@ -1039,7 +1053,7 @@ export function createAstronautBehavior({
   function finishSocial(aborted = false) {
     if (!aborted) lastChatAt = time;
     if (aborted) stats.aborts++;
-    const cooldown = between(3, 8);
+    const cooldown = aborted ? between(3, 8) : between(9, 18);
     for (const record of actors) {
       record.nextTalkAt = time + cooldown;
       record.walker.softPartner = null;
@@ -1153,13 +1167,20 @@ export function createAstronautBehavior({
     const canInspect = record.interest && time >= record.nextInspectAt;
     const canTalk =
       record === female &&
+      socialAvailable(record) &&
       socialAvailable(male) &&
       !male.state.startsWith("travel") &&
       time >= record.nextTalkAt &&
       time >= male.nextTalkAt &&
       angle(boy.normal, girl.normal) <= 0.5;
-    const inspectionWeight = canInspect ? (record === female ? 0.3 : 0.35) : 0;
-    const socialWeight = canTalk ? 2.4 : 0;
+    // Gradually favor an overdue solo visit; selection remains weighted and
+    // seeded instead of following a fixed chat/garden/chat rotation.
+    const inspectionWeight = canInspect
+      ? record === female
+        ? 0.45 + Math.min(0.75, (time - Math.max(0, record.completedAt)) / 120)
+        : 0.35
+      : 0;
+    const socialWeight = canTalk ? 1.4 : 0;
     const idleWeight = seats.length ? (record === male ? 0.02 : 0.015) : 0;
     const roll =
       random() *
@@ -2444,6 +2465,15 @@ export function createAstronautBehavior({
       }
     }
     if (male.state === "approachGirl") {
+      if (male.longApproach && !socialAvailable(female)) {
+        // She can choose an independent activity while he is approaching.
+        // Respect that newer choice instead of converting it into a meeting.
+        male.longApproach = false;
+        male.runUntil = 0;
+        male.nextTalkAt = time + between(7, 14);
+        wander(male);
+        return;
+      }
       if (time >= male.until || (boy.blocked && male.stalled >= 5)) {
         if (male.longApproach) {
           male.longApproach = false;
@@ -2462,7 +2492,7 @@ export function createAstronautBehavior({
       }
       if (
         angle(boy.normal, girl.normal) < 0.22 &&
-        available(female) &&
+        socialAvailable(female) &&
         (!male.longApproach || reserveMeeting())
       ) {
         if (male.longApproach) {
@@ -3274,7 +3304,27 @@ export function createAstronautBehavior({
       Math.abs(output.turn) > 0.02 ||
       record.walker.passageRole ||
       yieldPhase !== "none";
-    const phraseEligible = !reservedHands && (active || record.walker.moving);
+    // A low-priority dust brush never delays a destination or a shared action.
+    const suitEligible =
+      !reservedHands &&
+      !record.walker.moving &&
+      (record.state === "rest" || record.state === "wander") &&
+      output.weight < 0.05;
+    if (!suitEligible) record.suitCheckStarted = -100;
+    else if (time >= record.nextSuitCheckAt) {
+      record.suitCheckStarted = time;
+      record.suitCheckArm = suitRandom() < 0.5 ? 0 : 1;
+      record.nextSuitCheckAt = time + 35 + suitRandom() * 30;
+    }
+    const suitPhase = (time - record.suitCheckStarted) / 2.4;
+    const suitActive = suitEligible && suitPhase >= 0 && suitPhase < 1;
+    const suitAmount = suitActive ? Math.sin(Math.PI * suitPhase) ** 2 : 0;
+    output.suitCheck += (suitAmount - output.suitCheck) * blend;
+    output.suitStroke = suitActive
+      ? Math.max(0, Math.min(1, (suitPhase - 0.25) / 0.5))
+      : 0;
+    const phraseEligible =
+      !reservedHands && !suitActive && (active || record.walker.moving);
     if (!phraseEligible) record.handPhraseAt = -1;
     else if (
       record.handPhraseAt < 0 ||
@@ -3509,6 +3559,8 @@ export function createAstronautBehavior({
         record.pose.weight = seated;
         record.waveHop = record.playfulWait = false;
         record.walkingPlayDuration = 0;
+        record.suitCheckStarted = -100;
+        record.nextSuitCheckAt = time + 15 + suitRandom() * 20;
         record.handPhraseAt = -1;
         record.nextWalkingPlayAt = time + 3;
         record.touchActive = false;

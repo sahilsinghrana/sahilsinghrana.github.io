@@ -935,7 +935,8 @@ export function createMoonBase(
       person.head.rotation.y =
         turnLead +
         Math.sin(time * 0.65 + index * 2.1) * (walker.moving ? 0.16 : 0.3);
-      person.head.rotation.x = Math.sin(gait) * 0.055 * person.gaitBlend;
+      person.head.rotation.x =
+        Math.sin(gait) * 0.055 * person.gaitBlend + pose.suitCheck * 0.12;
       person.head.rotation.z = pose.playfulTilt;
       if (gazeWeight > 1e-5) {
         const upwardLimit =
@@ -1142,7 +1143,10 @@ export function createMoonBase(
         const push = pose.push * poseWeight;
         const touch =
           sideIndex === activity.touchArm ? pose.touch * poseWeight : 0;
+        const suitCheck =
+          sideIndex === activity.suitCheckArm ? pose.suitCheck : 0;
         const action = Math.max(
+          suitCheck,
           gesture * poseWeight,
           pose.chest * poseWeight,
           wave * pose.weight,
@@ -1217,6 +1221,19 @@ export function createMoonBase(
             desiredHandX += side * phrasePath * 0.014;
             desiredHandY += phrasePath * 0.013;
             desiredHandZ += (phrase - Math.abs(phrasePath)) * 0.014;
+          }
+          if (
+            suitCheck > 0.001 &&
+            point < 0.01 &&
+            wave < 0.01 &&
+            touch < 0.001 &&
+            salute < 0.01 &&
+            clap < 0.01 &&
+            push < 0.01
+          ) {
+            desiredHandX = side * 0.009;
+            desiredHandY = shoulderY - 0.004 - pose.suitStroke * 0.009;
+            desiredHandZ = 0.022;
           }
           if (touch > 0.001) {
             touchLocal
