@@ -2,7 +2,7 @@
   "name": "Node.js & TypeScript",
   "image": "mcr.microsoft.com/devcontainers/typescript-node:4-24-bookworm",
   "features": {
-    "ghcr.io/devcontainer-config/features/dot-config:4": {}
+    "ghcr.io/devcontainer-config/features/dot-config:5": {}
   },
 
   // Features to add to the dev container. More info: https://containers.dev/features.
