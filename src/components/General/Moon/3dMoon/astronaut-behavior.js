@@ -9,6 +9,28 @@ const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const eyeRadius = (walker) => 1 + (walker.eyeHeight ?? 0.063);
 const DECISION_STEP = 0.2;
 const MAX_CHAT_SECONDS = 10;
+const MAX_JOURNEY_SECONDS = 30;
+const JOURNEY_STATES = new Set([
+  "travelGarden",
+  "travelRocket",
+  "travelHouse",
+  "travelRest",
+  "travelDance",
+  "travelFlag",
+  "joinFlag",
+  "leadHouse",
+  "followHouse",
+  "leadGarden",
+  "followGarden",
+  "joinGarden",
+  "waitGarden",
+  "yieldInspection",
+  "flipApproach",
+  "approachGirl",
+  "approach",
+  "meeting",
+  "depart",
+]);
 const SOCIAL_IDLE = new Set(["wander", "rest", "sit"]);
 const FEMALE_SOCIAL_IDLE = new Set(["wander", "rest", "sit", "playful"]);
 const PLAYFUL_OVERLAY_STATES = new Set([
@@ -83,6 +105,7 @@ export function createAstronautBehavior({
   const expressionRandom = createRandom(seed ^ 0x4c83271);
   const playfulRandom = createRandom(seed ^ 0x735b1e);
   const walkingPlayRandom = createRandom(seed ^ 0x62c41a);
+  const viewRandom = createRandom(seed ^ 0x528bc1);
   const suitRandom = createRandom(seed ^ 0x3a781d);
   const handRandom = createRandom(seed ^ 0x491ad7);
   const flipRandom = createRandom(seed ^ 0x29c8a17);
@@ -94,6 +117,7 @@ export function createAstronautBehavior({
   let strollWalkingAt = 0;
   let strollDuration = 0;
   let flipRetargetAt = 0;
+  let flipAudienceAt = -1;
   let flipFlight = 1.4;
   const varietyRandom = createRandom(seed ^ 0x3af574);
   let nextSoloOpportunity = 90 + varietyRandom() * 70;
@@ -158,6 +182,7 @@ export function createAstronautBehavior({
   let performancePhase = "none";
   let performanceStarted = 0;
   let performanceSawFlowersAt = -1;
+  let performanceAudienceAt = -1;
   let nextPerformanceAt = 30;
   let nextPerformanceCheck = 0;
   const danceSpot = new Vector3();
@@ -330,6 +355,11 @@ export function createAstronautBehavior({
       waveHopAt: 1,
       calling: false,
       playfulWait: false,
+      flowerStyle: 0,
+      flowerStrength: 0.8,
+      idlePlayStarted: -100,
+      idlePlayDuration: 0,
+      nextIdlePlayAt: 12,
       nextPlayAt: 18,
       nextWalkingPlayAt: 3,
       walkingPlayStarted: -100,
@@ -344,6 +374,8 @@ export function createAstronautBehavior({
       gestureStyle: 0,
       approachDistance: 0,
       cruiseSpeed: walker.speed,
+      journeyStarted: -1,
+      journeyJog: false,
       pairSpeed: 0,
       pairSide: 0,
       runUntil: 0,
@@ -368,8 +400,14 @@ export function createAstronautBehavior({
       expressionDelay: 0.2,
       departureAttempts: 0,
       nextSuitCheckAt: 15 + suitRandom() * 20,
+      viewStarted: -100,
+      nextViewAt: 8 + viewRandom() * 18,
+      viewDuration: 3,
+      viewDirection: 1,
       suitCheckStarted: -100,
       suitCheckArm: 0,
+      suitCheckDuration: 2.8,
+      suitCheckSweep: 0.8,
       handPhraseAt: -1,
       handPhraseDuration: 1,
       handPhraseStyle: 0,
@@ -384,8 +422,14 @@ export function createAstronautBehavior({
         pathLeft: 0,
         pathRight: 0,
         phraseBody: 0,
+        talkX: 0,
+        talkY: 0,
+        talkZ: 0,
         suitCheck: 0,
         suitStroke: 0,
+        suitLook: 0,
+        viewYaw: 0,
+        viewBody: 0,
         weight: 0,
         lean: 0,
         tilt: 0,
@@ -545,6 +589,15 @@ export function createAstronautBehavior({
     return true;
   }
   function enter(record, state, duration) {
+    if (JOURNEY_STATES.has(state)) {
+      if (record.journeyStarted < 0) {
+        record.journeyStarted = time;
+        record.journeyJog = angle(record.walker.normal, record.goal) > 0.45;
+      }
+    } else {
+      record.journeyStarted = -1;
+      record.journeyJog = false;
+    }
     if (state === "wave" || state === "gardenCall") {
       record.handWaveTempo = 0.8 + handRandom() * 0.4;
       record.handWavePhase = handRandom() * Math.PI * 2;
@@ -607,6 +660,9 @@ export function createAstronautBehavior({
         state === "gardenGuest") &&
       record.lastFeature?.kind === "flower"
     ) {
+      record.flowerStyle =
+        (record.flowerStyle + 1 + Math.floor(expressionRandom() * 2)) % 3;
+      record.flowerStrength = 0.7 + expressionRandom() * 0.25;
       record.lastFlower = record.lastFeature;
       record.featureVisits.set(
         record.lastFeature,
@@ -1239,6 +1295,13 @@ export function createAstronautBehavior({
       turn.nod = gestureRandom() < 0.75;
       turn.spread = gestureRandom() < 0.4;
       turn.style = Math.floor(gestureRandom() * 4);
+      // Expressive sampling must not perturb activity selection or its timing.
+      turn.shape =
+        (i ? talkTurns[i - 1].shape + 1 : 0) +
+        Math.floor(expressionRandom() * 5);
+      turn.shape %= 6;
+      turn.strength = 0.65 + expressionRandom() * 0.3;
+      turn.support = 0.18 + expressionRandom() * 0.25;
     }
     for (const record of actors) enter(record, "conversation", talkDuration);
     navigation.hold(girl, boy.normal);
@@ -1395,7 +1458,9 @@ export function createAstronautBehavior({
     pairDirection.normalize();
     pairLateral.crossVectors(leader.normal, pairDirection).normalize();
     const longitudinal = guest.normal.dot(pairDirection);
-    const speed = Math.min(guide.cruiseSpeed, companion.cruiseSpeed);
+    const speed =
+      Math.min(guide.cruiseSpeed, companion.cruiseSpeed) *
+      (guide.journeyJog || companion.journeyJog ? 1.7 : 1);
     guide.pairSpeed = speed * clamp(1 + longitudinal * 8, 0.45, 1);
     companion.pairSpeed = speed * clamp(1 - longitudinal * 8, 0.6, 1.15);
     if (longitudinal > 0.045) {
@@ -1920,7 +1985,9 @@ export function createAstronautBehavior({
       stats.lastPerformanceAbort = `${performancePhase}:${male.state}:${female.state}:${male.stalled.toFixed(1)}:${female.stalled.toFixed(1)}:${(time - performanceStarted).toFixed(1)}`;
     }
     performancePhase = "none";
-    nextPerformanceAt = time + 85 + performanceRandom() * 60;
+    nextPerformanceAt =
+      time +
+      (aborted ? 25 + performanceRandom() * 20 : 65 + performanceRandom() * 40);
     for (const record of actors) {
       record.runUntil = 0;
       record.nextTalkAt = time + between(3, 8);
@@ -1937,7 +2004,6 @@ export function createAstronautBehavior({
       !seats.length ||
       !socialAvailable(male) ||
       female.lastFeature?.kind !== "flower" ||
-      angle(boy.normal, garden.normal) < 0.5 ||
       angle(girl.normal, lampInterest.normal) > 0.24 ||
       angle(boy.normal, girl.normal) > 1.15 ||
       !navigation.isClear(girl.normal, girl, 0.006) ||
@@ -1977,6 +2043,7 @@ export function createAstronautBehavior({
     girl.softPartner = boy;
     performanceStarted = time;
     performanceSawFlowersAt = -1;
+    performanceAudienceAt = -1;
     male.runUntil = time + 1;
     performanceFlowerFocus.copy(female.focus);
     enter(female, "gardenCall", 3.5 + performanceRandom() * 1.5);
@@ -1989,6 +2056,8 @@ export function createAstronautBehavior({
     if (performancePhase === "none") return false;
     boy.softPartner = girl;
     girl.softPartner = boy;
+    if (male.state === "sit" && performanceAudienceAt < 0)
+      performanceAudienceAt = time;
     if (
       time - performanceStarted > 90 ||
       male.stalled > 5 ||
@@ -2250,6 +2319,7 @@ export function createAstronautBehavior({
         navigation.segmentClear(girl.normal, candidate, girl) &&
         navigation.arrive(boy, candidate, girl.normal)
       ) {
+        male.goal.copy(candidate);
         return true;
       }
     }
@@ -2258,7 +2328,10 @@ export function createAstronautBehavior({
   function endBackflip() {
     const watched = female.state === "watchFlip";
     flipPhase = "none";
-    nextFlipAt = time + 65 + flipRandom() * 55;
+    const completed = male.state === "backflip" && time >= male.until;
+    nextFlipAt =
+      time + (completed ? 65 + flipRandom() * 55 : 25 + flipRandom() * 20);
+    if (!completed) stats.flipAborts = (stats.flipAborts || 0) + 1;
     male.runUntil = 0;
     male.pose.flip = male.pose.flipTuck = male.pose.crouch = male.pose.hop = 0;
     wander(male);
@@ -2276,7 +2349,11 @@ export function createAstronautBehavior({
     if (
       time - flipStarted > 35 ||
       male.stalled > 4 ||
-      (female.state !== "watchFlip" && !available(female))
+      (female.state !== "watchFlip" &&
+        !(
+          female.state === "wander" ||
+          (female.state === "garden" && !pendingFeature(female))
+        ))
     ) {
       endBackflip();
       return true;
@@ -2286,7 +2363,8 @@ export function createAstronautBehavior({
       angle(boy.normal, girl.normal) < 0.3 &&
       navigation.segmentClear(girl.normal, boy.normal, girl)
     ) {
-      enter(female, "watchFlip", 35);
+      flipAudienceAt = time;
+      enter(female, "watchFlip", 6);
       navigation.hold(girl, boy.normal);
     }
     if (time >= flipRetargetAt && female.state !== "watchFlip") {
@@ -2318,6 +2396,52 @@ export function createAstronautBehavior({
   }
   function decisions() {
     stats.decisions++;
+    // A spontaneous trick must not become a pursuit or a long audience hold.
+    if (
+      flipPhase === "approach" &&
+      (time - male.journeyStarted >= 12 ||
+        (flipAudienceAt >= 0 && time - flipAudienceAt >= 6))
+    ) {
+      navigation.cancelPassage?.();
+      endBackflip();
+      return;
+    }
+    // Sitting for an upcoming performance is a short wait, not an indefinitely
+    // renewed reservation. Count passage interruptions toward this visible wait.
+    if (
+      performancePhase !== "none" &&
+      performancePhase !== "dance" &&
+      performanceAudienceAt >= 0 &&
+      time - performanceAudienceAt >= 18
+    ) {
+      navigation.cancelPassage?.();
+      endPerformance(true);
+      return;
+    }
+    // Unlike activity deadlines, this budget is not extended by passage waits.
+    // Waypoint changes and companion handoffs retain the same journey clock.
+    for (const record of actors) {
+      if (
+        record.journeyStarted < 0 ||
+        time - record.journeyStarted < MAX_JOURNEY_SECONDS
+      )
+        continue;
+      navigation.cancelPassage?.();
+      stats.journeyTimeouts = (stats.journeyTimeouts || 0) + 1;
+      record.journeyStarted = -1;
+      if (ENGAGED.has(record.state) && record.state !== "depart") {
+        for (const actor of actors) actor.journeyStarted = -1;
+        cancelSharedActivity();
+        return;
+      }
+      if (
+        record.state === "travelGarden" ||
+        record.state === "travelHouse" ||
+        record.state === "travelRocket"
+      )
+        endVisit(record);
+      else wander(record);
+    }
     if (navigation.passageActive) return;
     for (const record of actors) {
       if (record.state !== "depart") continue;
@@ -2350,6 +2474,7 @@ export function createAstronautBehavior({
       nextFlipCheck = time + 6 + flipRandom() * 7;
       if (flipRandom() < 0.55 && pickFlipSpot()) {
         flipPhase = "approach";
+        flipAudienceAt = -1;
         flipStarted = time;
         flipRetargetAt = time + 0.8;
         enter(male, "flipApproach", 35);
@@ -2748,6 +2873,8 @@ export function createAstronautBehavior({
     }
   }
   function pose(record, dt) {
+    const flowerInspection =
+      record.state === "garden" && record.lastFeature?.kind === "flower";
     const inspecting =
       INSPECTION.has(record.state) ||
       record.state === "showGarden" ||
@@ -2770,6 +2897,9 @@ export function createAstronautBehavior({
       shake = 0,
       hop = 0;
     let clap = 0;
+    let talkX = 0,
+      talkY = 0,
+      talkZ = 0;
     let push = 0;
     let arc = 0,
       wrist = 0;
@@ -2864,6 +2994,34 @@ export function createAstronautBehavior({
         navigation.isClear(record.walker.normal, record.walker, 0.002)
       )
         stance = Math.sin(((elapsed - 1.3) * Math.PI) / 0.8) * 0.0015;
+      if (flowerInspection) {
+        // Observe first, reach once, linger briefly, then release before travel.
+        const rise = clamp((phase - 0.18) / 0.22, 0, 1);
+        const fall = clamp((0.86 - phase) / 0.22, 0, 1);
+        const reach =
+          rise * rise * (3 - 2 * rise) * fall * fall * (3 - 2 * fall);
+        const observe = Math.sin(Math.PI * phase) ** 2;
+        touch = record.touchActive ? reach : 0;
+        hand = record.touchActive
+          ? touch
+          : reach * record.flowerStrength * (record === male ? 0.35 : 0.65);
+        pointing = !record.touchActive && record.flowerStyle !== 1 && hand > 0;
+        chest =
+          !record.touchActive && record.flowerStyle === 1 ? hand * 0.45 : 0;
+        spread = 0;
+        nod = Math.sin(Math.PI * clamp((phase - 0.68) / 0.32, 0, 1)) * 0.045;
+        yaw = record.touchActive
+          ? 0
+          : observe * (record.flowerStyle === 2 ? -0.035 : 0.025);
+        shift = record.touchActive
+          ? 0
+          : observe * (record.variant % 2 ? 1 : -1) * 0.0009;
+        stance = 0;
+        arc = !record.touchActive
+          ? Math.sin(phase * Math.PI * 2) * 0.25 * hand
+          : 0;
+        wrist = !record.touchActive ? observe * 0.18 : 0;
+      }
     } else if (talking) {
       record.focus
         .copy(record === female ? boy.normal : girl.normal)
@@ -2872,28 +3030,54 @@ export function createAstronautBehavior({
         const turn = talkTurns[i];
         const local = (time - talkStarted - turn.start) / turn.duration;
         if (local < 0 || local > 1) continue;
-        const envelope = Math.sin(local * Math.PI) ** 1.4;
         const speaker = i % 2 === 0 ? female : male;
         if (record === speaker) {
-          hand = envelope * (record === female ? 1 : 0.76);
-          left = turn.arm === 0 || turn.both ? hand : 0;
-          right =
-            turn.arm === 1 || turn.both ? hand * (turn.both ? 0.82 : 1) : 0;
+          const stroke = Math.sin(Math.PI * clamp(local / 0.85, 0, 1)) ** 1.4;
+          hand = stroke * turn.strength;
+          const support =
+            Math.sin(Math.PI * clamp((local - 0.16) / 0.84, 0, 1)) ** 2 *
+            turn.strength *
+            (turn.both ? 0.65 : turn.support);
+          left = turn.arm === 0 ? hand : support;
+          right = turn.arm === 1 ? hand : support;
           if (turn.nod) {
             nod =
               Math.sin(local * Math.PI * 2) * (record === male ? 0.09 : 0.07);
             if (record === female)
               shake = Math.sin(local * Math.PI * 2) * 0.085;
           }
-          if (turn.spread) spread = envelope;
           arc = Math.sin(local * Math.PI * 2) * (record === female ? 1 : 0.6);
           wrist = Math.sin(local * Math.PI) * (turn.style % 2 ? 0.65 : -0.45);
-          // Different destinations and curved paths for beats, open palms,
-          // close-to-chest explanation, and outward invitation gestures.
-          if (turn.style === 0) chest = envelope * 0.65;
-          if (turn.style === 1)
-            spread = envelope * (record === female ? 0.85 : 0.5);
           if (turn.style === 2) arc *= -1;
+          // Six readable trajectories: open explanation, low beat, inward
+          // reflection, outward offer, lifted emphasis and a small curved sweep.
+          const sweep = Math.sin(local * Math.PI * 2);
+          if (turn.shape === 0) spread = stroke * 0.45;
+          talkX =
+            turn.shape === 0
+              ? 0.009
+              : turn.shape === 2
+                ? -0.008
+                : turn.shape === 3
+                  ? 0.006
+                  : turn.shape === 5
+                    ? sweep * 0.007
+                    : 0;
+          talkY =
+            turn.shape === 1
+              ? -0.012
+              : turn.shape === 4
+                ? 0.009
+                : turn.shape === 5
+                  ? Math.sin(local * Math.PI) * 0.005
+                  : -0.003;
+          talkZ = turn.shape === 2 ? -0.008 : turn.shape === 3 ? 0.006 : 0;
+          const weight =
+            Math.sin(Math.PI * clamp((local - 0.08) / 0.92, 0, 1)) ** 2;
+          shift = (turn.arm === 0 ? -1 : 1) * weight * 0.001;
+          yaw = (turn.arm === 0 ? 1 : -1) * weight * 0.065;
+          if (!record.walker.moving && !record.walker.passageRole)
+            crouch = weight * 0.0007;
         } else if (turn.nod) {
           const response = clamp(
             (local - record.expressionDelay) / (1 - record.expressionDelay),
@@ -2906,8 +3090,8 @@ export function createAstronautBehavior({
             shake = Math.sin(response * Math.PI * 2) * 0.18;
         }
       }
-      shift = Math.sin(elapsed * 0.48 + record.variant) * 0.0014;
-      yaw = Math.sin(elapsed * 0.7 + record.variant) * 0.045;
+      shift += Math.sin(elapsed * 0.48 + record.variant) * 0.0004;
+      yaw += Math.sin(elapsed * 0.7 + record.variant) * 0.02;
       const glance = (elapsed + record.variant * 0.9) % 5.5;
       if (glance > 4.7)
         yaw += Math.sin(((glance - 4.7) / 0.8) * Math.PI) * 0.12;
@@ -3016,20 +3200,53 @@ export function createAstronautBehavior({
       spread = 0.85;
       shake = Math.sin(elapsed * 5) * 0.17;
     }
+    // Use an existing wandering pause, never reserve or extend one for a pose.
+    const idlePlayEligible =
+      record === female &&
+      record.state === "wander" &&
+      !record.walker.moving &&
+      !record.walker.turning &&
+      !record.walker.passageRole &&
+      record.walker.pause > 0.2 &&
+      record.pose.suitLook < 0.01 &&
+      Math.abs(record.pose.viewYaw) < 0.01 &&
+      time >= playBlockedUntil &&
+      (!flag || angle(girl.normal, flag.normal) >= 0.38) &&
+      performancePhase === "none" &&
+      flipPhase === "none" &&
+      navigation.isClear(girl.normal, girl, 0.006);
+    if (!idlePlayEligible) record.idlePlayDuration = 0;
+    else if (time >= record.nextIdlePlayAt && record.walker.pause > 1.7) {
+      record.idlePlayStarted = time;
+      record.idlePlayDuration = Math.min(2.2, record.walker.pause - 0.2);
+      record.nextIdlePlayAt = time + 22 + playfulRandom() * 16;
+      record.playVariant = record.playVariant === 2 ? 0 : 2;
+      record.playTempo = 0.9 + playfulRandom() * 0.15;
+      record.playLead = playfulRandom() < 0.5 ? -1 : 1;
+    }
+    const idlePlay =
+      idlePlayEligible &&
+      time - record.idlePlayStarted < record.idlePlayDuration;
+    if (record.state === "wander") record.playfulWait = idlePlay;
+    const playElapsed = idlePlay ? time - record.idlePlayStarted : elapsed;
     if (
       (record.playfulWait || record.state === "gardenDance") &&
-      playContext() &&
-      record.walker.mode === "hold" &&
+      (idlePlay || playContext()) &&
+      (idlePlay || record.walker.mode === "hold") &&
       record.walker.velocity < 0.003 &&
-      elapsed > (record.state === "gardenDance" ? 0 : 0.4) &&
-      elapsed <
+      playElapsed > (record.state === "gardenDance" ? 0 : 0.4) &&
+      playElapsed <
         (record.state === "gardenDance" ? record.until - record.since : 3.6)
     ) {
-      const local = elapsed - (record.state === "gardenDance" ? 0 : 0.4);
+      const local = playElapsed - (record.state === "gardenDance" ? 0 : 0.4);
       const envelope = Math.min(
         1,
         local * 3,
-        ((record.state === "gardenDance" ? record.until - record.since : 3.2) -
+        ((idlePlay
+          ? record.idlePlayDuration - 0.4
+          : record.state === "gardenDance"
+            ? record.until - record.since
+            : 3.2) -
           local) *
           3,
       );
@@ -3167,7 +3384,11 @@ export function createAstronautBehavior({
       hand = record === male ? 0.08 : 0.14;
       arc = Math.sin(elapsed * (record === male ? 0.7 : 1.1)) * 0.18;
     }
-    if (INSPECTION.has(record.state) && !record.touchActive) {
+    if (
+      INSPECTION.has(record.state) &&
+      !record.touchActive &&
+      !flowerInspection
+    ) {
       arc =
         Math.sin(elapsed * 1.7 + record.gestureStyle) *
         (record === male ? 0.3 : 0.55);
@@ -3191,7 +3412,7 @@ export function createAstronautBehavior({
           right = hand * (0.65 + 0.35 * Math.sin(danceArmPhase - 1.8));
         }
         if (record.playfulWait && record.state !== "gardenDance") {
-          const phase = elapsed * record.playTempo * 3.8;
+          const phase = playElapsed * record.playTempo * 3.8;
           left = hand * (0.55 + 0.4 * Math.sin(phase));
           right = hand * (0.55 + 0.4 * Math.sin(phase - 1.3));
           if (record.playLead < 0) {
@@ -3229,16 +3450,23 @@ export function createAstronautBehavior({
       if (elapsed < 0.45) crouch = Math.sin((elapsed / 0.45) * Math.PI) * 0.004;
       else if (air >= 1 && air < 1.4)
         crouch = Math.sin(((air - 1) / 0.4) * Math.PI) * 0.003;
-      left = right = hand = air > 0 && air < 1 ? 0.7 : 0.3;
+      const prepare = clamp(elapsed / 0.45, 0, 1);
+      const recover = clamp((elapsed - 0.45 - flipFlight) / 0.8, 0, 1);
+      hand = air < 0 ? 0.25 + 0.45 * prepare * prepare : 0.7 - 0.55 * recover;
+      left = hand;
+      right = hand * (air < 0 ? 0.92 + 0.08 * prepare : 1);
       chest = flipTuck * 0.85;
       spread = air < 0 ? 0.25 : 0.05;
       nod = shake = 0;
       record.focus.copy(girl.normal).multiplyScalar(eyeRadius(girl));
     } else if (record.state === "watchFlip") {
       record.focus.copy(boy.normal).multiplyScalar(1 + 0.046 + male.pose.hop);
-      nod = Math.sin(elapsed * 2.7) * 0.045;
-      if (male.state === "backflip" && time - male.since > 0.45 + flipFlight)
-        clap = 0.8;
+      const reaction =
+        male.state === "backflip"
+          ? clamp((time - male.since - 0.45 - flipFlight - 0.12) / 0.55, 0, 1)
+          : 0;
+      nod = Math.sin(reaction * Math.PI) * 0.07;
+      if (reaction > 0) clap = Math.sin(reaction * Math.PI) * 0.8;
       else {
         left = 0.25;
         right = 0.15;
@@ -3289,6 +3517,9 @@ export function createAstronautBehavior({
         -dt / (record.state === "gardenDance" ? 0.075 : talking ? 0.09 : 0.16),
       );
     const output = record.pose;
+    output.talkX += (talkX - output.talkX) * blend;
+    output.talkY += (talkY - output.talkY) * blend;
+    output.talkZ += (talkZ - output.talkZ) * blend;
     // Independently timed phrases give the second hand a supporting response,
     // rather than mirroring the leading hand or looping a shared sine wave.
     const reservedHands =
@@ -3306,25 +3537,68 @@ export function createAstronautBehavior({
       yieldPhase !== "none";
     // A low-priority dust brush never delays a destination or a shared action.
     const suitEligible =
+      !idlePlay &&
       !reservedHands &&
       !record.walker.moving &&
       (record.state === "rest" || record.state === "wander") &&
       output.weight < 0.05;
     if (!suitEligible) record.suitCheckStarted = -100;
-    else if (time >= record.nextSuitCheckAt) {
+    else if (
+      time >= record.nextSuitCheckAt &&
+      time - record.viewStarted >= record.viewDuration &&
+      Math.abs(output.viewYaw) < 0.01
+    ) {
       record.suitCheckStarted = time;
       record.suitCheckArm = suitRandom() < 0.5 ? 0 : 1;
+      record.suitCheckDuration = 2.6 + suitRandom() * 0.7;
+      record.suitCheckSweep = 0.7 + suitRandom() * 0.3;
       record.nextSuitCheckAt = time + 35 + suitRandom() * 30;
     }
-    const suitPhase = (time - record.suitCheckStarted) / 2.4;
+    const suitPhase =
+      (time - record.suitCheckStarted) / record.suitCheckDuration;
     const suitActive = suitEligible && suitPhase >= 0 && suitPhase < 1;
-    const suitAmount = suitActive ? Math.sin(Math.PI * suitPhase) ** 2 : 0;
-    output.suitCheck += (suitAmount - output.suitCheck) * blend;
-    output.suitStroke = suitActive
-      ? Math.max(0, Math.min(1, (suitPhase - 0.25) / 0.5))
+    // Look first, bring the glove up, brush once, then lower it before looking up.
+    const reach = clamp((suitPhase - 0.12) / 0.23, 0, 1);
+    const release = clamp((1 - suitPhase) / 0.28, 0, 1);
+    const suitAmount = suitActive
+      ? reach * reach * (3 - 2 * reach) * release * release * (3 - 2 * release)
       : 0;
+    output.suitCheck += (suitAmount - output.suitCheck) * blend;
+    const stroke = clamp((suitPhase - 0.38) / 0.32, 0, 1);
+    // Keep the end of the stroke during recovery rather than snapping upward.
+    if (suitActive) output.suitStroke = stroke * stroke * (3 - 2 * stroke);
+    const look = suitActive
+      ? Math.sin(Math.PI * Math.min(1, suitPhase / 0.94))
+      : 0;
+    output.suitLook += (look - output.suitLook) * blend;
+    // A quiet look at the surroundings follows the head with a delayed torso turn.
+    const viewEligible = suitEligible && !suitActive && output.suitLook < 0.01;
+    if (!viewEligible) record.viewStarted = -100;
+    else if (time >= record.nextViewAt) {
+      record.viewStarted = time;
+      record.viewDuration = 2.8 + viewRandom() * 1.2;
+      record.viewDirection =
+        (viewRandom() < 0.5 ? -1 : 1) * (0.18 + viewRandom() * 0.1);
+      record.nextViewAt = time + 30 + viewRandom() * 35;
+    }
+    const viewPhase = (time - record.viewStarted) / record.viewDuration;
+    const viewActive = viewEligible && viewPhase >= 0 && viewPhase < 1;
+    const viewTarget = viewActive
+      ? Math.sin(Math.PI * viewPhase) ** 2 * record.viewDirection
+      : 0;
+    output.viewYaw += (viewTarget - output.viewYaw) * blend;
+    const bodyPhase = clamp((viewPhase - 0.12) / 0.88, 0, 1);
+    const bodyTarget = viewActive
+      ? Math.sin(Math.PI * bodyPhase) ** 2 * record.viewDirection * 0.16
+      : 0;
+    output.viewBody += (bodyTarget - output.viewBody) * blend;
     const phraseEligible =
-      !reservedHands && !suitActive && (active || record.walker.moving);
+      !idlePlay &&
+      !talking &&
+      !flowerInspection &&
+      !reservedHands &&
+      !suitActive &&
+      (active || record.walker.moving);
     if (!phraseEligible) record.handPhraseAt = -1;
     else if (
       record.handPhraseAt < 0 ||
@@ -3384,12 +3658,15 @@ export function createAstronautBehavior({
     // A short upper-body phrase can accompany ordinary activities. It never
     // owns the feet, destination, gaze target, or hands used by another action.
     const canPlayAlong =
+      !idlePlay &&
       record === female &&
       PLAYFUL_OVERLAY_STATES.has(record.state) &&
       !record.walker.passageRole &&
       !record.walker.blocked &&
       yieldPhase === "none" &&
       !record.touchActive &&
+      output.suitLook < 0.01 &&
+      Math.abs(output.viewYaw) < 0.01 &&
       touch === 0 &&
       salute === 0 &&
       clap === 0 &&
@@ -3403,7 +3680,8 @@ export function createAstronautBehavior({
     } else if (time >= record.nextWalkingPlayAt) {
       record.walkingPlayStarted = time;
       record.walkingPlayDuration = 2.6 + walkingPlayRandom() * 1.4;
-      record.walkingPlayStyle = Math.floor(walkingPlayRandom() * 3);
+      record.walkingPlayStyle =
+        (record.walkingPlayStyle + 1 + Math.floor(walkingPlayRandom() * 2)) % 3;
       record.walkingPlayLead = walkingPlayRandom() < 0.5 ? -1 : 1;
       record.nextWalkingPlayAt =
         time + record.walkingPlayDuration + 5 + walkingPlayRandom() * 6;
@@ -3559,6 +3837,10 @@ export function createAstronautBehavior({
         record.pose.weight = seated;
         record.waveHop = record.playfulWait = false;
         record.walkingPlayDuration = 0;
+        record.idlePlayDuration = 0;
+        record.nextIdlePlayAt = time + 12;
+        record.viewStarted = -100;
+        record.nextViewAt = time + 8 + viewRandom() * 18;
         record.suitCheckStarted = -100;
         record.nextSuitCheckAt = time + 15 + suitRandom() * 20;
         record.handPhraseAt = -1;
@@ -3602,7 +3884,18 @@ export function createAstronautBehavior({
           record.pairSpeed ||
           (record.state === "stroll" || record.state === "strollDepart"
             ? Math.min(male.cruiseSpeed, female.cruiseSpeed)
-            : record.cruiseSpeed * (time < record.runUntil ? 1.95 : 1));
+            : record.cruiseSpeed *
+              (time < record.runUntil
+                ? 1.95
+                : record.journeyJog && record.journeyStarted >= 0
+                  ? 1 +
+                    0.95 *
+                      clamp(
+                        (angle(record.walker.normal, record.goal) - 0.1) / 0.18,
+                        0,
+                        1,
+                      )
+                  : 1));
         record.walker.speed +=
           (targetSpeed - record.walker.speed) * (1 - Math.exp(-dt * 6));
         if (

@@ -923,8 +923,10 @@ export function createMoonBase(
         Math.sin(gait) * (index === 1 ? 0.032 : 0.025) * person.gaitBlend +
         pose.roll * poseWeight +
         pose.playfulSway +
-        pose.phraseBody;
+        pose.phraseBody +
+        pose.suitCheck * (activity.suitCheckArm === 0 ? -0.012 : 0.012);
       person.torso.rotation.y =
+        pose.viewBody +
         pose.yaw * poseWeight -
         turnLead * 0.35 +
         Math.sin(gait) * (index === 1 ? 0.026 : 0.017) * person.strideBlend;
@@ -933,10 +935,11 @@ export function createMoonBase(
         (0.079 * Math.cos(person.torso.rotation.x) + bob - seatDrop) * r;
       person.head.position.z = Math.sin(person.torso.rotation.x) * 0.079 * r;
       person.head.rotation.y =
+        pose.viewYaw +
         turnLead +
         Math.sin(time * 0.65 + index * 2.1) * (walker.moving ? 0.16 : 0.3);
       person.head.rotation.x =
-        Math.sin(gait) * 0.055 * person.gaitBlend + pose.suitCheck * 0.12;
+        Math.sin(gait) * 0.055 * person.gaitBlend + pose.suitLook * 0.12;
       person.head.rotation.z = pose.playfulTilt;
       if (gazeWeight > 1e-5) {
         const upwardLimit =
@@ -1193,6 +1196,11 @@ export function createMoonBase(
               : chest
                 ? 0.022
                 : shoulderZ + 0.028 - (pose.spread || 0) * 0.016;
+          if (activity.state === "conversation") {
+            desiredHandX += side * pose.talkX;
+            desiredHandY += pose.talkY;
+            desiredHandZ += pose.talkZ;
+          }
           if (wave < 0.01 && salute < 0.01 && point < 0.01 && touch < 0.01) {
             const expressiveness = index === 1 ? 1 : 0.65;
             const arc = pose.arc * expressiveness;
@@ -1231,8 +1239,11 @@ export function createMoonBase(
             clap < 0.01 &&
             push < 0.01
           ) {
-            desiredHandX = side * 0.009;
-            desiredHandY = shoulderY - 0.004 - pose.suitStroke * 0.009;
+            desiredHandX = side * (0.009 - pose.suitStroke * 0.003);
+            desiredHandY =
+              shoulderY -
+              0.004 -
+              pose.suitStroke * 0.009 * activity.suitCheckSweep;
             desiredHandZ = 0.022;
           }
           if (touch > 0.001) {
