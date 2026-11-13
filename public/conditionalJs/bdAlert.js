@@ -177,17 +177,19 @@ function createAlert(title, message, extended) {
 }
 
 const mainMessage = `
-    Stay kind,
+    Hey,
     Be safe,
     Celebrate!!.
   `;
 
 const extendedMsg = `
 "Eyes like midnight ocean,
-Shining hairs; a natural delight.
+Shining hairs; 
+A natural delight.
 
 Bluntness so sharp,
-cuts through, all the noise;
+cuts through,
+All the noise;
 
 Infinite curiosity;
 hey! relentless kitten,
@@ -200,12 +202,15 @@ corageous, yet so kind.
 
 It's all peace around you,
 there's a pleasing calm.
-yet i get numb,
+Yet! One is so dumb, 
+Always gets numb.
 
 Stop never, 
 You've worked so hard, 
 Victory is your rightful crown,
-you belong among the best.
+you belong among the best,
+Protect yourself, 
+Never let your guard down.
 
 It's your day,
 It's your night,
