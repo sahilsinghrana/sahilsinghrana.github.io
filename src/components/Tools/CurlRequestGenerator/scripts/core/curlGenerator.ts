@@ -2,7 +2,10 @@
  * Core curl command generator
  */
 
-import { sanitizeForShell } from "../utils/validation.ts";
+import {
+  quoteForDoubleQuotedShell,
+  quoteForSingleQuotedShell,
+} from "../utils/validation.ts";
 
 export interface CurlOptions {
   method?: string;
@@ -84,7 +87,7 @@ export class CurlGenerator {
 
     // Add URL (always last)
     if (options.url) {
-      parts.push(`"${sanitizeForShell(options.url)}"`);
+      parts.push(quoteForDoubleQuotedShell(options.url));
     }
 
     // Combine all parts
@@ -100,7 +103,7 @@ export class CurlGenerator {
 
     Object.entries(options.headers).forEach(([key, value]) => {
       if (key && value) {
-        parts.push(`-H "${sanitizeForShell(key)}: ${sanitizeForShell(value)}"`);
+        parts.push(`-H ${quoteForDoubleQuotedShell(`${key}: ${value}`)}`);
       }
     });
 
@@ -132,14 +135,14 @@ export class CurlGenerator {
       case "basic":
         if (options.username && options.password) {
           parts.push(
-            `-u "${sanitizeForShell(options.username)}:${sanitizeForShell(options.password)}"`,
+            `-u ${quoteForDoubleQuotedShell(`${options.username}:${options.password}`)}`,
           );
         }
         break;
       case "bearer":
         if (options.token) {
           parts.push(
-            `-H "Authorization: Bearer ${sanitizeForShell(options.token)}"`,
+            `-H ${quoteForDoubleQuotedShell(`Authorization: Bearer ${options.token}`)}`,
           );
         }
         break;
@@ -147,7 +150,7 @@ export class CurlGenerator {
         if (options.username && options.password) {
           parts.push("--digest");
           parts.push(
-            `-u "${sanitizeForShell(options.username)}:${sanitizeForShell(options.password)}"`,
+            `-u ${quoteForDoubleQuotedShell(`${options.username}:${options.password}`)}`,
           );
         }
         break;
@@ -155,7 +158,7 @@ export class CurlGenerator {
         if (options.username && options.password) {
           parts.push("--ntlm");
           parts.push(
-            `-u "${sanitizeForShell(options.username)}:${sanitizeForShell(options.password)}"`,
+            `-u ${quoteForDoubleQuotedShell(`${options.username}:${options.password}`)}`,
           );
         }
         break;
@@ -163,7 +166,7 @@ export class CurlGenerator {
         if (options.username && options.password) {
           parts.push("--negotiate");
           parts.push(
-            `-u "${sanitizeForShell(options.username)}:${sanitizeForShell(options.password)}"`,
+            `-u ${quoteForDoubleQuotedShell(`${options.username}:${options.password}`)}`,
           );
         }
         break;
@@ -177,12 +180,12 @@ export class CurlGenerator {
       case "json":
       case "raw":
         if (options.body) {
-          parts.push(`-d '${sanitizeForShell(options.body)}'`);
+          parts.push(`-d ${quoteForSingleQuotedShell(options.body)}`);
         }
         break;
       case "form":
         if (options.body) {
-          parts.push(`-d "${sanitizeForShell(options.body)}"`);
+          parts.push(`-d ${quoteForDoubleQuotedShell(options.body)}`);
         }
         break;
       case "multipart":
@@ -194,11 +197,13 @@ export class CurlGenerator {
               const [key, value] = line.split("=", 2);
               if (value.startsWith("@")) {
                 // File upload
-                parts.push(`-F "${sanitizeForShell(key.trim())}=${value}"`);
+                parts.push(
+                  `-F ${quoteForDoubleQuotedShell(`${key.trim()}=${value}`)}`,
+                );
               } else {
                 // Regular form field
                 parts.push(
-                  `-F "${sanitizeForShell(key.trim())}=${sanitizeForShell(value)}"`,
+                  `-F ${quoteForDoubleQuotedShell(`${key.trim()}=${value}`)}`,
                 );
               }
             }
@@ -230,11 +235,11 @@ export class CurlGenerator {
     }
 
     if (options.userAgent) {
-      parts.push(`-A "${sanitizeForShell(options.userAgent)}"`);
+      parts.push(`-A ${quoteForDoubleQuotedShell(options.userAgent)}`);
     }
 
     if (options.referer) {
-      parts.push(`-e "${sanitizeForShell(options.referer)}"`);
+      parts.push(`-e ${quoteForDoubleQuotedShell(options.referer)}`);
     }
   }
 
@@ -260,7 +265,7 @@ export class CurlGenerator {
     }
 
     if (options.outputFile) {
-      parts.push(`-o "${sanitizeForShell(options.outputFile)}"`);
+      parts.push(`-o ${quoteForDoubleQuotedShell(options.outputFile)}`);
     }
 
     if (options.writeOut && this.writeOutFormats[options.writeOut]) {
@@ -270,11 +275,11 @@ export class CurlGenerator {
 
   private addAdvancedOptions(parts: string[], options: CurlOptions): void {
     if (options.proxy) {
-      parts.push(`--proxy "${sanitizeForShell(options.proxy)}"`);
+      parts.push(`--proxy ${quoteForDoubleQuotedShell(options.proxy)}`);
     }
 
     if (options.interface) {
-      parts.push(`--interface "${sanitizeForShell(options.interface)}"`);
+      parts.push(`--interface ${quoteForDoubleQuotedShell(options.interface)}`);
     }
 
     if (options.httpVersion) {

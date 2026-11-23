@@ -82,30 +82,19 @@ export function isValidHeaderValue(headerValue: string): boolean {
   return !invalidChars.test(headerValue);
 }
 
-/**
- * Sanitize input for shell command - ENHANCED SECURITY
- * @param input - Input to sanitize
- * @returns Sanitized input
- */
-export function sanitizeForShell(input: string): string {
+function cleanShellInput(input: string): string {
   if (typeof input !== "string") return "";
+  return input.replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "");
+}
 
-  // Remove null bytes and control characters
-  let sanitized = input.replace(/[\x00-\x1F\x7F]/g, "");
+export function quoteForSingleQuotedShell(input: string): string {
+  const cleaned = cleanShellInput(input);
+  return `'${cleaned.replace(/'/g, `'\\''`)}'`;
+}
 
-  // Escape ALL shell metacharacters for maximum security
-  sanitized = sanitized.replace(/([\\$`"'|&;<>(){}[\]*?~!#%^])/g, "\\$1");
-
-  // Additional protection against command substitution
-  sanitized = sanitized.replace(/\$\(/g, "\\$(");
-  sanitized = sanitized.replace(/`/g, "\\`");
-
-  // Limit length to prevent buffer overflow attacks
-  if (sanitized.length > 10000) {
-    sanitized = sanitized.substring(0, 10000);
-  }
-
-  return sanitized;
+export function quoteForDoubleQuotedShell(input: string): string {
+  const cleaned = cleanShellInput(input);
+  return `"${cleaned.replace(/([\\$"`])/g, "\\$1")}"`;
 }
 
 /**

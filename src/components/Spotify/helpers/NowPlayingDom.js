@@ -65,8 +65,7 @@ class NowPlayingSongTitle {
 
   static setTitle(songTitle) {
     const titleEl = this.getEl();
-    titleEl.innerHTML = songTitle;
-    titleEl.target = "_blank";
+    if (titleEl) titleEl.textContent = songTitle;
   }
 
   static setLink(link) {
