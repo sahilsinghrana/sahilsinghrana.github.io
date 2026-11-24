@@ -5,6 +5,27 @@
     filter: grayscale(0);
   }
 
+  .builtFor {
+    font-weight: bold;
+    color: white;
+    opacity: 0.85;
+  }
+
+  h2 {
+    opacity: 1;
+    color: white;
+  }
+
+  p {
+    opacity: 0.77;
+    color: white;
+  }
+
+  .award p {
+    opacity: 0.9;
+    color: white;
+  }
+
   transition: 500ms ease-out;
 }
 
@@ -14,8 +35,8 @@
   min-height: 210px;
 
   // height: 230px;
-  max-height: 245px;
-  width: 310px;
+  max-height: 350px;
+  width: 330px;
   outline: 1px solid rgb(128 128 128 / 55.3%);
   border-radius: 15px;
   overflow: hidden;
@@ -26,7 +47,7 @@
   }
 
   img {
-    height: 100px;
+    height: 120px;
     width: 100%;
     object-fit: cover;
     object-position: top;
@@ -48,7 +69,7 @@
 
   p {
     font-size: 0.75rem;
-    opacity: 0.67;
+    opacity: 0.69;
     font-style: italic;
     text-align: justify;
   }
@@ -75,6 +96,62 @@
       svg {
         height: 20px;
       }
+    }
+  }
+
+  .awards {
+    .award {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      p {
+        font-size: 0.75rem;
+        opacity: 0.8;
+        font-weight: 600;
+        font-style: italic;
+        text-align: justify;
+
+        &::before {
+          content: "🏆";
+          margin-right: 3px;
+        }
+
+        &:hover {
+          opacity: 1;
+          color: white;
+        }
+      }
+
+      .awardSources {
+        display: flex;
+
+        a {
+          svg {
+            height: 15px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.projectCard {
+  .projectCardImg {
+    &.bg-white {
+      background-color: rgb(244 244 244 / 80.1%);
+    }
+
+    &.scale-down {
+      object-fit: scale-down !important;
+    }
+
+    &.object-contain {
+      object-fit: contain !important;
+    }
+
+    &.object-center {
+      object-position: center !important;
     }
   }
 }

@@ -1,6 +1,16 @@
 ---
 import RubiksCube from "@images/rubikscube.webp";
-const { title, content, image, links } = Astro.props;
+import ExternalLink from "lucide-astro/ExternalLink";
+
+const {
+  title,
+  content,
+  image,
+  links,
+  imageClassName = "",
+  builtFor = "Personal",
+  awards = [],
+} = Astro.props;
 
 import "./index.scss";
 import { Image } from "astro:assets";
@@ -10,7 +20,7 @@ const displayImage = image || RubiksCube;
 
 <div class="projectCard">
   <Image
-    class="projectCardImg"
+    class={`projectCardImg ${imageClassName}`}
     src={displayImage}
     alt={title}
     width={410}
@@ -18,8 +28,30 @@ const displayImage = image || RubiksCube;
   />
   <div class="content">
     <h2>{title}</h2>
+    <p class="builtFor">{builtFor}</p>
     <p>{content}</p>
   </div>
+
+  {
+    awards?.length > 0 && (
+      <div class="awards">
+        {awards.map((award) => (
+          <div class="award">
+            <p>{award?.title || ""}</p>
+            {award?.links?.length > 0 && (
+              <div class="awardSources">
+                {award?.links.map(({ Icon: AwardIcon, url: awardUrl }) => (
+                  <a href={awardUrl} target="_blank">
+                    {AwardIcon ? <AwardIcon /> : <ExternalLink />}
+                  </a>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    )
+  }
   <ul class="links">
     {
       links.map(({ Icon, link }) => {

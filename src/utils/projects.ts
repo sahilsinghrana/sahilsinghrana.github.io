@@ -1,7 +1,10 @@
 import ExternalLink from "lucide-astro/ExternalLink";
+import Facebook from "lucide-astro/Facebook";
+import Instagram from "lucide-astro/Instagram";
 import Github from "lucide-astro/Github";
 import Package from "lucide-astro/Package";
 import Youtube from "lucide-astro/Youtube";
+import Linkedin from "lucide-astro/Linkedin";
 
 import iwl from "@images/projects/iwl.webp";
 import nextChat from "@images/projects/nextchat.webp";
@@ -10,6 +13,11 @@ import diziPlayer from "@images/projects/diziPlayer.webp";
 import npxNamasteSahil from "@images/projects/npxNamasteSahil.webp";
 import TicTacToeVanilla from "@images/projects/TicTacToeVanilla.webp";
 import atrij from "@images/projects/atrij.png";
+import mobifinLogo from "@images/projects/mobifinLogo.png";
+import mobifinTapestryLogo from "@images/projects/mobifin_tapestry_logo.png";
+import mynechatLogo from "@images/projects/mynechat.png";
+import insiderTradeLogo from "@images/projects/insiderTradeLogo.png";
+import fixsyLogo from "@images/projects/fixsyLogo.png";
 
 export const diziPlayerMeta = {
   title: "Dizi Player",
@@ -67,8 +75,99 @@ export const jsonViewerMeta = {
   ],
 };
 
+export const Mobifin = {
+  title: "Mobifin",
+  image: mobifinLogo,
+  content:
+    "Worked on the Mobifin project, a fintech platform that provides digital financial services, including mobile banking, payments, and financial management tools.",
+  for: "Panamax Inc. (Now Bankai Infotech)",
+  links: [
+    {
+      Icon: ExternalLink,
+      link: "https://www.mobifin.com/",
+    },
+  ],
+};
+
+export const MyneChat = {
+  title: "MyneChat",
+  image: mynechatLogo,
+  imageClassName: "p-2 object-contain object-center",
+  content:
+    "Lead the team and engineered the app from design to implementation, building a chat application for internal communication between teams, with features such as group conversations, file sharing, real-time notifications, user presence indicators, WebRTC calls, message forwarding, message replies, A feed for social interaction with likes, comments and shares, etc.",
+  for: "Webmyne Systems Pvt. Ltd.",
+  links: [],
+};
+
+export const MobifinTapestry = {
+  title: "Mobifin Tapestry",
+  image: mobifinTapestryLogo,
+  imageClassName: "object-center",
+  content:
+    "Analyzed the requirements, did R&D for Mobifin Tapestry Admin portal and created initial multiple prototypes and iterations from scratch to build a composable UI architecture with Micro Frontends (Module Federation) and manage workflows dynamically using BPMN.",
+  for: "Panamax Inc. (Now Bankai Infotech)",
+  links: [
+    {
+      Icon: Linkedin,
+      link: "https://www.linkedin.com/company/mobifin-tapestry",
+    },
+  ],
+};
+
+export const InsiderTradeAI = {
+  title: "InsiderTrade.ai",
+  image: insiderTradeLogo,
+  imageClassName: "bg-white object-contain",
+  content:
+    "Engineered an AI chat based RegTech platform to answer questions about insider trading and regulatory compliance from a humongous knowledge base.",
+  awards: [
+    {
+      title: "Winner of AI in Risk & Compliance at TOI AI Quotient Awards",
+      links: [
+        {
+          title: "",
+          Icon: ExternalLink,
+          url: "https://toievents.indiatimes.com/ai-quotient-awards/winner#:~:text=INSIDERTRADE.AI%2DREGTECH%20INTELLIGENCE",
+        },
+        {
+          title: "",
+          Icon: Facebook,
+          url: "https://www.facebook.com/TimesofIndia/posts/congratulations-to-insidertradeai-winner-of-ai-in-risk-compliance-at-toiaiquotie/1532087465632102/",
+        },
+        {
+          title: "",
+          Icon: Instagram,
+          url: "https://www.instagram.com/p/DdG2k4Tis13/",
+        },
+      ],
+    },
+  ],
+  for: "Webmyne Systems Pvt. Ltd.",
+  links: [
+    {
+      Icon: ExternalLink,
+      link: "https://www.insidertrade.ai/",
+    },
+  ],
+};
+
+export const Fixsy = {
+  title: "Fixsy",
+  image: fixsyLogo,
+  imageClassName: "object-contain",
+  content:
+    "Architecting and leading the tech team to build a Canadian marketplace for home services.",
+  for: "Webmyne Systems Pvt. Ltd.",
+  links: [],
+};
+
 const projects = [
+  Mobifin,
+  MyneChat,
+  MobifinTapestry,
+  InsiderTradeAI,
   jsonViewerMeta,
+  Fixsy,
   {
     title: "Esp8266 Car",
     image: esp32Car,
@@ -106,6 +205,8 @@ const projects = [
     ],
   },
   diziPlayerMeta,
+  atrijMeta,
+
   {
     title: "Namaste-sahil",
     image: npxNamasteSahil,
