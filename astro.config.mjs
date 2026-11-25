@@ -153,33 +153,6 @@ export default defineConfig({
       },
     },
     {
-      name: "Cinzel",
-      provider: fontProviders.local(),
-      cssVariable: "--font-cinzel",
-      options: {
-        variants: [
-          {
-            weight: "400",
-            style: "normal",
-            display: "swap",
-            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
-          },
-          {
-            weight: "600",
-            style: "normal",
-            display: "swap",
-            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
-          },
-          {
-            weight: "700",
-            style: "normal",
-            display: "swap",
-            src: ["./src/assets/fonts/Cinzel-Variable.woff2"],
-          },
-        ],
-      },
-    },
-    {
       name: "Tiro Devanagari Sanskrit",
       provider: fontProviders.local(),
       cssVariable: "--font-tiro-devanagari-sanskrit",

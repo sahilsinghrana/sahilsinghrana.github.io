@@ -71,8 +71,12 @@ body,
 html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-  text-rendering: optimizelegibility;
+
+  // -webkit-text-size-adjust: 100%;
+  font-optical-sizing: auto;
+  font-kerning: auto;
+
+  // font-synthesis: weight style small-caps;
 }
 
 #root,

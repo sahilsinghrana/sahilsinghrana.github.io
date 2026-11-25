@@ -49,16 +49,6 @@ const sagittariusFacts = {
     "",
     "Visually, the brightest band of the Milky Way appears to rise like steam directly from the spout of the Sagittarius 'Teapot' asterism.",
   ),
-  baadesWindow: new Fact(
-    "Baade's Window: A Rare Glimpse Into the Core",
-    "https://apod.nasa.gov/apod/ap021219.html",
-    "A unique area in Sagittarius with low interstellar dust, acting as a clear window that allows astronomers to observe stars in the distant galactic bulge.",
-  ),
-  lagoonGiant: new Fact(
-    "M8: The Lagoon Nebula's Stellar Nursery",
-    "https://hubblesite.org/contents/media/images/1996/38/456-Image.html",
-    "Sagittarius hosts the Lagoon Nebula (M8), a giant interstellar cloud where new stars are being born, visible to the naked eye in dark skies.",
-  ),
 };
 
 export default sagittariusFacts;

@@ -112,21 +112,6 @@ export const BHAGAVAD_GITA_SHLOKAS: Shloka[] = [
     "From anger comes delusion; from delusion, the bewilderment of memory; when memory is bewildered, intelligence is lost; and when intelligence is lost, one falls down again into the material pool.",
   ),
   new BG_Shloka(
-    6.5,
-    "उद्धरेदात्मनात्मानं नात्मानमवसादयेत् ।\nआत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः ॥",
-    "One must uplift oneself by one's own self (mind), and should not degrade oneself. For the mind (self) alone is one's friend, and the mind (self) alone is one's enemy.",
-  ),
-  new BG_Shloka(
-    12.13,
-    "अद्वेष्टा सर्वभूतानां मैत्रः करुण एव च ।\nनिर्ममो निरहङ्कारः समदुःखसुखः क्षमी ॥",
-    "One who is not envious of any living entity, who is friendly and compassionate, who is free from the sense of proprietorship and false ego, who is equal in both happiness and distress, and who is always forgiving, he is very dear to Me.",
-  ),
-  new BG_Shloka(
-    18.17,
-    "यस्य नाहङ्कृतो भावो बुद्धिर्यस्य न लिप्यते। हत्वापि स इमाँल्लोकान्न हन्ति न निबध्यते॥",
-    "One who is free from the egoistic notion (that 'I am the doer') and whose intellect is not tainted, even if he slays these living beings, he neither slays nor is he bound by the action.",
-  ),
-  new BG_Shloka(
     3.27,
     "प्रकृतेः क्रियमाणानि गुणैः कर्माणि सर्वशः ।\nअहङ्कारविमूढात्मा कर्ताहमिति मन्यते ॥",
     "The spirit soul bewildered by the influence of false ego thinks himself the doer of activities that are in actuality carried out by the three modes of material nature.",

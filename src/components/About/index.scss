@@ -173,13 +173,13 @@ section.heading {
       margin: 0;
       margin-bottom: 1.4rem;
       font-size: 0.8rem;
-      color: rgb(255 255 255 / 69.9%);
+      color: rgb(255 255 255 / 89.7%);
       font-weight: 300;
     }
 
     a {
       background-color: rgb(97 97 97 / 73.3%);
-      color: rgb(255 255 255 / 83.6%);
+      color: rgb(255 255 255 / 85.3%);
       padding: 8px 15px;
       font-size: 0.8rem;
       border-radius: 12px;
@@ -192,7 +192,7 @@ section.heading {
 
 section.intro {
   font-size: small;
-  color: rgb(255 255 255 / 74%);
+  color: rgb(255 255 255 / 82.8%);
   text-align: justify;
 
   p {
@@ -201,7 +201,7 @@ section.intro {
 
   a {
     font-size: 0.7rem;
-    opacity: 0.9;
+    opacity: 0.95;
     font-style: italic;
     text-decoration: underline;
 
@@ -341,7 +341,7 @@ section.otherActivities {
 
           b {
             a {
-              opacity: 0.9;
+              opacity: 0.95;
               color: rgb(211 211 211 / 75.7%);
 
               &:hover {

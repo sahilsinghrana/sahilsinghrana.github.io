@@ -18,7 +18,7 @@ const miscFacts: Fact[] = [
   new Fact(
     "Saturn has 274 confirmed natural moons (updated via 2025 surveys).",
     "https://science.nasa.gov/saturn/moons/",
-    "Recent surveys announced in 2024–2025 added many small satellites; counts are observational and may increase with deeper surveys.",
+    "Recent surveys announced in 2024-2025 added many small satellites; counts are observational and may increase with deeper surveys.",
     "https://www.nature.com/articles/d41586-025-00781-1",
   ),
 
@@ -58,16 +58,16 @@ const miscFacts: Fact[] = [
   ),
 
   new Fact(
-    "Mercury has an unusually large metallic core (model-dependent: roughly ~75–85% of radius in many estimates).",
+    "Mercury has an unusually large metallic core.",
     "https://science.nasa.gov/mercury/facts/",
     "MESSENGER and subsequent modeling show Mercury's iron-rich core occupies a very large fraction of its radius; exact fraction varies by model and assumptions.",
     "https://messenger.jhuapl.edu/About/Why-Mercury.html",
   ),
 
   new Fact(
-    "The Sun's energy is produced by nuclear fusion via the proton–proton chain.",
+    "The Sun's energy is produced by nuclear fusion via the proton-proton chain.",
     "https://www.britannica.com/science/proton-proton-cycle",
-    "In the Sun's core hydrogen nuclei fuse into helium through the proton–proton chain, releasing the energy that powers the Sun.",
+    "In the Sun's core hydrogen nuclei fuse into helium through the proton-proton chain, releasing the energy that powers the Sun.",
     "https://en.wikipedia.org/wiki/Proton%E2%80%93proton_chain",
   ),
 
@@ -76,13 +76,6 @@ const miscFacts: Fact[] = [
     "https://science.nasa.gov/neptune/",
     "Voyager 2 and later observations record winds exceeding ~1,200 mph (≈2,000 km/h) in parts of Neptune's atmosphere; values vary by measurement.",
     "https://spacecenter.org/meet-our-solar-system-neptune/",
-  ),
-
-  new Fact(
-    "Uranus's ~98° axial tilt is explained by competing hypotheses (giant impacts vs. satellite-driven mechanisms).",
-    "https://www.aanda.org/articles/aa/full_html/2022/12/aa43953-22/aa43953-22.html",
-    "Leading explanations include one or more large early impacts and more recent models where migrating satellites torque the planet to high obliquity.",
-    "https://www.sciencedirect.com/science/article/pii/S0019103521004851",
   ),
 
   new Fact(
@@ -100,17 +93,10 @@ const miscFacts: Fact[] = [
   ),
 
   new Fact(
-    "The Milky Way is estimated to contain roughly 100–400 billion stars.",
+    "The Milky Way is estimated to contain roughly 100-400 billion stars.",
     "https://science.nasa.gov/universe/exoplanets/our-milky-way-galaxy-how-big-is-space/",
-    "Star-count estimates vary with method (stellar surveys, mass modeling); current consensus range is about 100–400 billion stars.",
+    "Star-count estimates vary with method (stellar surveys, mass modeling); current consensus range is about 100-400 billion stars.",
     "https://en.wikipedia.org/wiki/Milky_Way",
-  ),
-
-  new Fact(
-    "Jupiter's banded appearance arises from alternating east–west jet streams (belts and zones).",
-    "https://science.nasa.gov/image-detail/amf-pia24964/",
-    "Belts and zones are produced by strong east-west jet streams; differences in cloud opacity/composition create visible light/dark bands.",
-    "https://www.jpl.nasa.gov/images/pia26076-cylindrical-orientation-of-jupiters-east-west-jet-streams/",
   ),
 ];
 

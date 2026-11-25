@@ -1,8 +1,8 @@
-$codeGreen: rgb(0 189 0 / 80%);
+$codeGreen: rgb(0 189 0 / 90%);
 $borderRadius: 10px;
 
 .currentMoonInfo {
-  font-size: 0.75rem;
+  font-size: 0.8rem;
   position: relative;
   outline: 1px solid rgb(255 255 255 / 40%);
   margin: 1.2rem 0;
@@ -26,7 +26,7 @@ $borderRadius: 10px;
   }
 
   &:hover {
-    border-color: rgb(255 165 0 / 30%);
+    border-color: rgb(255 165 0 / 35%);
     border-top-color: rgb(0 76 0);
     border-top-width: 2.5px;
     box-shadow: 0 5px 15px -5px rgb(0 0 0 / 30%);
@@ -39,7 +39,7 @@ $borderRadius: 10px;
     color: $codeGreen;
     padding: 8px;
     margin: 10px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
 
   summary {
@@ -53,7 +53,7 @@ $borderRadius: 10px;
 
     &::marker {
       margin-right: 10px;
-      color: rgb(255 255 255 / 70%);
+      color: rgb(255 255 255 / 80%);
     }
   }
 
@@ -67,7 +67,7 @@ $borderRadius: 10px;
 
     dd {
       margin-inline-start: 10px;
-      opacity: 0.95;
+      opacity: 0.99;
       color: $codeGreen;
       display: flex;
       align-items: center;
