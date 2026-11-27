@@ -21,14 +21,6 @@ const STAMP_SVGS = {
     <path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M42 48l3 2 3-1M42 52l3 2 3-1"/>
     <path fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" d="M46 16l2 3 3 1M50 14l2 3 3 1"/>
   </svg>`,
-  catEyes: `<svg class="stamp stamp-cat-eyes" viewBox="0 0 96 36" aria-hidden="true" focusable="false">
-    <ellipse cx="24" cy="18" rx="16" ry="11" fill="none" stroke="currentColor" stroke-width="2.8"/>
-    <ellipse cx="72" cy="18" rx="16" ry="11" fill="none" stroke="currentColor" stroke-width="2.8"/>
-    <ellipse cx="24" cy="18" rx="5" ry="10" fill="currentColor"/>
-    <ellipse cx="72" cy="18" rx="5" ry="10" fill="currentColor"/>
-    <circle cx="25.5" cy="14" r="1.6" fill="#141210" opacity="0.55"/>
-    <circle cx="73.5" cy="14" r="1.6" fill="#141210" opacity="0.55"/>
-  </svg>`,
   // Flat two-tone flute — parchment ink (matches letter cream)
   flute: `<svg class="stamp stamp-flute" viewBox="0 0 40 160" aria-hidden="true" focusable="false">
     <rect x="12" y="4" width="8" height="152" fill="#e8d4b5"/>
@@ -47,7 +39,7 @@ function createStampsEl() {
   const wrap = document.createElement("div");
   wrap.className = "poetic-alert-stamps";
   wrap.setAttribute("aria-hidden", "true");
-  wrap.innerHTML = STAMP_SVGS.catEyes + STAMP_SVGS.moon + STAMP_SVGS.flute;
+  wrap.innerHTML = STAMP_SVGS.moon + STAMP_SVGS.flute;
 
   const tulip = document.createElement("img");
   tulip.className = "stamp stamp-tulip";
@@ -179,24 +171,24 @@ function createAlert(title, message, extended) {
 const mainMessage = `
     Hey,
     Be safe,
-    Celebrate!!.
+    and Celebrate!!.
   `;
 
 const extendedMsg = `
 "Eyes like midnight ocean,
-Shining hairs; 
-A natural delight.
+Shining hairs, captivating smile, 
+Oh! what a natural delight.
 
 Bluntness so sharp,
 cuts through,
 All the noise;
 
-Infinite curiosity;
 hey! relentless kitten,
 honest you too are not,
 beneath the facade,
 there's a version, hidden.
 
+Infinite curiosity;
 So stubborn you are,
 corageous, yet so kind.
 
@@ -207,10 +199,10 @@ Always gets numb.
 
 Stop never, 
 You've worked so hard, 
-Victory is your rightful crown,
-you belong among the best,
-Protect yourself, 
 Never let your guard down.
+Victory is your rightful crown,
+Protect yourself, 
+you belong among the best,
 
 It's your day,
 It's your night,

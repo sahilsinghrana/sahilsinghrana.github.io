@@ -100,28 +100,20 @@
 
 .stamp-moon {
   inset: 52% auto auto 50%;
-  width: 290px;
-  height: 290px;
+  width: 320px;
+  height: 320px;
   transform: translate(-50%, -50%);
-  opacity: 0.075;
+  opacity: 0.01;
 }
 
-.stamp-cat-eyes {
-  top: 1.15rem;
-  left: 0.9rem;
-  width: 96px;
-  height: 36px;
-  transform: rotate(-4deg);
-  opacity: 0.1;
-}
 
 .stamp-flute {
   top: 36%;
   left: 0.55rem;
   width: 48px;
-  height: 210px;
+  height: 260px;
   transform: rotate(-8deg);
-  opacity: 0.1;
+  opacity: 0.05;
 }
 
 .stamp-tulip {
@@ -131,7 +123,7 @@
   max-height: 120px;
   object-fit: contain;
   transform: none;
-  opacity: 0.85;
+  opacity: 0.25;
   mix-blend-mode: normal;
 }
 
@@ -139,7 +131,7 @@
   .stamp-moon {
     width: 200px;
     height: 200px;
-    opacity: 0.07;
+    opacity: 0.05;
   }
 
   .stamp-cat-eyes {
